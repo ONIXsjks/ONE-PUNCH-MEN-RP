@@ -1,9 +1,9 @@
-import os
+شششششimport os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = "8908872734:AAGwhpmLc6o8eOMhnVT9mHYUQZ_ipAT3DQM"
+BOT_TOKEN = "8908872734:AAEexZRr4WQeKeqMtc5sP_MVXXb4vS2nULk"
 DB_NAME = "game.db"
 
 START_COINS = 0
