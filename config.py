@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = "8908872734:AAEexZRr4WQeKeqMtc5sP_MVXXb4vS2nULk"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "game.db"
 
 START_COINS = 0
