@@ -72,7 +72,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c}")
-
+  
 
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
@@ -280,7 +280,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     new_battle = get_battle(user_id)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
     await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-
+  
 
 async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -503,7 +503,7 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
     ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-
+  
 
 # ============ TEAM BATTLE ============
 
@@ -543,4 +543,249 @@ async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     session_id = ctx.args[0]
     try:
-        team_num = int(
+        team_num = int(ctx.args[1])
+    except ValueError:
+        await update.message.reply_text("Team must be 1 or 2.")
+        return
+    if session_id not in TEAM_SESSIONS:
+        await update.message.reply_text("Not found.")
+        return
+    s = TEAM_SESSIONS[session_id]
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("No active character.")
+        return
+    all_players = [p[0] for p in s["team1"]] + [p[0] for p in s["team2"]]
+    if user_id in all_players:
+        await update.message.reply_text("Already joined.")
+        return
+    if team_num == 1:
+        if len(s["team1"]) >= s["size"]:
+            await update.message.reply_text("Team 1 full.")
+            return
+        s["team1"].append((user_id, char))
+        await update.message.reply_text(f"Joined Team 1 ({len(s['team1'])}/{s['size']})")
+    elif team_num == 2:
+        if len(s["team2"]) >= s["size"]:
+            await update.message.reply_text("Team 2 full.")
+            return
+        s["team2"].append((user_id, char))
+        await update.message.reply_text(f"Joined Team 2 ({len(s['team2'])}/{s['size']})")
+
+
+async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args:
+        await update.message.reply_text("Usage: /startteam <session_id>")
+        return
+    session_id = ctx.args[0]
+    if session_id not in TEAM_SESSIONS:
+        await update.message.reply_text("Not found.")
+        return
+    s = TEAM_SESSIONS[session_id]
+    if update.effective_user.id != s["host"]:
+        await update.message.reply_text("Only host can start.")
+        return
+    if len(s["team1"]) != s["size"] or len(s["team2"]) != s["size"]:
+        await update.message.reply_text(f"Need {s['size']} each.")
+        return
+
+    team1 = [{"uid": u, "name": c[2], "hp": c[5], "max_hp": c[5],
+              "atk": c[6], "def": c[7], "dodge": c[8],
+              "defending": 0, "dodged_next": 0} for u, c in s["team1"]]
+    team2 = [{"uid": u, "name": c[2], "hp": c[5], "max_hp": c[5],
+              "atk": c[6], "def": c[7], "dodge": c[8],
+              "defending": 0, "dodged_next": 0} for u, c in s["team2"]]
+
+    all_ids = [p["uid"] for p in team1 + team2]
+
+    create_multi_battle(
+        session_id=session_id,
+        battle_type="team",
+        host_id=s["host"],
+        players=all_ids,
+        team1=team1,
+        team2=team2
+    )
+
+    battle = get_multi_battle(session_id)
+    view = build_battle_view(battle)
+    kb = [
+        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    ]
+    await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+
+
+# ============ MULTI ACTION HANDLER ============
+
+async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+    parts = data.split("_", 2)
+    action = parts[1]
+    session_id = parts[2]
+    user_id = q.from_user.id
+
+    status, log = player_action(session_id, user_id, action)
+    if status is None:
+        await q.answer(log, show_alert=True)
+        return
+
+    if status in ("won", "team1_won", "team2_won", "draw"):
+        result = finish_multi_battle(session_id)
+        if result:
+            text = f"🏆 نبرد تموم شد!\n\n{log}\n\n"
+            for uid, amount in result["rewards"].items():
+                text += f"👤 {uid}: +{amount} coin\n"
+            await q.message.reply_text(text)
+        else:
+            await q.message.reply_text(f"🏆 نبرد تموم شد!\n\n{log}")
+        return
+
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.message.reply_text(f"{log}\n\n❌ نبرد یافت نشد.")
+        return
+    view = build_battle_view(battle)
+    kb = [
+        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    ]
+    await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
+
+
+# ============ QUESTS ============
+
+async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    reset_daily_quests(user_id)
+    user_quests = get_user_quests(user_id)
+    if not user_quests:
+        await update.message.reply_text("No quests today.")
+        return
+    text = "Daily Quests:\n\n"
+    for key, prog, completed, claimed in user_quests:
+        q = QUESTS[key]
+        status = "CLAIMED" if claimed else ("READY" if completed else f"{prog}/{q['target']}")
+        text += f"- {q['desc']} [{status}] (+{q['reward']})\n"
+    text += "\nClaim: /claim <quest_key>"
+    await update.message.reply_text(text)
+
+
+async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args:
+        await update.message.reply_text("Usage: /claim <quest_key>")
+        return
+    key = ctx.args[0]
+    if key not in QUESTS:
+        await update.message.reply_text("Invalid quest key.")
+        return
+    msg = claim_quest(update.effective_user.id, key)
+    await update.message.reply_text(msg)
+
+
+# ============ LEADERBOARD ============
+
+async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    kb = [
+        [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
+        [InlineKeyboardButton("Top by Level", callback_data="lb_level")],
+        [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")],
+    ]
+    await update.message.reply_text("Leaderboard:", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+    if data == "lb_coins":
+        rows = get_top_by_coins(10)
+        text = "Top 10 by Coins:\n\n"
+        for i, (name, coins) in enumerate(rows, 1):
+            text += f"{i}. {name or 'Unknown'} - {coins} coins\n"
+        await q.message.reply_text(text)
+    elif data == "lb_level":
+        rows = get_top_by_level(10)
+        text = "Top 10 by Level:\n\n"
+        for i, (name, char, rank, level) in enumerate(rows, 1):
+            text += f"{i}. {name or 'Unknown'} - {char} ({rank}) Lv{level}\n"
+        await q.message.reply_text(text)
+    elif data == "lb_rank":
+        rows = get_top_by_rank(10)
+        text = "Top 10 by Rank:\n\n"
+        for i, (name, char, rank) in enumerate(rows, 1):
+            text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
+        await q.message.reply_text(text)
+
+
+# ============ HELP ============
+
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Commands:\n"
+        "/start\n/profile\n/shop\n/buy <name>\n/buychar <name> <rank>\n"
+        "/select\n/upgrade\n/battle\n/coop\n/join <session>\n/startcoop <session>\n"
+        "/pvp\n/joinpvp <session>\n/team <2-4>\n/jointeam <session> <1|2>\n"
+        "/startteam <session>\n/quests\n/claim <key>\n/leaderboard\n/coins\n/help"
+    )
+
+
+# ============ MAIN ============
+
+def main():
+    init_db()
+    init_quests_table()
+    init_multi_table()
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    handlers = [
+        ("start", start),
+        ("profile", profile),
+        ("shop", shop),
+        ("buy", buy),
+        ("buychar", buychar),
+        ("select", select),
+        ("upgrade", upgrade),
+        ("battle", battle),
+        ("coop", coop),
+        ("join", join_coop),
+        ("startcoop", start_coop),
+        ("pvp", pvp),
+        ("joinpvp", join_pvp),
+        ("team", team),
+        ("jointeam", join_team),
+        ("startteam", start_team),
+        ("quests", quests_cmd),
+        ("claim", claim),
+        ("leaderboard", leaderboard),
+        ("coins", coins),
+        ("help", help_cmd),
+    ]
+    for cmd, fn in handlers:
+        app.add_handler(CommandHandler(cmd, fn))
+
+    callbacks = [
+        ("^mb_", multi_action_callback),
+        ("^act_", action_callback),
+        ("^ab_", ability_use_callback),
+        ("^it_", item_use_callback),
+        ("^sel_", select_callback),
+        ("^shop_", shop_callback),
+        ("^solo_", solo_callback),
+        ("^coopboss_", coop_boss_callback),
+        ("^lb_", leaderboard_callback),
+    ]
+    for pattern, fn in callbacks:
+        app.add_handler(CallbackQueryHandler(fn, pattern=pattern))
+
+    print("Bot Started")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
