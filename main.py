@@ -10,9 +10,9 @@ from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
 from battle import (player_attack, player_defend, player_dodge,
                     player_ability, player_item, build_battle_message,
                     finish_battle)
-from coop import coop_fight_boss
-from pvp import pvp_fight
-from team_battle import team_fight
+from multi_battle import (init_multi_table, create_multi_battle, get_multi_battle,
+                          update_multi_battle, end_multi_battle, player_action,
+                          finish_multi_battle, build_battle_view)
 from quests import (init_quests_table, reset_daily_quests,
                     update_quest_progress, get_user_quests, claim_quest, QUESTS)
 from leaderboard import get_top_by_coins, get_top_by_level, get_top_by_rank
@@ -178,7 +178,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
 
 
-# ============ BATTLE (TURN-BASED) ============
+# ============ BOSS BATTLE (TURN-BASED) ============
 
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -351,7 +351,7 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No active character.")
         return
     kb = [[InlineKeyboardButton(name, callback_data=f"coopboss_{name}")] for name in BOSSES]
-    await update.message.reply_text("Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
+    await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
 
 
 async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -359,12 +359,13 @@ async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     boss_name = q.data.replace("coopboss_", "")
     host_id = q.from_user.id
-    session_id = f"{host_id}_{boss_name}"
+    session_id = f"coop_{host_id}_{boss_name}"
     COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
     await q.message.reply_text(
-        f"Co-op session for {boss_name}\n"
+        f"👥 Co-op session for {boss_name}\n"
+        f"Session ID: {session_id}\n"
         f"Others: /join {session_id}\n"
-        f"Host: /startcoop {session_id}"
+        f"Host: /startcoop {session_id} when ready."
     )
 
 
@@ -389,7 +390,7 @@ async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Session full.")
         return
     s["players"].append(user_id)
-    await update.message.reply_text("Joined!")
+    await update.message.reply_text("✅ Joined!")
 
 
 async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -407,20 +408,40 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(s["players"]) < 2:
         await update.message.reply_text("Need 2 players.")
         return
+
     p1_id, p2_id = s["players"][0], s["players"][1]
     char1 = get_active_character(p1_id)
     char2 = get_active_character(p2_id)
-    win, log, reward, images = coop_fight_boss(p1_id, char1, p2_id, char2, s["boss"])
-    for img in images[:3]:
-        try:
-            await update.message.reply_photo(photo=img)
-        except Exception:
-            pass
-    if win:
-        await update.message.reply_text(f"CO-OP WIN!\n\n{log}\n\n+{reward} coins each")
-    else:
-        await update.message.reply_text(f"CO-OP LOSE!\n\n{log}")
-    del COOP_SESSIONS[session_id]
+    boss = BOSSES[s["boss"]]
+
+    team1 = [
+        {"uid": p1_id, "name": char1[2], "hp": char1[5], "max_hp": char1[5],
+         "atk": char1[6], "def": char1[7], "dodge": char1[8],
+         "defending": 0, "dodged_next": 0},
+        {"uid": p2_id, "name": char2[2], "hp": char2[5], "max_hp": char2[5],
+         "atk": char2[6], "def": char2[7], "dodge": char2[8],
+         "defending": 0, "dodged_next": 0},
+    ]
+
+    create_multi_battle(
+        session_id=session_id,
+        battle_type="coop",
+        host_id=s["host"],
+        players=[p1_id, p2_id],
+        team1=team1,
+        team2=[],
+        boss_name=s["boss"],
+        boss_hp=boss["hp"]
+    )
+
+    battle = get_multi_battle(session_id)
+    view = build_battle_view(battle)
+    kb = [
+        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    ]
+    await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
 
 
 # ============ PVP ============
@@ -434,7 +455,7 @@ async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     session_id = f"pvp_{user_id}"
     PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
     await update.message.reply_text(
-        f"PvP session created!\nSession ID: {session_id}\n"
+        f"⚔️ PvP session created!\nSession ID: {session_id}\n"
         f"Opponent: /joinpvp {session_id}"
     )
 
@@ -457,15 +478,31 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No active character.")
         return
     char_host = get_active_character(s["host"])
-    winner, log, reward = pvp_fight(s["host"], char_host, user_id, char)
-    if winner == 1:
-        text = f"Host wins!\n\n{log}\n\n+{reward} coins"
-    elif winner == 2:
-        text = f"Opponent wins!\n\n{log}\n\n+{reward} coins"
-    else:
-        text = f"Draw!\n\n{log}\n\n+{reward} coins"
-    await update.message.reply_text(text)
-    del PVP_SESSIONS[session_id]
+
+    team1 = [{"uid": s["host"], "name": char_host[2], "hp": char_host[5],
+              "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7],
+              "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
+    team2 = [{"uid": user_id, "name": char[2], "hp": char[5], "max_hp": char[5],
+              "atk": char[6], "def": char[7], "dodge": char[8],
+              "defending": 0, "dodged_next": 0}]
+
+    create_multi_battle(
+        session_id=session_id,
+        battle_type="pvp",
+        host_id=s["host"],
+        players=[s["host"], user_id],
+        team1=team1,
+        team2=team2
+    )
+
+    battle = get_multi_battle(session_id)
+    view = build_battle_view(battle)
+    kb = [
+        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    ]
+    await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
 
 
 # ============ TEAM BATTLE ============
@@ -493,7 +530,7 @@ async def team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "team1": [(user_id, char)], "team2": []
     }
     await update.message.reply_text(
-        f"Team Battle ({size}v{size})!\nSession: {session_id}\n"
+        f"👥 Team Battle ({size}v{size})!\nSession: {session_id}\n"
         f"Join T1: /jointeam {session_id} 1\n"
         f"Join T2: /jointeam {session_id} 2\n"
         f"Start: /startteam {session_id}"
@@ -506,44 +543,4 @@ async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     session_id = ctx.args[0]
     try:
-        team_num = int(ctx.args[1])
-    except ValueError:
-        await update.message.reply_text("Team must be 1 or 2.")
-        return
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    all_players = [p[0] for p in s["team1"]] + [p[0] for p in s["team2"]]
-    if user_id in all_players:
-        await update.message.reply_text("Already joined.")
-        return
-    if team_num == 1:
-        if len(s["team1"]) >= s["size"]:
-            await update.message.reply_text("Team 1 full.")
-            return
-        s["team1"].append((user_id, char))
-        await update.message.reply_text(f"Joined Team 1 ({len(s['team1'])}/{s['size']})")
-    elif team_num == 2:
-        if len(s["team2"]) >= s["size"]:
-            await update.message.reply_text("Team 2 full.")
-            return
-        s["team2"].append((user_id, char))
-        await update.message.reply_text(f"Joined Team 2 ({len(s['team2'])}/{s['size']})")
-
-
-async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startteam <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    if update.effective_use
+        team_num = int(
