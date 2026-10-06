@@ -120,3 +120,8 @@ BOSSES = {
     "Goku Lv3":         {"hp": 5000, "atk": 500, "entry": 6000, "reward": 2500},
     "Saitama + Goku":   {"hp": 7000, "atk": 9999,"entry": 10000,"reward": 5000},
 }
+
+# ============ ADMIN ============
+ADMIN_IDS = [
+    7023690411,
+]
