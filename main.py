@@ -14,12 +14,11 @@ from quests import (init_quests_table, reset_daily_quests,
 from leaderboard import get_top_by_coins, get_top_by_level, get_top_by_rank
 from images import IMAGES
 
-# Active sessions
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
 
-# ============ START ============
+
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
@@ -31,14 +30,13 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         set_active(user.id, chars[0][0])
         await update.message.reply_text(
             "Welcome to ONE PUNCH MEN RP!\n"
-            "Starter character: King (C Rank)\n"
-            "Farm bosses, earn coins, buy better characters!\n"
+            "Starter: King (C Rank)\n"
             "Commands: /profile /shop /battle /coop /quests /leaderboard"
         )
     else:
         await update.message.reply_text("Welcome back! /help")
 
-# ============ PROFILE ============
+
 async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -57,12 +55,12 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(text)
 
-# ============ COINS ============
+
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c}")
 
-# ============ SHOP ============
+
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("Ability", callback_data="shop_ab")],
@@ -71,6 +69,7 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("Characters", callback_data="shop_char")],
     ]
     await update.message.reply_text("SHOP:", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -100,10 +99,10 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text += "\nBuy: /buychar <name> <rank>"
         await q.message.reply_text(text)
 
-# ============ BUY CHARACTER ============
+
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /buychar <name> <rank>\nEx: /buychar Genos A")
+        await update.message.reply_text("Usage: /buychar <name> <rank>")
         return
     rank = ctx.args[-1].upper()
     char_name = " ".join(ctx.args[:-1])
@@ -113,7 +112,7 @@ async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = buy_character(update.effective_user.id, char_name, rank)
     await update.message.reply_text(msg)
 
-# ============ SELECT CHARACTER ============
+
 async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chars = get_user_characters(user_id)
@@ -124,6 +123,7 @@ async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
           for c in chars]
     await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
 
+
 async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -131,7 +131,7 @@ async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     set_active(q.from_user.id, char_id)
     await q.message.reply_text("Character selected!")
 
-# ============ BUY ============
+
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
         await update.message.reply_text("Usage: /buy <name>")
@@ -153,7 +153,7 @@ async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         msg = "Not found."
     await update.message.reply_text(msg)
 
-# ============ UPGRADE ============
+
 async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -164,7 +164,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
 
-# ============ SOLO BATTLE ============
+
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -173,6 +173,7 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     kb = [[InlineKeyboardButton(name, callback_data=f"solo_{name}")] for name in BOSSES]
     await update.message.reply_text("Solo Battle - Choose boss:", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -194,7 +195,7 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         await q.message.reply_text(f"LOSE!\n\n{log}")
 
-# ============ COOP ============
+
 async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -202,7 +203,8 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No active character.")
         return
     kb = [[InlineKeyboardButton(name, callback_data=f"coopboss_{name}")] for name in BOSSES]
-    await update.message.reply_text("Co-op Battle - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
+    await update.message.reply_text("Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -212,10 +214,11 @@ async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     session_id = f"{host_id}_{boss_name}"
     COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
     await q.message.reply_text(
-        f"Co-op session created for {boss_name}\n"
+        f"Co-op session for {boss_name}\n"
         f"Others: /join {session_id}\n"
-        f"Host: /startcoop {session_id} when ready."
+        f"Host: /startcoop {session_id}"
     )
+
 
 async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
@@ -238,7 +241,8 @@ async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Session full.")
         return
     s["players"].append(user_id)
-    await update.message.reply_text(f"Joined!")
+    await update.message.reply_text("Joined!")
+
 
 async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
@@ -270,7 +274,7 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"CO-OP LOSE!\n\n{log}")
     del COOP_SESSIONS[session_id]
 
-# ============ PVP ============
+
 async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -283,6 +287,7 @@ async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"PvP session created!\nSession ID: {session_id}\n"
         f"Opponent: /joinpvp {session_id}"
     )
+
 
 async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
@@ -312,7 +317,7 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
     del PVP_SESSIONS[session_id]
 
-# ============ TEAM BATTLE ============
+
 async def team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
         await update.message.reply_text("Usage: /team <size 2-4>")
@@ -336,11 +341,12 @@ async def team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "team1": [(user_id, char)], "team2": []
     }
     await update.message.reply_text(
-        f"Team Battle ({size}v{size}) created!\nSession: {session_id}\n"
+        f"Team Battle ({size}v{size})!\nSession: {session_id}\n"
         f"Join T1: /jointeam {session_id} 1\n"
         f"Join T2: /jointeam {session_id} 2\n"
         f"Start: /startteam {session_id}"
     )
+
 
 async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(ctx.args) < 2:
@@ -378,6 +384,7 @@ async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         s["team2"].append((user_id, char))
         await update.message.reply_text(f"Joined Team 2 ({len(s['team2'])}/{s['size']})")
 
+
 async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
         await update.message.reply_text("Usage: /startteam <session_id>")
@@ -405,7 +412,7 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
     del TEAM_SESSIONS[session_id]
 
-# ============ QUESTS ============
+
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -421,6 +428,7 @@ async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "\nClaim: /claim <quest_key>"
     await update.message.reply_text(text)
 
+
 async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
         await update.message.reply_text("Usage: /claim <quest_key>")
@@ -432,7 +440,7 @@ async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = claim_quest(update.effective_user.id, key)
     await update.message.reply_text(msg)
 
-# ============ LEADERBOARD ============
+
 async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
@@ -440,6 +448,7 @@ async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")],
     ]
     await update.message.reply_text("Leaderboard:", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -464,67 +473,61 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
         await q.message.reply_text(text)
 
-# ============ HELP ============
+
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Commands:\n"
-        "/start - Start\n"
-        "/profile - Your profile\n"
-        "/shop - Shop\n"
-        "/buy <name> - Buy ability/item/buff\n"
-        "/buychar <name> <rank> - Buy character\n"
-        "/select - Choose active character\n"
-        "/upgrade - Level up\n"
-        "/battle - Solo boss\n"
-        "/coop - Create co-op\n"
-        "/join <session> - Join co-op\n"
-        "/startcoop <session> - Start co-op\n"
-        "/pvp - Create PvP\n"
-        "/joinpvp <session> - Join PvP\n"
-        "/team <2-4> - Create team battle\n"
-        "/jointeam <session> <1|2> - Join team\n"
-        "/startteam <session> - Start team\n"
-        "/quests - Daily quests\n"
-        "/claim <key> - Claim quest\n"
-        "/leaderboard - Top players\n"
-        "/coins - Balance"
+        "/start\n/profile\n/shop\n/buy <name>\n/buychar <name> <rank>\n"
+        "/select\n/upgrade\n/battle\n/coop\n/join <session>\n/startcoop <session>\n"
+        "/pvp\n/joinpvp <session>\n/team <2-4>\n/jointeam <session> <1|2>\n"
+        "/startteam <session>\n/quests\n/claim <key>\n/leaderboard\n/coins\n/help"
     )
 
-# ============ MAIN ============
+
 def main():
     init_db()
     init_quests_table()
     app = Application.builder().token(BOT_TOKEN).build()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("profile", profile))
-    app.add_handler(CommandHandler("shop", shop))
-    app.add_handler(CommandHandler("buy", buy))
-    app.add_handler(CommandHandler("buychar", buychar))
-    app.add_handler(CommandHandler("select", select))
-    app.add_handler(CommandHandler("upgrade", upgrade))
-    app.add_handler(CommandHandler("battle", battle))
-    app.add_handler(CommandHandler("coop", coop))
-    app.add_handler(CommandHandler("join", join_coop))
-app.add_handler(CommandHandler("startcoop", start_coop))
-app.add_handler(CommandHandler("pvp", pvp))
-app.add_handler(CommandHandler("joinpvp", join_pvp))
-app.add_handler(CommandHandler("team", team))
-app.add_handler(CommandHandler("jointeam", join_team))
-app.add_handler(CommandHandler("startteam", start_team))
-app.add_handler(CommandHandler("quests", quests_cmd))
-app.add_handler(CommandHandler("claim", claim))
-app.add_handler(CommandHandler("leaderboard", leaderboard))
-app.add_handler(CommandHandler("coins", coins))
-app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
-    app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
-    app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
-    app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
-    app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
+    handlers = [
+        ("start", start),
+        ("profile", profile),
+        ("shop", shop),
+        ("buy", buy),
+        ("buychar", buychar),
+        ("select", select),
+        ("upgrade", upgrade),
+        ("battle", battle),
+        ("coop", coop),
+        ("join", join_coop),
+        ("startcoop", start_coop),
+        ("pvp", pvp),
+        ("joinpvp", join_pvp),
+        ("team", team),
+        ("jointeam", join_team),
+        ("startteam", start_team),
+        ("quests", quests_cmd),
+        ("claim", claim),
+        ("leaderboard", leaderboard),
+        ("coins", coins),
+        ("help", help_cmd),
+    ]
+    for cmd, fn in handlers:
+        app.add_handler(CommandHandler(cmd, fn))
+
+    callbacks = [
+        ("^sel_", select_callback),
+        ("^shop_", shop_callback),
+        ("^solo_", solo_callback),
+        ("^coopboss_", coop_boss_callback),
+        ("^lb_", leaderboard_callback),
+    ]
+    for pattern, fn in callbacks:
+        app.add_handler(CallbackQueryHandler(fn, pattern=pattern))
 
     print("Bot Started")
     app.run_polling()
+
 
 if __name__ == "__main__":
     main()
