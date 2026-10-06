@@ -49,6 +49,20 @@ def init_db():
         buff_name TEXT
     )""")
 
+    c.execute("""CREATE TABLE IF NOT EXISTS active_battles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        boss_name TEXT,
+        player_hp INTEGER,
+        player_max_hp INTEGER,
+        boss_hp INTEGER,
+        boss_max_hp INTEGER,
+        player_defending INTEGER DEFAULT 0,
+        turn INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
     conn.commit()
     conn.close()
 
@@ -86,4 +100,80 @@ def spend_coins(user_id, amount):
     if coins < amount:
         return False
     add_coins(user_id, -amount)
+    return True
+
+
+# ============ ACTIVE BATTLES ============
+
+def create_battle(user_id, boss_name, player_hp, boss_hp):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM active_battles WHERE user_id=?", (user_id,))
+    c.execute("""INSERT INTO active_battles
+        (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp, turn, status)
+        VALUES (?,?,?,?,?,?,0,'active')""",
+        (user_id, boss_name, player_hp, player_hp, boss_hp, boss_hp))
+    bid = c.lastrowid
+    conn.commit()
+    conn.close()
+    return bid
+
+def get_battle(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
+                        boss_hp, boss_max_hp, player_defending, turn, status
+                 FROM active_battles WHERE user_id=? AND status='active'""", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    return row
+
+def update_battle(battle_id, player_hp, boss_hp, turn, defending=0, status='active'):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""UPDATE active_battles
+                 SET player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?
+                 WHERE id=?""",
+        (player_hp, boss_hp, turn, defending, status, battle_id))
+    conn.commit()
+    conn.close()
+
+def end_battle(battle_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
+    conn.commit()
+    conn.close()
+
+def get_abilities(user_id, char_name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT ability_name FROM abilities_owned
+                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    rows = c.fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+def get_items(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT item_name, quantity FROM items WHERE user_id=? AND quantity>0", (user_id,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def use_item(user_id, item_name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?", (user_id, item_name))
+    row = c.fetchone()
+    if not row or row[1] <= 0:
+        conn.close()
+        return False
+    if row[1] == 1:
+        c.execute("DELETE FROM items WHERE id=?", (row[0],))
+    else:
+        c.execute("UPDATE items SET quantity = quantity - 1 WHERE id=?", (row[0],))
+    conn.commit()
+    conn.close()
     return True
