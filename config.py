@@ -4,8 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-DB_NAME = "game.db"
-
+DB_NAME = "/data/game.db"
 START_COINS = 0
 DAILY_REWARD = 100
 PERFECT_DODGE = 20
