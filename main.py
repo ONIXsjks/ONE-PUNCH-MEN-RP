@@ -17,6 +17,10 @@ from quests import (init_quests_table, reset_daily_quests,
                     update_quest_progress, get_user_quests, claim_quest, QUESTS)
 from leaderboard import get_top_by_coins, get_top_by_level, get_top_by_rank
 from images import IMAGES
+from admin import (is_admin, get_all_users, get_user_stats,
+                   give_coins, take_coins, reset_user,
+                   ban_user, unban_user, is_banned)
+from gift import send_gift, get_gift_history, get_top_givers
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
@@ -31,6 +35,41 @@ BATTLE_KB = [
      InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")],
 ]
 
+COMMAND_DESCRIPTIONS = {
+    "start": "شروع بازی و انتخاب کاراکتر",
+    "profile": "پروفایل و آمار کاراکتر",
+    "select": "انتخاب کاراکتر فعال",
+    "coins": "موجودی سکه",
+    "shop": "منوی شاپ (Ability, Item, Buff, Character)",
+    "buy": "خرید Ability/Item/Buff — /buy <name>",
+    "buychar": "خرید کاراکتر جدید — /buychar <name> <rank>",
+    "upgrade": "ارتقای Level کاراکتر",
+    "battle": "باس‌فایت تکی (نوبتی)",
+    "coop": "نبرد گروهی با یه رفیق (نوبتی)",
+    "join": "پیوستن به Co-op — /join <session>",
+    "startcoop": "شروع Co-op — /startcoop <session>",
+    "pvp": "نبرد 1v1 با یه کاربر (نوبتی)",
+    "joinpvp": "پیوستن به PvP — /joinpvp <session>",
+    "team": "نبرد تیمی — /team <2-4>",
+    "jointeam": "پیوستن به تیم — /jointeam <session> <1|2>",
+    "startteam": "شروع نبرد تیمی — /startteam <session>",
+    "quests": "کوئست‌های روزانه",
+    "claim": "دریافت جایزه کوئست — /claim <key>",
+    "leaderboard": "جدول برترین‌ها",
+    "help": "همین پیام",
+    "gift": "هدیه دادن Coin — /gift <amount> یا /gift <user_id> <amount>",
+    "gifthistory": "تاریخچه هدیه‌های تو",
+    "topgivers": "برترین هدیه‌دهنده‌ها",
+    "admin": "پنل ادمین (فقط ادمین‌ها)",
+    "give": "به کاربر Coin بده — /give <user_id> <amount>",
+    "take": "از کاربر Coin بگیر — /take <user_id> <amount>",
+    "userinfo": "آمار کامل کاربر — /userinfo <user_id>",
+    "allusers": "لیست همه کاربران",
+    "resetuser": "ریست کاربر — /resetuser <user_id>",
+    "ban": "بن کاربر — /ban <user_id>",
+    "unban": "آنبن کاربر — /unban <user_id>",
+}
+
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -38,16 +77,50 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     reset_daily_quests(user.id)
     chars = get_user_characters(user.id)
     if not chars:
-        create_character(user.id, "King", "C")
-        chars = get_user_characters(user.id)
-        set_active(user.id, chars[0][0])
+        kb = []
+        for c_name, c_title in CHARACTERS["C"].items():
+            kb.append([InlineKeyboardButton(
+                f"{c_name} — {c_title}",
+                callback_data=f"first_{c_name}"
+            )])
         await update.message.reply_text(
-            "Welcome to ONE PUNCH MEN RP!\n"
-            "Starter: King (C Rank)\n"
-            "Commands: /profile /shop /battle /coop /quests /leaderboard"
+            "🎮 به ONE PUNCH MEN RP خوش اومدی!\n\n"
+            "یه کاراکتر رایگان انتخاب کن (C Rank):",
+            reply_markup=InlineKeyboardMarkup(kb)
         )
     else:
         await update.message.reply_text("Welcome back! /help")
+
+
+async def first_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    char_name = q.data.replace("first_", "")
+    user_id = q.from_user.id
+
+    existing = get_user_characters(user_id)
+    if existing:
+        await q.message.reply_text("❌ تو قبلاً یه کاراکتر انتخاب کردی!")
+        return
+
+    if char_name not in CHARACTERS["C"]:
+        await q.message.reply_text("❌ کاراکتر نامعتبر.")
+        return
+
+    create_character(user_id, char_name, "C")
+    chars = get_user_characters(user_id)
+    set_active(user_id, chars[0][0])
+
+    await q.message.reply_text(
+        f"✅ کاراکتر {char_name} (C Rank) انتخاب شد!\n\n"
+        f"دستورات:\n"
+        f"/profile — پروفایل\n"
+        f"/shop — شاپ\n"
+        f"/battle — باس‌فایت نوبتی\n"
+        f"/quests — کوئست روزانه\n"
+        f"/leaderboard — جدول\n"
+        f"/help — راهنما"
+    )
 
 
 async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -721,18 +794,248 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for i, (name, char, rank) in enumerate(rows, 1):
             text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
         await q.message.reply_text(text)
+      
+
+# ============ ADMIN ============
+
+async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text("❌ تو ادمین نیستی!")
+        return
+
+    text = (
+        "👑 پنل ادمین\n"
+        "━━━━━━━━━━━━━━━━━━━\n\n"
+        "💰 مدیریت سکه:\n"
+        "  /give <user_id> <amount> — سکه بده\n"
+        "  /take <user_id> <amount> — سکه بگیر\n\n"
+        "👤 مدیریت کاربران:\n"
+        "  /userinfo <user_id> — آمار کاربر\n"
+        "  /allusers — لیست کاربران\n"
+        "  /resetuser <user_id> — ریست کاربر\n"
+        "  /ban <user_id> — بن\n"
+        "  /unban <user_id> — آنبن\n"
+    )
+    await update.message.reply_text(text)
+
+
+async def give_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if len(ctx.args) < 2:
+        await update.message.reply_text("Usage: /give <user_id> <amount>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+        amount = int(ctx.args[1])
+    except ValueError:
+        await update.message.reply_text("❌ اعداد معتبر بده.")
+        return
+    give_coins(target_id, amount)
+    await update.message.reply_text(f"✅ {amount} coin به {target_id} دادی.")
+
+
+async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if len(ctx.args) < 2:
+        await update.message.reply_text("Usage: /take <user_id> <amount>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+        amount = int(ctx.args[1])
+    except ValueError:
+        await update.message.reply_text("❌ اعداد معتبر بده.")
+        return
+    if take_coins(target_id, amount):
+        await update.message.reply_text(f"✅ {amount} coin از {target_id} گرفتی.")
+    else:
+        await update.message.reply_text("❌ کاربر Coin کافی نداره.")
+
+
+async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /userinfo <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    user, chars = get_user_stats(target_id)
+    if not user:
+        await update.message.reply_text("❌ کاربر پیدا نشد.")
+        return
+    text = f"👤 کاربر: {user[0] or 'Unknown'}\n"
+    text += f"🆔 ID: {target_id}\n"
+    text += f"💰 Coins: {user[1]}\n\n"
+    text += "🦸 کاراکترها:\n"
+    if not chars:
+        text += "  ❌ هیچ کاراکتری نداره\n"
+    else:
+        for c in chars:
+            text += f"  • {c[0]} ({c[1]}) Lv{c[2]}\n"
+    await update.message.reply_text(text)
+
+
+async def allusers_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    rows = get_all_users()
+    text = f"📋 کل کاربران: {len(rows)}\n\n"
+    for i, (uid, name, coins) in enumerate(rows[:30], 1):
+        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins} 💰\n"
+    if len(rows) > 30:
+        text += f"\n... و {len(rows) - 30} نفر دیگه"
+    await update.message.reply_text(text)
+
+
+async def resetuser_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /resetuser <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    reset_user(target_id)
+    await update.message.reply_text(f"♻️ کاربر {target_id} ریست شد.")
+
+
+async def ban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /ban <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    ban_user(target_id)
+    await update.message.reply_text(f"🚫 کاربر {target_id} بن شد.")
+
+
+async def unban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /unban <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    unban_user(target_id)
+    await update.message.reply_text(f"✅ کاربر {target_id} آنبن شد.")
+
+
+# ============ GIFT ============
+
+async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    if update.message.reply_to_message:
+        target = update.message.reply_to_message.from_user
+        target_id = target.id
+        target_name = target.first_name
+        if not ctx.args:
+            await update.message.reply_text("❌ مقدار رو بنویس: /gift <amount>")
+            return
+        try:
+            amount = int(ctx.args[0])
+        except ValueError:
+            await update.message.reply_text("❌ مقدار معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
+        return
+
+    if len(ctx.args) >= 2:
+        try:
+            target_id = int(ctx.args[0])
+            amount = int(ctx.args[1])
+        except ValueError:
+            await update.message.reply_text("❌ اعداد معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(msg)
+        return
+
+    await update.message.reply_text(
+        "🎁 چطوری هدیه بدم:\n\n"
+        "روش ۱: روی پیام کاربر ریپلای کن و بنویس:\n"
+        "  /gift 500\n\n"
+        "روش ۲: با آیدی عددی:\n"
+        "  /gift 123456789 500"
+    )
+
+
+async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    rows = get_gift_history(user_id, 10)
+    if not rows:
+        await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
+        return
+
+    text = "🎁 تاریخچه هدیه‌ها:\n\n"
+    for from_id, to_id, amount, date in rows:
+        if from_id == user_id:
+            text += f"📤 تو → {to_id}: {amount} 💰\n"
+        else:
+            text += f"📥 {from_id} → تو: {amount} 💰\n"
+    await update.message.reply_text(text)
+
+
+async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    rows = get_top_givers(10)
+    if not rows:
+        await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
+        return
+
+    text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
+    for i, (uid, total) in enumerate(rows, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {uid} — {total} 💰\n"
+    await update.message.reply_text(text)
 
 
 # ============ HELP ============
 
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Commands:\n"
-        "/start\n/profile\n/shop\n/buy <name>\n/buychar <name> <rank>\n"
-        "/select\n/upgrade\n/battle\n/coop\n/join <session>\n/startcoop <session>\n"
-        "/pvp\n/joinpvp <session>\n/team <2-4>\n/jointeam <session> <1|2>\n"
-        "/startteam <session>\n/quests\n/claim <key>\n/leaderboard\n/coins\n/help"
-    )
+    text = "🎮 ONE PUNCH MEN RP — راهنما\n"
+    text += "━━━━━━━━━━━━━━━━━━━\n\n"
+
+    categories = {
+        "👤 حساب کاربری": ["start", "profile", "select", "coins"],
+        "🏪 شاپ و خرید": ["shop", "buy", "buychar", "upgrade"],
+        "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
+                    "pvp", "joinpvp", "team", "jointeam", "startteam"],
+        "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
+        "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
+        "👑 ادمین": ["admin", "give", "take", "userinfo",
+                      "allusers", "resetuser", "ban", "unban"],
+        "❓ راهنما": ["help"],
+    }
+
+    for cat_name, cmds in categories.items():
+        text += f"{cat_name}:\n"
+        for c in cmds:
+            desc = COMMAND_DESCRIPTIONS.get(c, "—")
+            text += f"  /{c} — {desc}\n"
+        text += "\n"
+
+    text += "━━━━━━━━━━━━━━━━━━━\n"
+    text += "💡 برای شروع: /start"
+    await update.message.reply_text(text)
 
 
 # ============ MAIN ============
@@ -765,11 +1068,23 @@ def main():
         ("leaderboard", leaderboard),
         ("coins", coins),
         ("help", help_cmd),
+        ("gift", gift),
+        ("gifthistory", gift_history),
+        ("topgivers", top_givers),
+        ("admin", admin),
+        ("give", give_cmd),
+        ("take", take_cmd),
+        ("userinfo", userinfo_cmd),
+        ("allusers", allusers_cmd),
+        ("resetuser", resetuser_cmd),
+        ("ban", ban_cmd),
+        ("unban", unban_cmd),
     ]
     for cmd, fn in handlers:
         app.add_handler(CommandHandler(cmd, fn))
 
     callbacks = [
+        ("^first_", first_char_callback),
         ("^mb_", multi_action_callback),
         ("^act_", action_callback),
         ("^ab_", ability_use_callback),
