@@ -948,9 +948,10 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
-        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+            [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
     ]
-
+  
     try:
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
