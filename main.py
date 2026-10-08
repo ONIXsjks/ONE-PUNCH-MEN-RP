@@ -16,7 +16,7 @@ from multi_battle import (init_multi_table, create_multi_battle, get_multi_battl
 from quests import (init_quests_table, reset_daily_quests,
                     update_quest_progress, get_user_quests, claim_quest, QUESTS)
 from leaderboard import get_top_by_coins, get_top_by_level, get_top_by_rank
-from images import IMAGES
+from images import IMAGES, SHOP_IMAGE
 from admin import (is_admin, get_all_users, get_user_stats,
                    give_coins, take_coins, reset_user,
                    ban_user, unban_user, is_banned)
