@@ -426,13 +426,13 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [[InlineKeyboardButton(name, callback_data=f"coopboss_{name}")] for name in BOSSES]
     await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
 
-
 async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     boss_name = q.data.replace("coopboss_", "")
     host_id = q.from_user.id
-    session_id = f"coop_{host_id}_{boss_name}"
+    safe_boss = boss_name.replace(" ", "_").replace("+", "plus")
+    session_id = f"coop_{host_id}_{safe_boss}"
     COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
     await q.message.reply_text(
         f"👥 Co-op session for {boss_name}\n"
