@@ -1,10 +1,10 @@
 import random
 import json
+import sqlite3
 from config import BOSSES, ABILITIES
-from jjk_data import DOMAINS_JJK
+from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK
 from database import DB_NAME, add_coins
 from quests import update_quest_progress
-import sqlite3
 
 
 def init_multi_table():
@@ -109,19 +109,16 @@ def roll_damage(atk, defender_def=0, defending=0):
 
 
 def next_turn(battle):
-    """بعدی رو انتخاب کن از لیست players"""
     players = battle["players"]
     idx = battle["turn_index"] + 1
-    while idx < len(players) * 2:  # دو دور بچرخه
+    while idx < len(players) * 2:
         candidate = players[idx % len(players)]
-        # چک کن زنده باشه
         for p in battle["team1"] + battle["team2"]:
             if p["uid"] == candidate and p["hp"] > 0:
                 battle["current_turn"] = candidate
                 battle["turn_index"] = idx
                 return
         idx += 1
-    # اگه هیچ‌کس زنده نبود
     battle["current_turn"] = None
 
 
@@ -142,7 +139,6 @@ def get_enemies(battle, team):
 
 
 def build_battle_view(battle):
-    """متن صفحه نبرد"""
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
 
     if battle["boss_name"]:
@@ -171,7 +167,6 @@ def build_battle_view(battle):
 
 
 def player_action(session_id, uid, action):
-    """حرکت بازیکن تو نبرد گروهی"""
     battle = get_multi_battle(session_id)
     if not battle:
         return None, "نبرد فعال نیست."
@@ -191,6 +186,11 @@ def player_action(session_id, uid, action):
             return None, "دشمنی نمونده."
         target = random.choice(enemies)
         dmg, crit = roll_damage(player["atk"], target["def"], 0)
+
+        atk_boost = player.get("atk_boost", 0)
+        if atk_boost:
+            dmg = int(dmg * (1 + atk_boost / 100))
+
         target["hp"] = max(0, target["hp"] - dmg)
         crit_str = " 🎯 CRIT!" if crit else ""
         log = f"⚔️ {player['name']} → {target['name']}: {dmg}{crit_str}"
@@ -208,95 +208,92 @@ def player_action(session_id, uid, action):
         else:
             log = f"❌ {player['name']} جاخالی ناموفق!"
 
-elif action == "domain":
-    # گسترش قلمرو تو نبرد گروهی
-    char_name = player["name"]
-    if char_name not in DOMAINS_JJK:
-        return None, "❌ این کاراکتر گسترش قلمرو نداره!"
+    elif action == "domain":
+        char_name = player["name"]
+        if char_name not in DOMAINS_JJK:
+            return None, "❌ این کاراکتر گسترش قلمرو نداره!"
 
-    cd_key = f"domain_cd_{uid}"
-    if battle.get(cd_key, 0) > 0:
-        return None, f"⏱️ کول‌داون: {battle[cd_key]} راند مونده"
+        cd_key = f"domain_cd_{uid}"
+        if battle.get(cd_key, 0) > 0:
+            return None, f"⏱️ کول‌داون: {battle[cd_key]} راند مونده"
 
-    domain = DOMAINS_JJK[char_name]
-    effects = domain["effects"]
-    enemies = get_enemies(battle, team)
+        domain = DOMAINS_JJK[char_name]
+        effects = domain["effects"]
+        enemies = get_enemies(battle, team)
 
-    # انتخاب هدف‌ها
-    if domain["type"] == "single":
-        targets = enemies[:1]
-    elif domain["type"] == "multi":
-        targets = enemies[:2]
-    else:
-        targets = enemies
+        if domain["type"] == "single":
+            targets = enemies[:1]
+        elif domain["type"] == "multi":
+            targets = enemies[:2]
+        else:
+            targets = enemies
 
-    log = f"🌀 {domain['name']}!\n"
+        log = f"🌀 {domain['name']}!\n"
 
-    # اعمال افکت‌ها
-    for target in targets:
-        if "hp_drain" in effects:
-            drain = int(target["max_hp"] * effects["hp_drain"] / 100)
-            target["hp"] = max(0, target["hp"] - drain)
-            log += f"💀 {target['name']}: -{drain} HP\n"
+        for target in targets:
+            if "hp_drain" in effects:
+                drain = int(target["max_hp"] * effects["hp_drain"] / 100)
+                target["hp"] = max(0, target["hp"] - drain)
+                log += f"💀 {target['name']}: -{drain} HP\n"
 
-        if "freeze" in effects:
-            target["frozen"] = effects["freeze"]
-            log += f"❄️ {target['name']} فریز شد!\n"
+            if "freeze" in effects:
+                target["frozen"] = effects["freeze"]
+                log += f"❄️ {target['name']} فریز شد!\n"
 
-        if "dodge_debuff" in effects:
-            target["dodge_debuff"] = effects["dodge_debuff"]
-            log += f"💨 {target['name']}: جاخالی -{effects['dodge_debuff']}٪\n"
+            if "dodge_debuff" in effects:
+                target["dodge_debuff"] = effects["dodge_debuff"]
+                log += f"💨 {target['name']}: جاخالی -{effects['dodge_debuff']}٪\n"
 
-    if "atk_boost" in effects:
-        player["atk_boost"] = effects["atk_boost"]
-        log += f"⚔️ ATK تو +{effects['atk_boost']}٪\n"
+        if "atk_boost" in effects:
+            player["atk_boost"] = effects["atk_boost"]
+            log += f"⚔️ ATK تو +{effects['atk_boost']}٪\n"
 
-    if "heal" in effects:
-        heal = int(player["max_hp"] * effects["heal"] / 100)
-        player["hp"] = min(player["max_hp"], player["hp"] + heal)
-        log += f"💚 {heal} HP برگشت\n"
+        if "heal" in effects:
+            heal = int(player["max_hp"] * effects["heal"] / 100)
+            player["hp"] = min(player["max_hp"], player["hp"] + heal)
+            log += f"💚 {heal} HP برگشت\n"
 
-    # کول‌داون
-    battle[cd_key] = domain["cooldown"]
-    battle["domain_active"] = True
-    battle["domain_caster"] = uid
-    battle["domain_turns"] = domain["duration"]
-    battle["domain_name"] = domain["name"]
+        battle[cd_key] = domain["cooldown"]
+        battle["domain_active"] = True
+        battle["domain_caster"] = uid
+        battle["domain_turns"] = domain["duration"]
+        battle["domain_name"] = domain["name"]
 
-    # نوبت بعدی
-    next_turn(battle)
-    update_multi_battle(session_id, battle)
-    return "active", log
+        next_turn(battle)
+        update_multi_battle(session_id, battle)
+        return "active", log
 
-    # چک پایان
     team1_alive = [p for p in battle["team1"] if p["hp"] > 0]
     team2_alive = [p for p in battle["team2"] if p["hp"] > 0]
 
-    # اگه باس داری
     if battle["boss_name"]:
         if battle["boss_hp"] <= 0:
             battle["status"] = "won"
             update_multi_battle(session_id, battle)
             return "won", log
-        # باس یه ضربه بزنه
         all_players = [p for p in battle["team1"] + battle["team2"] if p["hp"] > 0]
         if all_players:
             target = random.choice(all_players)
             if target.get("dodged_next"):
                 target["dodged_next"] = 0
                 log += f"\n💨 {target['name']} از ضربه باس جاخالی داد!"
+            elif target.get("frozen", 0) > 0:
+                target["frozen"] -= 1
+                log += f"\n❄️ {target['name']} فریزه!"
             else:
-                dmg, crit = roll_damage(int(battle["boss_name"] and 100 or 100),
-                                        target["def"], target.get("defending", 0))
+                boss_atk = 100
+                if battle["boss_name"] in BOSSES_JJK:
+                    boss_atk = BOSSES_JJK[battle["boss_name"]]["atk"]
+                elif battle["boss_name"] in BOSSES:
+                    boss_atk = BOSSES[battle["boss_name"]]["atk"]
+                dmg, crit = roll_damage(boss_atk, target["def"], target.get("defending", 0))
                 target["defending"] = 0
                 target["hp"] = max(0, target["hp"] - dmg)
                 crit_str = " 🎯" if crit else ""
                 log += f"\n👹 باس → {target['name']}: {dmg}{crit_str}"
                 if target["hp"] <= 0:
                     log += f"\n☠️ {target['name']} از نبرد خارج شد!"
-
     else:
-        # PvP / Team
         if not team1_alive or not team2_alive:
             if team1_alive and not team2_alive:
                 battle["status"] = "team1_won"
@@ -307,14 +304,12 @@ elif action == "domain":
             update_multi_battle(session_id, battle)
             return battle["status"], log
 
-    # نوبت بعدی
     next_turn(battle)
     update_multi_battle(session_id, battle)
     return "active", log
 
 
 def finish_multi_battle(session_id):
-    """وقتی نبرد تموم شد، جایزه بده"""
     battle = get_multi_battle(session_id)
     if not battle:
         return None
@@ -323,7 +318,12 @@ def finish_multi_battle(session_id):
     rewards = {}
 
     if battle["boss_name"] and status == "won":
-        reward = BOSSES[battle["boss_name"]]["reward"]
+        if battle["boss_name"] in BOSSES_JJK:
+            reward = BOSSES_JJK[battle["boss_name"]]["reward"]
+        elif battle["boss_name"] in FODDER_JJK:
+            reward = FODDER_JJK[battle["boss_name"]]["reward"]
+        else:
+            reward = BOSSES.get(battle["boss_name"], {}).get("reward", 100)
         for p in battle["team1"] + battle["team2"]:
             add_coins(p["uid"], reward)
             rewards[p["uid"]] = reward
