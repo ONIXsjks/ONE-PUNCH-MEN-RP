@@ -31,6 +31,7 @@ BATTLE_KB = [
      InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")],
     [InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"),
      InlineKeyboardButton("🔥 Ability", callback_data="act_ability")],
+    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")],
     [InlineKeyboardButton("💊 آیتم", callback_data="act_item"),
      InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")],
 ]
