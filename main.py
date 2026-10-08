@@ -150,19 +150,19 @@ async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
-        [InlineKeyboardButton("💊 Item", callback_data="shop_item")],
-        [InlineKeyboardButton("🔥 Buff", callback_data="shop_buff")],
-        [InlineKeyboardButton("🦸 Characters", callback_data="shop_char")],
+        [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")],
+        [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")],
+        [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
     ]
     try:
         await update.message.reply_photo(
             photo=SHOP_IMAGE,
-            caption="🏪 SHOP:\nیه دسته انتخاب کن:",
+            caption="🏪 شاپ:\nیه دسته انتخاب کن:",
             reply_markup=InlineKeyboardMarkup(kb)
         )
     except Exception:
         await update.message.reply_text(
-            "🏪 SHOP:",
+            "🏪 شاپ:\nیه دسته انتخاب کن:",
             reply_markup=InlineKeyboardMarkup(kb)
         )
 
@@ -171,29 +171,174 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
+
     if data == "shop_ab":
-        text = "Abilities:\n\n"
+        kb = []
         for name, info in ABILITIES.items():
-            text += f"- {name} | {info['effect']} | {info['price']} coins\n"
-        await q.message.reply_text(text)
+            fa = ABILITY_FA.get(name, name)
+            price = info["price"]
+            kb.append([InlineKeyboardButton(
+                f"{fa} — {price} 💰",
+                callback_data=f"buyab_{name}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
+        try:
+            await q.edit_message_text(
+                "🛡️ Ability ها:\nیه Ability انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+        except Exception:
+            await q.message.reply_text(
+                "🛡️ Ability ها:\nیه Ability انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+
     elif data == "shop_item":
-        text = "Items:\n\n"
+        kb = []
         for name, info in ITEMS.items():
-            text += f"- {name} | {info['effect']} | {info['price']} coins\n"
-        await q.message.reply_text(text)
+            fa = ITEM_FA.get(name, name)
+            price = info["price"]
+            kb.append([InlineKeyboardButton(
+                f"{fa} — {price} 💰",
+                callback_data=f"buyit_{name}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
+        try:
+            await q.edit_message_text(
+                "💊 آیتم‌ها:\nیه آیتم انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+        except Exception:
+            await q.message.reply_text(
+                "💊 آیتم‌ها:\nیه آیتم انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+
     elif data == "shop_buff":
-        text = "Buffs:\n\n"
+        kb = []
         for name, info in BUFFS.items():
-            text += f"- {name} | {info['effect']} | {info['price']} coins\n"
-        await q.message.reply_text(text)
+            fa = BUFF_FA.get(name, name)
+            price = info["price"]
+            kb.append([InlineKeyboardButton(
+                f"{fa} — {price} 💰",
+                callback_data=f"buybf_{name}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
+        try:
+            await q.edit_message_text(
+                "🔥 باف‌ها:\nیه باف انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+        except Exception:
+            await q.message.reply_text(
+                "🔥 باف‌ها:\nیه باف انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+
     elif data == "shop_char":
-        text = "Characters:\n\n"
+        kb = []
         for rank, chars in CHARACTERS.items():
-            text += f"\n{rank} Rank ({CHAR_PRICES[rank]} coins):\n"
-            for name, title in chars.items():
-                text += f"  - {name} | {title}\n"
-        text += "\nBuy: /buychar <name> <rank>"
-        await q.message.reply_text(text)
+            kb.append([InlineKeyboardButton(
+                f"📦 {rank} Rank — {CHAR_PRICES[rank]} 💰",
+                callback_data=f"shchrank_{rank}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
+        try:
+            await q.edit_message_text(
+                "🦸 کاراکترها:\nیه رنک انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+        except Exception:
+            await q.message.reply_text(
+                "🦸 کاراکترها:\nیه رنک انتخاب کن:",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
+
+    elif data == "shop_main":
+        kb = [
+            [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
+            [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")],
+            [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")],
+            [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
+        ]
+        try:
+            await q.edit_message_text("🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+        except Exception:
+            await q.message.reply_text("🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    ability_name = q.data.replace("buyab_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await q.answer("❌ کاراکتر فعال نداری. /start", show_alert=True)
+        return
+    result = buy_ability(user_id, char[2], ability_name)
+    fa = ABILITY_FA.get(ability_name, ability_name)
+    await q.answer(f"{fa}\n{result}", show_alert=True)
+
+
+async def buy_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    item_name = q.data.replace("buyit_", "")
+    user_id = q.from_user.id
+    result = buy_item(user_id, item_name)
+    fa = ITEM_FA.get(item_name, item_name)
+    await q.answer(f"{fa}\n{result}", show_alert=True)
+
+
+async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    buff_name = q.data.replace("buybf_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await q.answer("❌ کاراکتر فعال نداری.", show_alert=True)
+        return
+    result = buy_buff(user_id, char[2], buff_name)
+    fa = BUFF_FA.get(buff_name, buff_name)
+    await q.answer(f"{fa}\n{result}", show_alert=True)
+
+
+async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    rank = q.data.replace("shchrank_", "")
+    kb = []
+    for name, title in CHARACTERS[rank].items():
+        price = CHAR_PRICES[rank]
+        kb.append([InlineKeyboardButton(
+            f"{name} ({title}) — {price} 💰",
+            callback_data=f"buych_{name}_{rank}"
+        )])
+    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_char")])
+    try:
+        await q.edit_message_text(
+            f"🦸 {rank} Rank — کاراکتر انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+    except Exception:
+        await q.message.reply_text(
+            f"🦸 {rank} Rank — کاراکتر انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+
+async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data.replace("buych_", "")
+    parts = data.rsplit("_", 1)
+    char_name = parts[0]
+    rank = parts[1]
+    user_id = q.from_user.id
+    result = buy_character(user_id, char_name, rank)
+    await q.answer(f"{char_name} ({rank})\n{result}", show_alert=True)
 
 
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1179,6 +1324,11 @@ def main():
         ("^it_", item_use_callback),
         ("^sel_", select_callback),
         ("^shop_", shop_callback),
+        ("^buyab_", buy_ability_callback),
+        ("^buyit_", buy_item_callback),
+        ("^buybf_", buy_buff_callback),
+        ("^shchrank_", shop_char_rank_callback),
+        ("^buych_", buy_char_callback),
         ("^solo_", solo_callback),
         ("^coopboss_", coop_boss_callback),
         ("^lb_", leaderboard_callback),
