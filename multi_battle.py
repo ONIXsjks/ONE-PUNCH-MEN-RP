@@ -1,6 +1,7 @@
 import random
 import json
 from config import BOSSES, ABILITIES
+from jjk_data import DOMAINS_JJK
 from database import DB_NAME, add_coins
 from quests import update_quest_progress
 import sqlite3
@@ -206,6 +207,66 @@ def player_action(session_id, uid, action):
             player["dodged_next"] = 1
         else:
             log = f"❌ {player['name']} جاخالی ناموفق!"
+
+elif action == "domain":
+    # گسترش قلمرو تو نبرد گروهی
+    char_name = player["name"]
+    if char_name not in DOMAINS_JJK:
+        return None, "❌ این کاراکتر گسترش قلمرو نداره!"
+
+    cd_key = f"domain_cd_{uid}"
+    if battle.get(cd_key, 0) > 0:
+        return None, f"⏱️ کول‌داون: {battle[cd_key]} راند مونده"
+
+    domain = DOMAINS_JJK[char_name]
+    effects = domain["effects"]
+    enemies = get_enemies(battle, team)
+
+    # انتخاب هدف‌ها
+    if domain["type"] == "single":
+        targets = enemies[:1]
+    elif domain["type"] == "multi":
+        targets = enemies[:2]
+    else:
+        targets = enemies
+
+    log = f"🌀 {domain['name']}!\n"
+
+    # اعمال افکت‌ها
+    for target in targets:
+        if "hp_drain" in effects:
+            drain = int(target["max_hp"] * effects["hp_drain"] / 100)
+            target["hp"] = max(0, target["hp"] - drain)
+            log += f"💀 {target['name']}: -{drain} HP\n"
+
+        if "freeze" in effects:
+            target["frozen"] = effects["freeze"]
+            log += f"❄️ {target['name']} فریز شد!\n"
+
+        if "dodge_debuff" in effects:
+            target["dodge_debuff"] = effects["dodge_debuff"]
+            log += f"💨 {target['name']}: جاخالی -{effects['dodge_debuff']}٪\n"
+
+    if "atk_boost" in effects:
+        player["atk_boost"] = effects["atk_boost"]
+        log += f"⚔️ ATK تو +{effects['atk_boost']}٪\n"
+
+    if "heal" in effects:
+        heal = int(player["max_hp"] * effects["heal"] / 100)
+        player["hp"] = min(player["max_hp"], player["hp"] + heal)
+        log += f"💚 {heal} HP برگشت\n"
+
+    # کول‌داون
+    battle[cd_key] = domain["cooldown"]
+    battle["domain_active"] = True
+    battle["domain_caster"] = uid
+    battle["domain_turns"] = domain["duration"]
+    battle["domain_name"] = domain["name"]
+
+    # نوبت بعدی
+    next_turn(battle)
+    update_multi_battle(session_id, battle)
+    return "active", log
 
     # چک پایان
     team1_alive = [p for p in battle["team1"] if p["hp"] > 0]
