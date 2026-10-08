@@ -311,7 +311,10 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if action == "surrender":
         end_battle(battle[0])
-        await q.message.reply_text("🏳️ تسلیم شدی!")
+        try:
+            await q.edit_message_text("🏳️ تسلیم شدی!")
+        except Exception:
+            await q.message.reply_text("🏳️ تسلیم شدی!")
         return
 
     if action == "attack":
@@ -323,7 +326,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif action == "ability":
         abilities = get_abilities(user_id, char[2])
         if not abilities:
-            await q.message.reply_text("❌ Ability نداری.")
+            await q.answer("❌ Ability نداری.", show_alert=True)
             return
         kb = [[InlineKeyboardButton(a, callback_data=f"ab_{a}")] for a in abilities]
         await q.message.reply_text("🔥 Ability انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
@@ -331,7 +334,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif action == "item":
         items = get_items(user_id)
         if not items:
-            await q.message.reply_text("❌ آیتم نداری.")
+            await q.answer("❌ آیتم نداری.", show_alert=True)
             return
         kb = [[InlineKeyboardButton(f"{n} (x{c})", callback_data=f"it_{n}")] for n, c in items]
         await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
@@ -342,18 +345,33 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if status == "won":
         reward = finish_battle(user_id, battle[2], True)
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
     elif status == "lost":
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        msg = f"{text}\n\n💀 باختی!"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
 
     update_battle(battle[0], php, bhp, 0, 0, 'active')
     new_battle = get_battle(user_id)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-    await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-  
+
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+      
 
 async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -370,17 +388,32 @@ async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if status == "won":
         reward = finish_battle(user_id, battle[2], True)
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
     elif status == "lost":
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        msg = f"{text}\n\n💀 باختی!"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
 
     update_battle(battle[0], php, bhp, 0, 0, 'active')
     new_battle = get_battle(user_id)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-    await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -402,17 +435,32 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if status == "won":
         reward = finish_battle(user_id, battle[2], True)
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
     elif status == "lost":
         end_battle(battle[0])
-        await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        msg = f"{text}\n\n💀 باختی!"
+        try:
+            await q.edit_message_text(msg)
+        except Exception:
+            await q.message.reply_text(msg)
         return
 
     update_battle(battle[0], php, bhp, 0, 0, 'active')
     new_battle = get_battle(user_id)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-    await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 # ============ CO-OP ============
@@ -425,6 +473,7 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     kb = [[InlineKeyboardButton(name, callback_data=f"coopboss_{name}")] for name in BOSSES]
     await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -710,25 +759,48 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if status in ("won", "team1_won", "team2_won", "draw"):
         result = finish_multi_battle(session_id)
         if result:
-            text = f"🏆 نبرد تموم شد!\n\n{log}\n\n"
+            text = "🏆 نبرد تموم شد!\n\n"
             for uid, amount in result["rewards"].items():
                 text += f"👤 {uid}: +{amount} coin\n"
-            await q.message.reply_text(text)
+            try:
+                await q.edit_message_text(text)
+            except Exception:
+                await q.message.reply_text(text)
         else:
-            await q.message.reply_text(f"🏆 نبرد تموم شد!\n\n{log}")
+            try:
+                await q.edit_message_text("🏆 نبرد تموم شد!")
+            except Exception:
+                await q.message.reply_text("🏆 نبرد تموم شد!")
         return
 
     battle = get_multi_battle(session_id)
     if not battle:
-        await q.message.reply_text(f"{log}\n\n❌ نبرد یافت نشد.")
+        try:
+            await q.edit_message_text("❌ نبرد یافت نشد.")
+        except Exception:
+            await q.message.reply_text("❌ نبرد یافت نشد.")
         return
+
     view = build_battle_view(battle)
+
+    log_lines = log.split("\n")
+    if len(log_lines) > 5:
+        log = "\n".join(log_lines[-5:])
+
+    full_text = f"{log}\n\n{view}"
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+
     kb = [
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
     ]
-    await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
+
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
 
 
 # ============ QUESTS ============
