@@ -221,7 +221,7 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
         ]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)            "🏪 شاپ:\nیه دسته انتخاب کن:",
-            reply_markup=InlineKeyboardMarkup(kb)
+            
         )
       
 async def edit_shop_msg(q, caption, keyboard):
