@@ -161,7 +161,12 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(kb)
         )
     except Exception:
-        await update.message.reply_text(
+                 await update.message.reply_text(
+            "🏪 شاپ:\nیه دسته انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
