@@ -21,6 +21,7 @@ from admin import (is_admin, get_all_users, get_user_stats,
                    give_coins, take_coins, reset_user,
                    ban_user, unban_user, is_banned)
 from gift import send_gift, get_gift_history, get_top_givers
+from jjk_data import CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK, DOMAINS_JJK
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
@@ -60,6 +61,7 @@ COMMAND_DESCRIPTIONS = {
     "gift": "هدیه دادن Coin — /gift <amount> یا /gift <user_id> <amount>",
     "gifthistory": "تاریخچه هدیه‌های تو",
     "topgivers": "برترین هدیه‌دهنده‌ها",
+    "jjk": "منوی جوجوتسو کایسن",
 }
 
 
@@ -361,7 +363,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
   
 
-# ============ BOSS BATTLE (TURN-BASED) ============
+# ============ BOSS BATTLE ============
 
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -460,14 +462,11 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not has_domain(char[2]):
             await q.answer("❌ این کاراکتر گسترش قلمرو نداره!", show_alert=True)
             return
-
         allowed, msg = can_use_domain(battle, char[2])
         if not allowed:
             await q.answer(msg, show_alert=True)
             return
-
         status, text, php, bhp = player_ability(battle, char, "DOMAIN")
-
         if status == "won":
             reward = finish_battle(user_id, battle[2], True)
             end_battle(battle[0])
@@ -483,7 +482,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 await q.message.reply_text(f"{text}\n\n💀 باختی!")
             return
-
         update_battle(battle[0], php, bhp, 0, 0, 'active')
         new_battle = get_battle(user_id)
         full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
@@ -521,6 +519,8 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
         await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+
 async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -710,8 +710,8 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
-  ]
+        [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+    ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
   
 
@@ -769,12 +769,13 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     battle = get_multi_battle(session_id)
     view = build_battle_view(battle)
     kb = [
-    [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
-     InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
-    [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
-]
-await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+        [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+    ]
+    await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+
 
 # ============ TEAM BATTLE ============
 
@@ -884,9 +885,9 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
-            [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
-]
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+        [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+    ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
 
 
@@ -944,10 +945,10 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
-            [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+        [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
     ]
-  
+
     try:
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
@@ -1026,7 +1027,6 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(user_id):
         await update.message.reply_text("❌ تو ادمین نیستی!")
         return
-
     text = (
         "👑 پنل ادمین\n"
         "━━━━━━━━━━━━━━━━━━━\n\n"
@@ -1165,7 +1165,6 @@ async def unban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-
     if update.message.reply_to_message:
         target = update.message.reply_to_message.from_user
         target_id = target.id
@@ -1181,7 +1180,6 @@ async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         msg = send_gift(user_id, target_id, amount)
         await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
         return
-
     if len(ctx.args) >= 2:
         try:
             target_id = int(ctx.args[0])
@@ -1192,7 +1190,6 @@ async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         msg = send_gift(user_id, target_id, amount)
         await update.message.reply_text(msg)
         return
-
     await update.message.reply_text(
         "🎁 چطوری هدیه بدم:\n\n"
         "روش ۱: روی پیام کاربر ریپلای کن و بنویس:\n"
@@ -1208,7 +1205,6 @@ async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not rows:
         await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
         return
-
     text = "🎁 تاریخچه هدیه‌ها:\n\n"
     for from_id, to_id, amount, date in rows:
         if from_id == user_id:
@@ -1223,12 +1219,158 @@ async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not rows:
         await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
         return
-
     text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
     for i, (uid, total) in enumerate(rows, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {uid} — {total} 💰\n"
     await update.message.reply_text(text)
+
+
+# ============ JJK MENU ============
+
+async def jjk_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    kb = [
+        [InlineKeyboardButton("🛒 کاراکترها", callback_data="jjk_chars")],
+        [InlineKeyboardButton("🐾 نوچه‌ها (فارم)", callback_data="jjk_fodder")],
+        [InlineKeyboardButton("👹 باس‌های ویژه", callback_data="jjk_bosses")],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")],
+    ]
+    await update.message.reply_text(
+        "🌀 جوجوتسو کایسن\n━━━━━━━━━━━━━━━━━━━\n\n"
+        "یه بخش انتخاب کن:",
+        reply_markup=InlineKeyboardMarkup(kb)
+    )
+
+
+async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+
+    if data == "jjk_chars":
+        kb = []
+        for rank in ["S", "A", "B"]:
+            if rank in CHARACTERS_JJK:
+                kb.append([InlineKeyboardButton(
+                    f"📦 {rank} Rank — {CHAR_PRICES.get(rank, 0)} 💰",
+                    callback_data=f"jjkrank_{rank}"
+                )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
+        await q.edit_message_text(
+            "🛒 کاراکترهای جوجوتسو:\nیه رنک انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+    elif data == "jjk_fodder":
+        kb = []
+        for fname, fdata in FODDER_JJK.items():
+            kb.append([InlineKeyboardButton(
+                f"{fdata['display_name']} (HP {fdata['hp']}) — {fdata['reward']} 💰",
+                callback_data=f"jjkfodder_{fname}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
+        await q.edit_message_text(
+            "🐾 نوچه‌ها (برای فارم Coin):\nیه نوچه انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+    elif data == "jjk_bosses":
+        kb = []
+        for bname, bdata in BOSSES_JJK.items():
+            kb.append([InlineKeyboardButton(
+                f"{bdata['display_name']} (HP {bdata['hp']})",
+                callback_data=f"jjkboss_{bname}"
+            )])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
+        await q.edit_message_text(
+            "👹 باس‌های ویژه جوجوتسو:\nیه باس انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+    elif data == "jjk_back":
+        kb = [
+            [InlineKeyboardButton("🛒 کاراکترها", callback_data="jjk_chars")],
+            [InlineKeyboardButton("🐾 نوچه‌ها (فارم)", callback_data="jjk_fodder")],
+            [InlineKeyboardButton("👹 باس‌های ویژه", callback_data="jjk_bosses")],
+        ]
+        await q.edit_message_text(
+            "🌀 جوجوتسو کایسن\n━━━━━━━━━━━━━━━━━━━\n\nیه بخش انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+
+async def jjk_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    rank = q.data.replace("jjkrank_", "")
+    kb = []
+    for name, title in CHARACTERS_JJK.get(rank, {}).items():
+        price = CHAR_PRICES.get(rank, 0)
+        kb.append([InlineKeyboardButton(
+            f"{name} — {price} 💰",
+            callback_data=f"jjkbuy_{name}_{rank}"
+        )])
+    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_chars")])
+    await q.edit_message_text(
+        f"🦸 {rank} Rank — کاراکتر انتخاب کن:",
+        reply_markup=InlineKeyboardMarkup(kb)
+    )
+
+
+async def jjk_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data.replace("jjkbuy_", "")
+    parts = data.rsplit("_", 1)
+    char_name = parts[0]
+    rank = parts[1]
+    user_id = q.from_user.id
+    result = buy_character(user_id, char_name, rank)
+    await q.answer(f"{char_name} ({rank})\n{result}", show_alert=True)
+
+
+async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    fodder_name = q.data.replace("jjkfodder_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await q.answer("❌ کاراکتر فعال نداری. /start", show_alert=True)
+        return
+    if fodder_name not in FODDER_JJK:
+        await q.answer("❌ نوچه پیدا نشد.", show_alert=True)
+        return
+    fdata = FODDER_JJK[fodder_name]
+    existing = get_battle(user_id)
+    if existing:
+        end_battle(existing[0])
+    create_battle(user_id, fodder_name, char[5], fdata["hp"])
+    battle_data = get_battle(user_id)
+    text = build_battle_message(battle_data, char)
+    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+
+async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    boss_name = q.data.replace("jjkboss_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await q.answer("❌ کاراکتر فعال نداری. /start", show_alert=True)
+        return
+    if boss_name not in BOSSES_JJK:
+        await q.answer("❌ باس پیدا نشد.", show_alert=True)
+        return
+    bdata = BOSSES_JJK[boss_name]
+    existing = get_battle(user_id)
+    if existing:
+        end_battle(existing[0])
+    create_battle(user_id, boss_name, char[5], bdata["hp"])
+    battle_data = get_battle(user_id)
+    text = build_battle_message(battle_data, char)
+    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
   
 
 # ============ HELP ============
@@ -1238,14 +1380,15 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "━━━━━━━━━━━━━━━━━━━\n\n"
 
     categories = {
-    "👤 حساب کاربری": ["start", "profile", "select", "coins"],
-    "🏪 شاپ و خرید": ["shop", "buy", "upgrade"],
-    "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
-                "pvp", "joinpvp", "team", "jointeam", "startteam"],
-    "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
-    "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
-    "❓ راهنما": ["help"],
-}
+        "👤 حساب کاربری": ["start", "profile", "select", "coins"],
+        "🏪 شاپ و خرید": ["shop", "buy", "upgrade"],
+        "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
+                    "pvp", "joinpvp", "team", "jointeam", "startteam"],
+        "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
+        "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
+        "🌀 جوجوتسو": ["jjk"],
+        "❓ راهنما": ["help"],
+    }
 
     for cat_name, cmds in categories.items():
         text += f"{cat_name}:\n"
@@ -1300,6 +1443,7 @@ def main():
         ("resetuser", resetuser_cmd),
         ("ban", ban_cmd),
         ("unban", unban_cmd),
+        ("jjk", jjk_menu),
     ]
     for cmd, fn in handlers:
         app.add_handler(CommandHandler(cmd, fn))
@@ -1320,6 +1464,11 @@ def main():
         ("^solo_", solo_callback),
         ("^coopboss_", coop_boss_callback),
         ("^lb_", leaderboard_callback),
+        ("^jjkrank_", jjk_rank_callback),
+        ("^jjkbuy_", jjk_buy_callback),
+        ("^jjkfodder_", jjk_fodder_callback),
+        ("^jjkboss_", jjk_boss_callback),
+        ("^jjk_", jjk_callback),
     ]
     for pattern, fn in callbacks:
         app.add_handler(CallbackQueryHandler(fn, pattern=pattern))
