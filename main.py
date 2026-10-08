@@ -147,7 +147,24 @@ async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Coins: {c}")
   
 
-async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+
+
+
+async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if len(ctx.args) < 2:
+        await update.message.reply_text("Usage: /buychar <name> <rank>")
+        return
+    rank = ctx.args[-1].upper()
+    char_name = " ".join(ctx.args[:-1])
+    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
+        await update.message.reply_text("Invalid character or rank.")
+        return
+    msg = buy_character(update.effective_user.id, char_name, rank)
+    await update.message.reply_text(msg)
+
+
+async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_idasync def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
         [InlineKeyboardButton("💊 Item", callback_data="shop_item")],
@@ -167,8 +184,6 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
 
-
-
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -183,21 +198,9 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for name, info in ITEMS.items():
             text += f"- {name} | {info['effect']} | {info['price']} coins\n"
         await q.message.reply_text(text)
-    
-        
-elif data == "shop_buff":
-    text = "Buffs:\n\n"
-    for name, info in BUFFS.items():
-        text += f"- {name} | {info['effect']} | {info['price']} coins\n"
-    await q.message.reply_text(text)
-elif data == "shop_char":
-    text = "Characters:\n\n"
-    for rank, chars in CHARACTERS.items():
-        text += f"\n{rank} Rank ({CHAR_PRICES[rank]} coins):\n"
-        for name, title in chars.items():
-            text += f"  - {name} | {title}\n"
-    text += "\nBuy: /buychar <name> <rank>"
-    await q.message.reply_text(text)
+    elif data == "shop_buff":
+        text = "Buffs:\n\n"
+        for name, info in BUFFS.items():
             text += f"- {name} | {info['effect']} | {info['price']} coins\n"
         await q.message.reply_text(text)
     elif data == "shop_char":
@@ -220,11 +223,7 @@ async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Invalid character or rank.")
         return
     msg = buy_character(update.effective_user.id, char_name, rank)
-    await update.message.reply_text(msg)
-
-
-async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
+    await update.message.reply_text(msg) = update.effective_user.id
     chars = get_user_characters(user_id)
     if not chars:
         await update.message.reply_text("No characters.")
