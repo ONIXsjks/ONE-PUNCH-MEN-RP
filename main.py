@@ -35,40 +35,31 @@ BATTLE_KB = [
      InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")],
 ]
 
-🎮 ONE PUNCH MEN RP — راهنما
-━━━━━━━━━━━━━━━━━━━
-
-👤 حساب کاربری:
-  /start — شروع بازی و انتخاب کاراکتر
-  /profile — پروفایل و آمار کاراکتر
-  /select — انتخاب کاراکتر فعال
-  /coins — موجودی سکه
-
-🏪 شاپ و خرید:
-  /shop — منوی شاپ (Ability, Item, Buff, Character)
-  /buy — خرید Ability/Item/Buff
-  /upgrade — ارتقای Level کاراکتر
-
-⚔️ نبرد:
-  /battle — باس‌فایت تکی (نوبتی)
-  /coop — نبرد گروهی با یه رفیق (نوبتی)
-  ...
-
-📜 کوئست و رتبه:
-  /quests — کوئست‌های روزانه
-  /claim — دریافت جایزه کوئست
-  /leaderboard — جدول برترین‌ها
-
-🎁 هدیه:
-  /gift — هدیه دادن Coin
-  /gifthistory — تاریخچه هدیه‌های تو
-  /topgivers — برترین هدیه‌دهنده‌ها
-
-❓ راهنما:
-  /help — همین پیام
-
-━━━━━━━━━━━━━━━━━━━
-💡 برای شروع: /start
+COMMAND_DESCRIPTIONS = {
+    "start": "شروع بازی و انتخاب کاراکتر",
+    "profile": "پروفایل و آمار کاراکتر",
+    "select": "انتخاب کاراکتر فعال",
+    "coins": "موجودی سکه",
+    "shop": "منوی شاپ (Ability, Item, Buff, Character)",
+    "buy": "خرید Ability/Item/Buff — /buy <name>",
+    "upgrade": "ارتقای Level کاراکتر",
+    "battle": "باس‌فایت تکی (نوبتی)",
+    "coop": "نبرد گروهی با یه رفیق (نوبتی)",
+    "join": "پیوستن به Co-op — /join <session>",
+    "startcoop": "شروع Co-op — /startcoop <session>",
+    "pvp": "نبرد 1v1 با یه کاربر (نوبتی)",
+    "joinpvp": "پیوستن به PvP — /joinpvp <session>",
+    "team": "نبرد تیمی — /team <2-4>",
+    "jointeam": "پیوستن به تیم — /jointeam <session> <1|2>",
+    "startteam": "شروع نبرد تیمی — /startteam <session>",
+    "quests": "کوئست‌های روزانه",
+    "claim": "دریافت جایزه کوئست — /claim <key>",
+    "leaderboard": "جدول برترین‌ها",
+    "help": "همین پیام",
+    "gift": "هدیه دادن Coin — /gift <amount> یا /gift <user_id> <amount>",
+    "gifthistory": "تاریخچه هدیه‌های تو",
+    "topgivers": "برترین هدیه‌دهنده‌ها",
+}
 
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
