@@ -172,3 +172,9 @@ BOSSES = {
 ADMIN_IDS = [
     7023690411,
 ]
+
+
+# ============ JJK MERGE ============
+CHARACTERS.update(CHARACTERS_JJK)
+CHAR_PRICES.update(CHAR_PRICES_JJK)
+BOSSES.update(BOSSES_JJK)
