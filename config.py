@@ -2,7 +2,10 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
+from jjk_data import (
+    CHARACTERS_JJK, CHAR_PRICES_JJK, ABILITIES_JJK,
+    DOMAINS_JJK, BOSSES_JJK, FODDER_JJK, COOLDOWNS_JJK
+)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "/data/game.db"
 
