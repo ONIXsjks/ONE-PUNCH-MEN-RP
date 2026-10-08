@@ -454,7 +454,42 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             fa = ITEM_FA.get(n, n)
             kb.append([InlineKeyboardButton(f"{fa} (x{c})", callback_data=f"it_{n}")])
         await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+        return 
+elif action == "domain":
+    from domain_system import has_domain, can_use_domain
+    if not has_domain(char[2]):
+        await q.answer("❌ این کاراکتر گسترش قلمرو نداره!", show_alert=True)
         return
+
+    allowed, msg = can_use_domain(battle, char[2])
+    if not allowed:
+        await q.answer(msg, show_alert=True)
+        return
+
+    status, text, php, bhp = player_ability(battle, char, "DOMAIN")
+
+    if status == "won":
+        reward = finish_battle(user_id, battle[2], True)
+        end_battle(battle[0])
+        try:
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+        return
+    elif status == "lost":
+        end_battle(battle[0])
+        try:
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        return
+
+    update_battle(battle[0], php, bhp, 0, 0, 'active')
+    new_battle = get_battle(user_id)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
+    await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    return
+
     else:
         return
 
