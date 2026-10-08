@@ -149,12 +149,24 @@ async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
-        [InlineKeyboardButton("Ability", callback_data="shop_ab")],
-        [InlineKeyboardButton("Item", callback_data="shop_item")],
-        [InlineKeyboardButton("Buff", callback_data="shop_buff")],
-        [InlineKeyboardButton("Characters", callback_data="shop_char")],
+        [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
+        [InlineKeyboardButton("💊 Item", callback_data="shop_item")],
+        [InlineKeyboardButton("🔥 Buff", callback_data="shop_buff")],
+        [InlineKeyboardButton("🦸 Characters", callback_data="shop_char")],
     ]
-    await update.message.reply_text("SHOP:", reply_markup=InlineKeyboardMarkup(kb))
+    try:
+        await update.message.reply_photo(
+            photo=SHOP_IMAGE,
+            caption="🏪 SHOP:\nیه دسته انتخاب کن:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+    except Exception:
+        await update.message.reply_text(
+            "🏪 SHOP:",
+            reply_markup=InlineKeyboardMarkup(kb)
+        )
+
+
 
 
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -171,9 +183,21 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for name, info in ITEMS.items():
             text += f"- {name} | {info['effect']} | {info['price']} coins\n"
         await q.message.reply_text(text)
-    elif data == "shop_buff":
-        text = "Buffs:\n\n"
-        for name, info in BUFFS.items():
+    
+        
+elif data == "shop_buff":
+    text = "Buffs:\n\n"
+    for name, info in BUFFS.items():
+        text += f"- {name} | {info['effect']} | {info['price']} coins\n"
+    await q.message.reply_text(text)
+elif data == "shop_char":
+    text = "Characters:\n\n"
+    for rank, chars in CHARACTERS.items():
+        text += f"\n{rank} Rank ({CHAR_PRICES[rank]} coins):\n"
+        for name, title in chars.items():
+            text += f"  - {name} | {title}\n"
+    text += "\nBuy: /buychar <name> <rank>"
+    await q.message.reply_text(text)
             text += f"- {name} | {info['effect']} | {info['price']} coins\n"
         await q.message.reply_text(text)
     elif data == "shop_char":
