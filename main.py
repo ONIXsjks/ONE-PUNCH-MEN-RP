@@ -145,26 +145,9 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c}")
-  
 
 
-
-
-async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /buychar <name> <rank>")
-        return
-    rank = ctx.args[-1].upper()
-    char_name = " ".join(ctx.args[:-1])
-    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
-        await update.message.reply_text("Invalid character or rank.")
-        return
-    msg = buy_character(update.effective_user.id, char_name, rank)
-    await update.message.reply_text(msg)
-
-
-async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_idasync def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
         [InlineKeyboardButton("💊 Item", callback_data="shop_item")],
@@ -223,7 +206,11 @@ async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Invalid character or rank.")
         return
     msg = buy_character(update.effective_user.id, char_name, rank)
-    await update.message.reply_text(msg) = update.effective_user.id
+    await update.message.reply_text(msg)
+
+
+async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     chars = get_user_characters(user_id)
     if not chars:
         await update.message.reply_text("No characters.")
@@ -272,7 +259,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0])
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
-
+  
 
 # ============ BOSS BATTLE (TURN-BASED) ============
 
@@ -351,7 +338,10 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not abilities:
             await q.answer("❌ Ability نداری.", show_alert=True)
             return
-        kb = [[InlineKeyboardButton(a, callback_data=f"ab_{a}")] for a in abilities]
+        kb = []
+        for a in abilities:
+            fa = ABILITY_FA.get(a, a)
+            kb.append([InlineKeyboardButton(fa, callback_data=f"ab_{a}")])
         await q.message.reply_text("🔥 Ability انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
         return
     elif action == "item":
@@ -359,7 +349,10 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not items:
             await q.answer("❌ آیتم نداری.", show_alert=True)
             return
-        kb = [[InlineKeyboardButton(f"{n} (x{c})", callback_data=f"it_{n}")] for n, c in items]
+        kb = []
+        for n, c in items:
+            fa = ITEM_FA.get(n, n)
+            kb.append([InlineKeyboardButton(f"{fa} (x{c})", callback_data=f"it_{n}")])
         await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
         return
     else:
@@ -394,7 +387,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
         await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-      
+
 
 async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -587,7 +580,7 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
     ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-
+  
 
 # ============ PVP ============
 
@@ -648,7 +641,7 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
     ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-  
+
 
 # ============ TEAM BATTLE ============
 
@@ -1101,7 +1094,7 @@ async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {uid} — {total} 💰\n"
     await update.message.reply_text(text)
-
+  
 
 # ============ HELP ============
 
