@@ -713,7 +713,8 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
          InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
         [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    ]
+    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+  ]
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
   
 
@@ -771,11 +772,12 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     battle = get_multi_battle(session_id)
     view = build_battle_view(battle)
     kb = [
-        [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
-         InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
-        [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
-    ]
-    await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+    [InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
+     InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")],
+    [InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}")],
+    [InlineKeyboardButton("🌀 گسترش قلمرو", callback_data=f"mb_domain_{session_id}")],
+]    
+  await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
 
 
 # ============ TEAM BATTLE ============
