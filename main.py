@@ -35,40 +35,40 @@ BATTLE_KB = [
      InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")],
 ]
 
-COMMAND_DESCRIPTIONS = {
-    "start": "شروع بازی و انتخاب کاراکتر",
-    "profile": "پروفایل و آمار کاراکتر",
-    "select": "انتخاب کاراکتر فعال",
-    "coins": "موجودی سکه",
-    "shop": "منوی شاپ (Ability, Item, Buff, Character)",
-    "buy": "خرید Ability/Item/Buff — /buy <name>",
-    "buychar": "خرید کاراکتر جدید — /buychar <name> <rank>",
-    "upgrade": "ارتقای Level کاراکتر",
-    "battle": "باس‌فایت تکی (نوبتی)",
-    "coop": "نبرد گروهی با یه رفیق (نوبتی)",
-    "join": "پیوستن به Co-op — /join <session>",
-    "startcoop": "شروع Co-op — /startcoop <session>",
-    "pvp": "نبرد 1v1 با یه کاربر (نوبتی)",
-    "joinpvp": "پیوستن به PvP — /joinpvp <session>",
-    "team": "نبرد تیمی — /team <2-4>",
-    "jointeam": "پیوستن به تیم — /jointeam <session> <1|2>",
-    "startteam": "شروع نبرد تیمی — /startteam <session>",
-    "quests": "کوئست‌های روزانه",
-    "claim": "دریافت جایزه کوئست — /claim <key>",
-    "leaderboard": "جدول برترین‌ها",
-    "help": "همین پیام",
-    "gift": "هدیه دادن Coin — /gift <amount> یا /gift <user_id> <amount>",
-    "gifthistory": "تاریخچه هدیه‌های تو",
-    "topgivers": "برترین هدیه‌دهنده‌ها",
-    "admin": "پنل ادمین (فقط ادمین‌ها)",
-    "give": "به کاربر Coin بده — /give <user_id> <amount>",
-    "take": "از کاربر Coin بگیر — /take <user_id> <amount>",
-    "userinfo": "آمار کامل کاربر — /userinfo <user_id>",
-    "allusers": "لیست همه کاربران",
-    "resetuser": "ریست کاربر — /resetuser <user_id>",
-    "ban": "بن کاربر — /ban <user_id>",
-    "unban": "آنبن کاربر — /unban <user_id>",
-}
+🎮 ONE PUNCH MEN RP — راهنما
+━━━━━━━━━━━━━━━━━━━
+
+👤 حساب کاربری:
+  /start — شروع بازی و انتخاب کاراکتر
+  /profile — پروفایل و آمار کاراکتر
+  /select — انتخاب کاراکتر فعال
+  /coins — موجودی سکه
+
+🏪 شاپ و خرید:
+  /shop — منوی شاپ (Ability, Item, Buff, Character)
+  /buy — خرید Ability/Item/Buff
+  /upgrade — ارتقای Level کاراکتر
+
+⚔️ نبرد:
+  /battle — باس‌فایت تکی (نوبتی)
+  /coop — نبرد گروهی با یه رفیق (نوبتی)
+  ...
+
+📜 کوئست و رتبه:
+  /quests — کوئست‌های روزانه
+  /claim — دریافت جایزه کوئست
+  /leaderboard — جدول برترین‌ها
+
+🎁 هدیه:
+  /gift — هدیه دادن Coin
+  /gifthistory — تاریخچه هدیه‌های تو
+  /topgivers — برترین هدیه‌دهنده‌ها
+
+❓ راهنما:
+  /help — همین پیام
+
+━━━━━━━━━━━━━━━━━━━
+💡 برای شروع: /start
 
 
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
