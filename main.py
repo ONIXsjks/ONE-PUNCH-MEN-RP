@@ -1202,16 +1202,14 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "━━━━━━━━━━━━━━━━━━━\n\n"
 
     categories = {
-        "👤 حساب کاربری": ["start", "profile", "select", "coins"],
-        "🏪 شاپ و خرید": ["shop", "buy", "buychar", "upgrade"],
-        "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
-                    "pvp", "joinpvp", "team", "jointeam", "startteam"],
-        "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
-        "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
-        "👑 ادمین": ["admin", "give", "take", "userinfo",
-                      "allusers", "resetuser", "ban", "unban"],
-        "❓ راهنما": ["help"],
-    }
+    "👤 حساب کاربری": ["start", "profile", "select", "coins"],
+    "🏪 شاپ و خرید": ["shop", "buy", "upgrade"],
+    "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
+                "pvp", "joinpvp", "team", "jointeam", "startteam"],
+    "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
+    "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
+    "❓ راهنما": ["help"],
+}
 
     for cat_name, cmds in categories.items():
         text += f"{cat_name}:\n"
