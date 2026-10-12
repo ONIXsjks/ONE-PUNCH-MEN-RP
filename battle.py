@@ -3,12 +3,49 @@ from config import BOSSES, ABILITIES, ITEMS, ABILITY_FA, ITEM_FA
 from database import add_coins
 from images import IMAGES
 from quests import update_quest_progress
-from jjk_data import ABILITIES_JJK, DOMAINS_JJK, BOSSES_JJK
+from jjk_data import (ABILITIES_JJK, DOMAINS_JJK, BOSSES_JJK, FODDER_JJK)
 from domain_system import (has_domain, can_use_domain, start_domain,
                            apply_domain_round, tick_cooldowns,
                            set_cooldown, is_ability_on_cooldown,
                            get_cooldown_turns)
 
+
+# ============================================================
+# HELPER: گرفتن داده باس از هر منبع
+# ============================================================
+
+def get_boss_data(boss_name):
+    """گرفتن داده باس از BOSSES، BOSSES_JJK یا FODDER_JJK"""
+    if boss_name in BOSSES_JJK:
+        data = BOSSES_JJK[boss_name]
+        return {
+            "hp": data["hp"],
+            "atk": data["atk"],
+            "reward": data["reward"],
+            "display_name": data.get("display_name", boss_name),
+        }
+    if boss_name in FODDER_JJK:
+        data = FODDER_JJK[boss_name]
+        return {
+            "hp": data["hp"],
+            "atk": data["atk"],
+            "reward": data["reward"],
+            "display_name": data.get("display_name", boss_name),
+        }
+    if boss_name in BOSSES:
+        data = BOSSES[boss_name]
+        return {
+            "hp": data["hp"],
+            "atk": data["atk"],
+            "reward": data.get("reward", 100),
+            "display_name": boss_name,
+        }
+    return None
+
+
+# ============================================================
+# DAMAGE ROLL
+# ============================================================
 
 def roll_damage(atk, defender_def=0, defender_defending=0):
     base = atk * random.uniform(0.85, 1.15)
@@ -22,6 +59,10 @@ def roll_damage(atk, defender_def=0, defender_defending=0):
     dmg = max(1, int(base))
     return dmg, crit
 
+
+# ============================================================
+# BOSS AI
+# ============================================================
 
 def boss_ai(boss_name, boss_hp, boss_max_hp):
     r = random.random()
@@ -38,6 +79,7 @@ def boss_action(action, boss, php, pmax, bhp, bmax, defending=0):
     text = ""
     new_php = php
     new_bhp = bhp
+
     if action == "attack":
         dmg, crit = roll_damage(boss["atk"], 0, defending)
         new_php = max(0, php - dmg)
@@ -45,16 +87,20 @@ def boss_action(action, boss, php, pmax, bhp, bmax, defending=0):
         if crit:
             text += " 🎯 کریتیکال!"
         text += f"\n👤 HP تو: {new_php}/{pmax}"
+
     elif action == "special":
         dmg, _ = roll_damage(boss["atk"] * 2, 0, defending)
         new_php = max(0, php - dmg)
         text = f"💥 حمله ویژه باس: {dmg} آسیب!\n👤 HP تو: {new_php}/{pmax}"
+
     elif action == "defend":
         text = "🛡️ باس دفاع گرفت."
+
     elif action == "heal":
         heal = int(bmax * 0.1)
         new_bhp = min(bmax, bhp + heal)
         text = f"💚 باس خودشو درمان کرد: +{heal}\n👹 HP باس: {new_bhp}/{bmax}"
+
     return text, new_php, new_bhp
 
 
@@ -64,11 +110,12 @@ def boss_action(action, boss, php, pmax, bhp, bmax, defending=0):
 
 def player_attack(battle, char):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
-    boss = BOSSES[boss_name]
+    boss = get_boss_data(boss_name)
+    if not boss:
+        return "active", "❌ باس پیدا نشد.", php, bhp
 
     dmg, crit = roll_damage(char[6], 0, 0)
 
-    # ATK boost از Domain
     atk_boost = battle.get("domain_atk_boost", 0)
     if atk_boost:
         dmg = int(dmg * (1 + atk_boost / 100))
@@ -83,7 +130,6 @@ def player_attack(battle, char):
     if new_bhp <= 0:
         return "won", text, php, new_bhp
 
-    # نوبت باس
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n❄️ باس فریزه! حمله نمی‌کنه"
@@ -100,7 +146,9 @@ def player_attack(battle, char):
 
 def player_defend(battle, char):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
-    boss = BOSSES[boss_name]
+    boss = get_boss_data(boss_name)
+    if not boss:
+        return "active", "❌ باس پیدا نشد.", php, bhp
 
     text = "🛡️ دفاع گرفتی! آسیب این راند کم می‌شه."
 
@@ -119,7 +167,9 @@ def player_defend(battle, char):
 
 def player_dodge(battle, char):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
-    boss = BOSSES[boss_name]
+    boss = get_boss_data(boss_name)
+    if not boss:
+        return "active", "❌ باس پیدا نشد.", php, bhp
 
     dodge_chance = char[8] + battle.get("player_dodge_bonus", 0)
     success = random.randint(1, 100) <= dodge_chance
@@ -145,10 +195,13 @@ def player_dodge(battle, char):
 
 def player_ability(battle, char, ability_name):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
-    boss = BOSSES[boss_name]
+    boss = get_boss_data(boss_name)
+    if not boss:
+        return "active", "❌ باس پیدا نشد.", php, bhp
+
     char_name = char[2]
 
-    # ====== چک Domain ======
+    # ========== چک Domain ==========
     if ability_name == "DOMAIN":
         allowed, msg = can_use_domain(battle, char_name)
         if not allowed:
@@ -163,8 +216,6 @@ def player_ability(battle, char, ability_name):
         battle["domain_atk_boost"] = domain["effects"].get("atk_boost", 0)
 
         text = f"🌀 گسترش قلمرو: {domain['name']}!"
-
-        # افکت‌های راند اول
         effects = domain["effects"]
 
         if "hp_drain" in effects:
@@ -184,12 +235,12 @@ def player_ability(battle, char, ability_name):
         if "atk_boost" in effects:
             text += f"\n⚔️ ATK تو +{effects['atk_boost']}٪"
 
-        if new_bhp_check(bhp):
+        if bhp <= 0:
             return "won", text, php, bhp
 
         return "active", text, php, bhp
 
-    # ====== چک کول‌داون ======
+    # ========== چک کول‌داون ==========
     if is_ability_on_cooldown(battle, ability_name):
         cd = get_cooldown_turns(battle, ability_name)
         return "active", f"⏱️ {ability_name} کول‌داون: {cd} راند", php, bhp
@@ -198,7 +249,7 @@ def player_ability(battle, char, ability_name):
     new_bhp = bhp
     new_php = php
 
-    # ====== JJK Abilities ======
+    # ========== JJK Abilities ==========
     jjk_abs = ABILITIES_JJK.get(char_name, {})
     found_jjk = False
 
@@ -270,12 +321,11 @@ def player_ability(battle, char, ability_name):
                 battle["boss_disabled"] = 1
                 text += "\n🔨 ۱ Ability باس غیرفعال شد"
 
-            # کول‌داون
             cd = 1 if key == "ability_1" else 2
             set_cooldown(battle, ability_name, cd)
             break
 
-    # ====== Ability عادی ======
+    # ========== Ability عادی ==========
     if not found_jjk:
         info = ABILITIES.get(ability_name)
         if not info:
@@ -285,7 +335,7 @@ def player_ability(battle, char, ability_name):
     if new_bhp <= 0:
         return "won", text, new_php, new_bhp
 
-    # ====== حرکت باس ======
+    # ========== حرکت باس ==========
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n❄️ باس فریزه! حمله نمی‌کنه"
@@ -297,10 +347,9 @@ def player_ability(battle, char, ability_name):
     if new_php <= 0:
         return "lost", text, new_php, new_bhp
 
-    # کاهش کول‌داون
     tick_cooldowns(battle)
 
-    # Domain round
+    # ========== Domain Round ==========
     if battle.get("domain_active"):
         dom_log = apply_domain_round(battle, {"hp": new_php, "max_hp": pmax}, [
             {"hp": new_bhp, "max_hp": bmax, "name": boss_name}
@@ -311,13 +360,12 @@ def player_ability(battle, char, ability_name):
     return "active", text, new_php, new_bhp
 
 
-def new_bhp_check(bhp):
-    return bhp <= 0
-
-
 def player_item(battle, char, item_name):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
-    boss = BOSSES[boss_name]
+    boss = get_boss_data(boss_name)
+    if not boss:
+        return "active", "❌ باس پیدا نشد.", php, bhp
+
     info = ITEMS.get(item_name)
     if not info:
         return "active", "❌ این آیتم رو نداری.", php, bhp
@@ -354,13 +402,20 @@ def player_item(battle, char, item_name):
     return "active", text, new_php, new_bhp
 
 
+# ============================================================
+# BATTLE MESSAGE
+# ============================================================
+
 def build_battle_message(battle, char):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
+    boss = get_boss_data(boss_name)
+    boss_atk = boss["atk"] if boss else 0
+    boss_display = boss["display_name"] if boss else boss_name
 
     text = (
-        f"👹 {boss_name}\n"
+        f"👹 {boss_display}\n"
         f"❤️ HP: {bhp}/{bmax}\n"
-        f"⚔️ ATK: {BOSSES[boss_name]['atk']}\n\n"
+        f"⚔️ ATK: {boss_atk}\n\n"
         f"━━━━━━━━━━━━━━━━\n\n"
         f"👤 {char[2]} ({char[3]} Rank)\n"
         f"❤️ HP: {php}/{pmax}\n"
@@ -369,7 +424,6 @@ def build_battle_message(battle, char):
         f"💨 DODGE: {char[8]}%\n\n"
     )
 
-    # Domain status
     if battle.get("domain_active"):
         text += f"\n🌀 قلمرو فعال: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)\n"
 
@@ -377,9 +431,14 @@ def build_battle_message(battle, char):
     return text
 
 
+# ============================================================
+# FINISH BATTLE
+# ============================================================
+
 def finish_battle(uid, boss_name, won):
     if won:
-        reward = BOSSES[boss_name].get("reward", 100)
+        boss = get_boss_data(boss_name)
+        reward = boss["reward"] if boss else 100
         add_coins(uid, reward)
         update_quest_progress(uid, "win_3_bosses")
         update_quest_progress(uid, "win_5_bosses")
