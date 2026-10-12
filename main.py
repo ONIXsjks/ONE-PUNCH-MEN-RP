@@ -389,10 +389,25 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if existing:
         end_battle(existing[0])
 
-    boss = BOSSES[boss_name]
-    create_battle(user_id, boss_name, char[5], boss["hp"])
+    # چک انواع باس
+    if boss_name in BOSSES_JJK:
+        boss_data = BOSSES_JJK[boss_name]
+        create_battle(user_id, boss_name, char[5], boss_data["hp"])
+    elif boss_name in FODDER_JJK:
+        fodder_data = FODDER_JJK[boss_name]
+        create_battle(user_id, boss_name, char[5], fodder_data["hp"])
+    elif boss_name in BOSSES:
+        boss = BOSSES[boss_name]
+        create_battle(user_id, boss_name, char[5], boss["hp"])
+    else:
+        await q.message.reply_text("❌ باس پیدا نشد.")
+        return
 
     battle_data = get_battle(user_id)
+    if not battle_data:
+        await q.message.reply_text("❌ خطا در ساخت نبرد.")
+        return
+
     text = build_battle_message(battle_data, char)
 
     if boss_name == "Saitama Phase 1":
@@ -407,7 +422,6 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             pass
 
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-
 
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
