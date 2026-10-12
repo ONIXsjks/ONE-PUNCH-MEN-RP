@@ -109,25 +109,32 @@ def roll_damage(atk, defender_def=0, defending=0):
 
 
 def next_turn(battle):
+    """نوبت بعدی رو انتخاب کن — با رفع باگ"""
     players = battle["players"]
+    if not players:
+        battle["current_turn"] = None
+        return
     idx = battle["turn_index"] + 1
-    while idx < len(players) * 2:
+    max_iter = len(players) * 3
+    counter = 0
+    while counter < max_iter:
         candidate = players[idx % len(players)]
         for p in battle["team1"] + battle["team2"]:
-            if p["uid"] == candidate and p["hp"] > 0:
+            if str(p["uid"]) == str(candidate) and p["hp"] > 0:
                 battle["current_turn"] = candidate
                 battle["turn_index"] = idx
                 return
         idx += 1
+        counter += 1
     battle["current_turn"] = None
 
 
 def get_player(battle, uid):
     for p in battle["team1"]:
-        if p["uid"] == uid:
+        if str(p["uid"]) == str(uid):
             return p, "team1"
     for p in battle["team2"]:
-        if p["uid"] == uid:
+        if str(p["uid"]) == str(uid):
             return p, "team2"
     return None, None
 
@@ -148,14 +155,14 @@ def build_battle_view(battle):
     text += "🟦 Team 1:\n"
     for p in battle["team1"]:
         status = "✅" if p["hp"] > 0 else "💀"
-        turn_mark = " 🎯" if p["uid"] == battle["current_turn"] else ""
+        turn_mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
         text += f"  {status} {p['name']} — HP {p['hp']}/{p['max_hp']}{turn_mark}\n"
 
     if battle["team2"]:
         text += "\n🟥 Team 2:\n"
         for p in battle["team2"]:
             status = "✅" if p["hp"] > 0 else "💀"
-            turn_mark = " 🎯" if p["uid"] == battle["current_turn"] else ""
+            turn_mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
             text += f"  {status} {p['name']} — HP {p['hp']}/{p['max_hp']}{turn_mark}\n"
 
     text += f"\n━━━━━━━━━━━━━━━━\n"
@@ -171,7 +178,7 @@ def player_action(session_id, uid, action):
     if not battle:
         return None, "نبرد فعال نیست."
 
-    if battle["current_turn"] != uid:
+    if str(battle["current_turn"]) != str(uid):
         return None, "نوبت تو نیست!"
 
     player, team = get_player(battle, uid)
