@@ -163,7 +163,8 @@ def get_boss_atk(boss_name):
         return FODDER_JJK[boss_name]["atk"]
     if boss_name in BOSSES:
         return BOSSES[boss_name]["atk"]
-    return 100def build_battle_view(battle):
+    return 100
+  def build_battle_view(battle):
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
     if battle["boss_name"]:
         text += f"👹 {battle['boss_name']}\n"
