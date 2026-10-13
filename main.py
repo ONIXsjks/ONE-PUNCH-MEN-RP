@@ -443,8 +443,7 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
 
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))===========
-
+    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 
