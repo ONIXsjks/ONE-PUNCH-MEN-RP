@@ -11,11 +11,10 @@ from domain_system import (has_domain, can_use_domain, start_domain,
 
 
 # ============================================================
-# HELPER: گرفتن داده باس از هر منبع
+# HELPER
 # ============================================================
 
 def get_boss_data(boss_name):
-    """گرفتن داده باس از BOSSES، BOSSES_JJK یا FODDER_JJK"""
     if boss_name in BOSSES_JJK:
         data = BOSSES_JJK[boss_name]
         return {
@@ -43,10 +42,6 @@ def get_boss_data(boss_name):
     return None
 
 
-# ============================================================
-# DAMAGE ROLL
-# ============================================================
-
 def roll_damage(atk, defender_def=0, defender_defending=0):
     base = atk * random.uniform(0.85, 1.15)
     crit = random.random() < 0.15
@@ -59,10 +54,6 @@ def roll_damage(atk, defender_def=0, defender_defending=0):
     dmg = max(1, int(base))
     return dmg, crit
 
-
-# ============================================================
-# BOSS AI
-# ============================================================
 
 def boss_ai(boss_name, boss_hp, boss_max_hp):
     r = random.random()
@@ -201,13 +192,18 @@ def player_ability(battle, char, ability_name):
 
     char_name = char[2]
 
-    # ========== چک Domain ==========
+    # ========== DOMAIN ==========
     if ability_name == "DOMAIN":
+        # چک ۱ بار مصرف
+        if battle.get("domain_used", False):
+            return "active", "❌ گسترش قلمرو فقط یه بار در نبرد قابل استفاده‌ست!", php, bhp
+
         allowed, msg = can_use_domain(battle, char_name)
         if not allowed:
             return "active", msg, php, bhp
 
         domain = DOMAINS_JJK.get(char_name)
+        battle["domain_used"] = True
         battle["domain_active"] = True
         battle["domain_turns"] = domain["duration"]
         battle["domain_name"] = domain["name"]
@@ -402,10 +398,6 @@ def player_item(battle, char, item_name):
     return "active", text, new_php, new_bhp
 
 
-# ============================================================
-# BATTLE MESSAGE
-# ============================================================
-
 def build_battle_message(battle, char):
     bid, uid, boss_name, php, pmax, bhp, bmax, defending, turn, status = battle
     boss = get_boss_data(boss_name)
@@ -430,10 +422,6 @@ def build_battle_message(battle, char):
     text += f"\n━━━━━━━━━━━━━━━━\n\n🎯 نوبت توئه! یه حرکت انتخاب کن:"
     return text
 
-
-# ============================================================
-# FINISH BATTLE
-# ============================================================
 
 def finish_battle(uid, boss_name, won):
     if won:
