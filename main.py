@@ -377,7 +377,9 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
   
 
-# ============ BOSS BATTLE =async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+# ============ BOSS BATTLE ============
+
+async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
     if not char:
@@ -444,7 +446,6 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             pass
 
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-
 
 
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
