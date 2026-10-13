@@ -99,6 +99,11 @@ def roll_damage(atk, defender_def=0, defending=0):
     return max(1, int(base)), crit
 
 
+def disp(p):
+    """نمایش اسم: یوزرنیم اگه بود، وگرنه اسم کاراکتر"""
+    return p.get("display") or p.get("name", "؟")
+
+
 # ============================================================
 # 🎯 تابع دفاع/جاخالی (۳۳-۳۳-۳۳)
 # ============================================================
@@ -160,9 +165,7 @@ def get_boss_atk(boss_name):
     if boss_name in FODDER_JJK: return FODDER_JJK[boss_name]["atk"]
     if boss_name in BOSSES: return BOSSES[boss_name]["atk"]
     return 100
-
-
-def build_battle_view(battle):
+  def build_battle_view(battle):
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
     if battle["boss_name"]:
         text += f"👹 {battle['boss_name']}\n"
@@ -172,18 +175,22 @@ def build_battle_view(battle):
     for p in battle["team1"]:
         status = "✅" if p["hp"] > 0 else "💀"
         mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
-        text += f"  {status} {p['name']} — HP {p['hp']}/{p['max_hp']}{mark}\n"
+        text += f"  {status} {disp(p)} — HP {p['hp']}/{p['max_hp']}{mark}\n"
 
     if battle["team2"]:
         text += "\n🟥 Team 2:\n"
         for p in battle["team2"]:
             status = "✅" if p["hp"] > 0 else "💀"
             mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
-            text += f"  {status} {p['name']} — HP {p['hp']}/{p['max_hp']}{mark}\n"
+            text += f"  {status} {disp(p)} — HP {p['hp']}/{p['max_hp']}{mark}\n"
 
     text += f"\n━━━━━━━━━━━━━━━━\n"
     if battle["current_turn"]:
-        text += f"🎯 نوبت: {battle['current_turn']}"
+        p, _ = get_player(battle, battle["current_turn"])
+        if p:
+            text += f"🎯 نوبت: {disp(p)}"
+        else:
+            text += f"🎯 نوبت: {battle['current_turn']}"
     else:
         text += "⏳ در حال پردازش..."
     return text
@@ -201,38 +208,36 @@ def boss_attack_players(battle, log):
     # فراست چک
     if target.get("frozen", 0) > 0:
         target["frozen"] -= 1
-        log += f"\n❄️ {target['name']} فریزه!"
+        log += f"\n❄️ {disp(target)} فریزه!"
         return log
 
     # آسیب پایه
     base_dmg, crit = roll_damage(boss_atk, 0, 0)
     crit_str = " 🎯" if crit else ""
-    log += f"\n👹 باس → {target['name']}!\n⚔️ آسیب پایه: {base_dmg}{crit_str}"
+    log += f"\n👹 باس → {disp(target)}!\n⚔️ آسیب پایه: {base_dmg}{crit_str}"
 
     # چک دفاع/جاخالی
     defense = target.get("defense_action", None)
     if defense == "defend":
         target["hp"], def_log = apply_defense_check(base_dmg, target["hp"], "دفاع")
         log += f"\n{def_log}"
-        log += f"\n👤 HP {target['name']}: {target['hp']}/{target['max_hp']}"
+        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
     elif defense == "dodge":
         target["hp"], def_log = apply_defense_check(base_dmg, target["hp"], "جاخالی")
         log += f"\n{def_log}"
-        log += f"\n👤 HP {target['name']}: {target['hp']}/{target['max_hp']}"
+        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
     else:
         target["hp"] = max(0, target["hp"] - base_dmg)
-        log += f"\n👤 HP {target['name']}: {target['hp']}/{target['max_hp']}"
+        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
 
     if target["hp"] <= 0:
-        log += f"\n☠️ {target['name']} خارج شد!"
+        log += f"\n☠️ {disp(target)} خارج شد!"
 
     # پاک کردن flag دفاع
     target["defense_action"] = None
 
     return log
-  
-
-def player_action(session_id, uid, action, extra=None):
+  def player_action(session_id, uid, action, extra=None):
     battle = get_multi_battle(session_id)
     if not battle:
         return None, "نبرد فعال نیست."
@@ -258,19 +263,19 @@ def player_action(session_id, uid, action, extra=None):
             dmg = int(dmg * (1 + atk_boost / 100))
         target["hp"] = max(0, target["hp"] - dmg)
         crit_str = " 🎯 CRIT!" if crit else ""
-        log = f"⚔️ {player['name']} → {target['name']}: {dmg}{crit_str}"
+        log = f"⚔️ {disp(player)} → {disp(target)}: {dmg}{crit_str}"
         if target["hp"] <= 0:
-            log += f"\n☠️ {target['name']} خارج شد!"
+            log += f"\n☠️ {disp(target)} خارج شد!"
 
     # ========== دفاع ==========
     elif action == "defend":
         player["defense_action"] = "defend"
-        log = f"🛡️ {player['name']} دفاع گرفت. (۳۳٪ کامل / ۳۳٪ جزئی)"
+        log = f"🛡️ {disp(player)} دفاع گرفت. (۳۳٪ کامل / ۳۳٪ جزئی)"
 
     # ========== جاخالی ==========
     elif action == "dodge":
         player["defense_action"] = "dodge"
-        log = f"💨 {player['name']} جاخالی می‌زنه. (۳۳٪ کامل / ۳۳٪ جزئی)"
+        log = f"💨 {disp(player)} جاخالی می‌زنه. (۳۳٪ کامل / ۳۳٪ جزئی)"
 
     # ========== Domain ==========
     elif action == "domain":
@@ -294,14 +299,14 @@ def player_action(session_id, uid, action, extra=None):
             if "damage_mult" in effects:
                 dmg = int(player["atk"] * effects["damage_mult"])
                 target["hp"] = max(0, target["hp"] - dmg)
-                log += f"⚔️ {target['name']}: {dmg} آسیب\n"
+                log += f"⚔️ {disp(target)}: {dmg} آسیب\n"
             if "hp_drain" in effects:
                 drain = int(target["max_hp"] * effects["hp_drain"] / 100)
                 target["hp"] = max(0, target["hp"] - drain)
-                log += f"💀 {target['name']}: -{drain} HP\n"
+                log += f"💀 {disp(target)}: -{drain} HP\n"
             if "freeze" in effects:
                 target["frozen"] = effects["freeze"]
-                log += f"❄️ {target['name']} فریز!\n"
+                log += f"❄️ {disp(target)} فریز!\n"
             if "dodge_debuff" in effects:
                 target["dodge_debuff"] = effects["dodge_debuff"]
         if "atk_boost" in effects:
@@ -388,7 +393,7 @@ def player_action(session_id, uid, action, extra=None):
                 target["hp"] = max(0, target["hp"] - dmg)
                 log += f"⚔️ {dmg} آسیب\n"
                 if target["hp"] <= 0:
-                    log += f"☠️ {target['name']} خارج شد!"
+                    log += f"☠️ {disp(target)} خارج شد!"
         elif ab_type == "heal":
             heal = int(player["max_hp"] * 0.3)
             player["hp"] = min(player["max_hp"], player["hp"] + heal)
@@ -396,7 +401,7 @@ def player_action(session_id, uid, action, extra=None):
         elif ab_type == "freeze":
             if target:
                 target["frozen"] = 1
-                log += f"❄️ {target['name']} فریز!\n"
+                log += f"❄️ {disp(target)} فریز!\n"
         elif ab_type == "buff":
             player["atk_boost"] = 50
             log += "⚔️ ATK +۵۰٪\n"
@@ -457,10 +462,8 @@ def player_action(session_id, uid, action, extra=None):
             battle["status"] = "won"
             update_multi_battle(session_id, battle)
             return "won", log
-        # باس حمله می‌کنه
         log = boss_attack_players(battle, log)
 
-        # Bankai round effects (فقط برای همه)
         for p in battle["team1"] + battle["team2"]:
             if p["hp"] > 0 and p.get("atk_per_round"):
                 cur = p.get("bankai_atk_current", 0)
@@ -480,18 +483,17 @@ def player_action(session_id, uid, action, extra=None):
                     p["bankai_bleed_current"] = min(mx, cur + p["bleed_per_round"])
                 bleed = int(battle["boss_max_hp"] * p["bankai_bleed_current"] / 100)
                 battle["boss_hp"] = max(0, battle["boss_hp"] - bleed)
-                log += f"\n🩸 {p['name']} بانکای: باس {bleed} HP"
+                log += f"\n🩸 {disp(p)} بانکای: باس {bleed} HP"
             if p["hp"] > 0 and p.get("heal_per_round"):
                 heal = int(p["max_hp"] * p["heal_per_round"] / 100)
                 p["hp"] = min(p["max_hp"], p["hp"] + heal)
-                log += f"\n💚 {p['name']} بانکای: {heal} HP"
+                log += f"\n💚 {disp(p)} بانکای: {heal} HP"
 
         if battle["boss_hp"] <= 0:
             battle["status"] = "won"
             update_multi_battle(session_id, battle)
             return "won", log
     else:
-        # PvP / Team - چک بازنده
         if not team1_alive or not team2_alive:
             if team1_alive and not team2_alive:
                 battle["status"] = "team1_won"
