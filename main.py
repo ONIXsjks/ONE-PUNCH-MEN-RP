@@ -3,7 +3,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from config import *
 from database import (init_db, get_user, add_coins, get_coins,
                       create_battle, get_battle, update_battle, end_battle,
-                      get_abilities, get_items, use_item)
+                      get_abilities, get_items, use_item, get_username)
 from characters import (create_character, get_user_characters,
                         get_active_character, set_active, buy_character)
 from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
@@ -91,8 +91,6 @@ COMMAND_DESCRIPTIONS = {
     "topgivers": "برترین هدیه‌دهنده‌ها",
     "jjk": "منوی جوجوتسو",
 }
-
-
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
@@ -383,9 +381,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0])
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
-  
-
-# ============ BOSS BATTLE ============
+  # ============ BOSS BATTLE ============
 
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -629,9 +625,7 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
         await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-
-
-# ============ CO-OP ============
+      # ============ CO-OP ============
 
 async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -722,10 +716,10 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         boss_hp = BOSSES[s["boss"]]["hp"]
 
     team1 = [
-        {"uid": p1_id, "name": char1[2], "hp": char1[5], "max_hp": char1[5],
+        {"uid": p1_id, "name": get_username(p1_id), "hp": char1[5], "max_hp": char1[5],
          "atk": char1[6], "def": char1[7], "dodge": char1[8],
          "defending": 0, "dodged_next": 0},
-        {"uid": p2_id, "name": char2[2], "hp": char2[5], "max_hp": char2[5],
+        {"uid": p2_id, "name": get_username(p2_id), "hp": char2[5], "max_hp": char2[5],
          "atk": char2[6], "def": char2[7], "dodge": char2[8],
          "defending": 0, "dodged_next": 0},
     ]
@@ -782,10 +776,10 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_host = get_active_character(s["host"])
 
-    team1 = [{"uid": s["host"], "name": char_host[2], "hp": char_host[5],
+    team1 = [{"uid": s["host"], "name": get_username(s["host"]), "hp": char_host[5],
               "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7],
               "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
-    team2 = [{"uid": user_id, "name": char[2], "hp": char[5], "max_hp": char[5],
+    team2 = [{"uid": user_id, "name": get_username(user_id), "hp": char[5], "max_hp": char[5],
               "atk": char[6], "def": char[7], "dodge": char[8],
               "defending": 0, "dodged_next": 0}]
 
@@ -889,10 +883,10 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Need {s['size']} each.")
         return
 
-    team1 = [{"uid": u, "name": c[2], "hp": c[5], "max_hp": c[5],
+    team1 = [{"uid": u, "name": get_username(u), "hp": c[5], "max_hp": c[5],
               "atk": c[6], "def": c[7], "dodge": c[8],
               "defending": 0, "dodged_next": 0} for u, c in s["team1"]]
-    team2 = [{"uid": u, "name": c[2], "hp": c[5], "max_hp": c[5],
+    team2 = [{"uid": u, "name": get_username(u), "hp": c[5], "max_hp": c[5],
               "atk": c[6], "def": c[7], "dodge": c[8],
               "defending": 0, "dodged_next": 0} for u, c in s["team2"]]
 
@@ -943,7 +937,7 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
             text += f"{log}\n\n💰 جوایز:\n"
             for uid, amount in result["rewards"].items():
-                text += f"👤 {uid}: +{amount} coin\n"
+                text += f"👤 {get_username(uid)}: +{amount} coin\n"
             try:
                 await q.edit_message_text(text)
             except Exception:
@@ -1140,9 +1134,7 @@ async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-
-
-# ============ QUESTS ============
+      # ============ QUESTS ============
 
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
