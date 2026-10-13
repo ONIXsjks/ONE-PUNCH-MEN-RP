@@ -26,7 +26,6 @@ def init_multi_table():
         current_turn TEXT,
         turn_index INTEGER,
         status TEXT DEFAULT 'active',
-        extra_data TEXT DEFAULT '{}',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
     conn.commit()
@@ -40,8 +39,8 @@ def create_multi_battle(session_id, battle_type, host_id, players, team1, team2,
     c.execute("DELETE FROM multi_battles WHERE session_id=?", (session_id,))
     c.execute("""INSERT INTO multi_battles
         (session_id, battle_type, host_id, players, team1, team2,
-         boss_name, boss_hp, boss_max_hp, current_turn, turn_index, status, extra_data)
-        VALUES (?,?,?,?,?,?,?,?,?,?,0,'active','{}')""",
+         boss_name, boss_hp, boss_max_hp, current_turn, turn_index, status)
+        VALUES (?,?,?,?,?,?,?,?,?,?,0,'active')""",
         (session_id, battle_type, host_id, json.dumps(players),
          json.dumps(team1), json.dumps(team2),
          boss_name, boss_hp, boss_hp, json.dumps(players[0] if players else None)))
@@ -54,20 +53,14 @@ def get_multi_battle(session_id):
     c = conn.cursor()
     c.execute("""SELECT id, session_id, battle_type, host_id, players,
                         team1, team2, boss_name, boss_hp, boss_max_hp,
-                        current_turn, turn_index, status, extra_data
+                        current_turn, turn_index, status
                  FROM multi_battles WHERE session_id=? AND status='active'""",
         (session_id,))
     row = c.fetchone()
     conn.close()
     if not row:
         return None
-
-    try:
-        extra = json.loads(row[13]) if row[13] else {}
-    except Exception:
-        extra = {}
-
-    battle = {
+    return {
         "id": row[0],
         "session_id": row[1],
         "type": row[2],
@@ -80,27 +73,19 @@ def get_multi_battle(session_id):
         "boss_max_hp": row[9],
         "current_turn": json.loads(row[10]) if row[10] else None,
         "turn_index": row[11],
-        "status": row[12],
+        "status": row[12]
     }
-    battle.update(extra)
-    return battle
 
 
 def update_multi_battle(session_id, data):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-
-    main_keys = {"team1", "team2", "boss_hp", "current_turn", "turn_index", "status",
-                 "id", "session_id", "type", "host", "players", "boss_name", "boss_max_hp"}
-
-    extra = {k: v for k, v in data.items() if k not in main_keys}
-
     c.execute("""UPDATE multi_battles SET
-        team1=?, team2=?, boss_hp=?, current_turn=?, turn_index=?, status=?, extra_data=?
+        team1=?, team2=?, boss_hp=?, current_turn=?, turn_index=?, status=?
         WHERE session_id=?""",
         (json.dumps(data["team1"]), json.dumps(data["team2"]),
          data["boss_hp"], json.dumps(data["current_turn"]),
-         data["turn_index"], data["status"], json.dumps(extra), session_id))
+         data["turn_index"], data["status"], session_id))
     conn.commit()
     conn.close()
 
@@ -283,7 +268,6 @@ def player_action(session_id, uid, action, extra=None):
 
             if "dodge_debuff" in effects:
                 target["dodge_debuff"] = effects["dodge_debuff"]
-                log += f"💨 {target['name']}: جاخالی -{effects['dodge_debuff']}٪\n"
 
         if "atk_boost" in effects:
             player["atk_boost"] = effects["atk_boost"]
@@ -295,12 +279,11 @@ def player_action(session_id, uid, action, extra=None):
             log += f"💚 {heal} HP برگشت\n"
 
         battle[cd_key] = domain["cooldown"]
-
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
 
-    # ========== Bankai (Bleach) ==========
+    # ========== Bankai ==========
     elif action == "bankai":
         char_name = player["name"]
         if char_name not in BLEACH_BANKAI:
@@ -349,9 +332,6 @@ def player_action(session_id, uid, action, extra=None):
 
             if "dodge_debuff" in bankai:
                 target["dodge_debuff"] = bankai["dodge_debuff"]
-
-            if "enemy_atk_debuff" in bankai:
-                target["atk_debuff"] = bankai["enemy_atk_debuff"]
 
         next_turn(battle)
         update_multi_battle(session_id, battle)
@@ -411,7 +391,7 @@ def player_action(session_id, uid, action, extra=None):
                 log += f"⚔️ {dmg} آسیب\n"
                 if target["hp"] <= 0:
                     log += f"☠️ {target['name']} از نبرد خارج شد!"
-            if "self" in eff and "20% HP" in eff:
+            if "self" in eff and "20%" in eff:
                 dmg_self = int(player["max_hp"] * 0.2)
                 player["hp"] = max(0, player["hp"] - dmg_self)
                 log += f"\n🩸 خودت {dmg_self} HP از دست دادی"
@@ -586,19 +566,20 @@ def finish_multi_battle(session_id):
             rewards[p["uid"]] = amount
         end_multi_battle(session_id)
         return {"type": "team1_win", "rewards": rewards}
-          if status == "team2_won":"
-    amount = 300 if battle["type"] == "pvp" else 1500
-    for p in battle["team2"]:
-        add_coins(p["uid"], amount)
-        rewards[p["uid"]] = amount
-    end_multi_battle(session_id)
-    return {"type": "team2_win", "rewards": rewards}
 
-if status == "draw":
-    for p in battle["team1"] + battle["team2"]:
-        add_coins(p["uid"], 500)
-        rewards[p["uid"]] = 500
-    end_multi_battle(session_id)
-    return {"type": "draw", "rewards": rewards}
+    if status == "team2_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
+        for p in battle["team2"]:
+            add_coins(p["uid"], amount)
+            rewards[p["uid"]] = amount
+        end_multi_battle(session_id)
+        return {"type": "team2_win", "rewards": rewards}
 
-return None
+    if status == "draw":
+        for p in battle["team1"] + battle["team2"]:
+            add_coins(p["uid"], 500)
+            rewards[p["uid"]] = 500
+        end_multi_battle(session_id)
+        return {"type": "draw", "rewards": rewards}
+
+    return None
