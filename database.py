@@ -226,4 +226,4 @@ def use_item(user_id, item_name):
         c.execute("UPDATE items SET quantity = quantity - 1 WHERE id=?", (row[0],))
     conn.commit()
     conn.close()
-    return True.
+    return True
