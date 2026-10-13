@@ -100,16 +100,10 @@ def roll_damage(atk, defender_def=0, defending=0):
 
 
 def disp(p):
-    """نمایش اسم: یوزرنیم اگه بود، وگرنه اسم کاراکتر"""
     return p.get("display") or p.get("name", "؟")
 
 
-# ============================================================
-# 🎯 تابع دفاع/جاخالی (۳۳-۳۳-۳۳)
-# ============================================================
-
 def apply_defense_check(base_dmg, hp, defense_type):
-    """۳۳٪ کامل، ۳۳٪ جزئی، ۳۳٪ ناموفق"""
     roll = random.randint(1, 100)
     if roll <= 33:
         return hp, f"✅ {defense_type} کامل! ۰ آسیب"
@@ -159,11 +153,16 @@ def get_enemies(battle, team):
 
 
 def get_boss_atk(boss_name):
-    if boss_name in BLEACH_BOSSES: return BLEACH_BOSSES[boss_name]["atk"]
-    if boss_name in BLEACH_FODDER: return BLEACH_FODDER[boss_name]["atk"]
-    if boss_name in BOSSES_JJK: return BOSSES_JJK[boss_name]["atk"]
-    if boss_name in FODDER_JJK: return FODDER_JJK[boss_name]["atk"]
-    if boss_name in BOSSES: return BOSSES[boss_name]["atk"]
+    if boss_name in BLEACH_BOSSES:
+        return BLEACH_BOSSES[boss_name]["atk"]
+    if boss_name in BLEACH_FODDER:
+        return BLEACH_FODDER[boss_name]["atk"]
+    if boss_name in BOSSES_JJK:
+        return BOSSES_JJK[boss_name]["atk"]
+    if boss_name in FODDER_JJK:
+        return FODDER_JJK[boss_name]["atk"]
+    if boss_name in BOSSES:
+        return BOSSES[boss_name]["atk"]
     return 100
   def build_battle_view(battle):
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
@@ -197,7 +196,6 @@ def get_boss_atk(boss_name):
 
 
 def boss_attack_players(battle, log):
-    """باس به بازیکن‌ها حمله می‌کنه (با چک دفاع/جاخالی)"""
     all_players = [p for p in battle["team1"] + battle["team2"] if p["hp"] > 0]
     if not all_players:
         return log
@@ -205,18 +203,15 @@ def boss_attack_players(battle, log):
     target = random.choice(all_players)
     boss_atk = get_boss_atk(battle["boss_name"])
 
-    # فراست چک
     if target.get("frozen", 0) > 0:
         target["frozen"] -= 1
         log += f"\n❄️ {disp(target)} فریزه!"
         return log
 
-    # آسیب پایه
     base_dmg, crit = roll_damage(boss_atk, 0, 0)
     crit_str = " 🎯" if crit else ""
     log += f"\n👹 باس → {disp(target)}!\n⚔️ آسیب پایه: {base_dmg}{crit_str}"
 
-    # چک دفاع/جاخالی
     defense = target.get("defense_action", None)
     if defense == "defend":
         target["hp"], def_log = apply_defense_check(base_dmg, target["hp"], "دفاع")
@@ -233,7 +228,6 @@ def boss_attack_players(battle, log):
     if target["hp"] <= 0:
         log += f"\n☠️ {disp(target)} خارج شد!"
 
-    # پاک کردن flag دفاع
     target["defense_action"] = None
 
     return log
@@ -251,7 +245,6 @@ def boss_attack_players(battle, log):
 
     log = ""
 
-    # ========== حمله ==========
     if action == "attack":
         enemies = get_enemies(battle, team)
         if not enemies:
@@ -267,17 +260,14 @@ def boss_attack_players(battle, log):
         if target["hp"] <= 0:
             log += f"\n☠️ {disp(target)} خارج شد!"
 
-    # ========== دفاع ==========
     elif action == "defend":
         player["defense_action"] = "defend"
         log = f"🛡️ {disp(player)} دفاع گرفت. (۳۳٪ کامل / ۳۳٪ جزئی)"
 
-    # ========== جاخالی ==========
     elif action == "dodge":
         player["defense_action"] = "dodge"
         log = f"💨 {disp(player)} جاخالی می‌زنه. (۳۳٪ کامل / ۳۳٪ جزئی)"
 
-    # ========== Domain ==========
     elif action == "domain":
         char_name = player["name"]
         if char_name not in DOMAINS_JJK:
@@ -321,7 +311,6 @@ def boss_attack_players(battle, log):
         update_multi_battle(session_id, battle)
         return "active", log
 
-    # ========== Bankai ==========
     elif action == "bankai":
         char_name = player["name"]
         if char_name not in BLEACH_BANKAI:
@@ -358,7 +347,6 @@ def boss_attack_players(battle, log):
         update_multi_battle(session_id, battle)
         return "active", log
 
-    # ========== Ability ==========
     elif action == "ability" and extra:
         ability_name = extra
         used_key = f"used_{uid}_{ability_name}"
@@ -382,12 +370,18 @@ def boss_attack_players(battle, log):
         eff = found_ab.get("effect", "")
         if ab_type in ("damage", "shop"):
             mult = 2
-            if "x6" in eff: mult = 6
-            elif "x5" in eff: mult = 5
-            elif "x4" in eff: mult = 4
-            elif "x3.5" in eff: mult = 3.5
-            elif "x3" in eff: mult = 3
-            elif "x2.5" in eff: mult = 2.5
+            if "x6" in eff:
+                mult = 6
+            elif "x5" in eff:
+                mult = 5
+            elif "x4" in eff:
+                mult = 4
+            elif "x3.5" in eff:
+                mult = 3.5
+            elif "x3" in eff:
+                mult = 3
+            elif "x2.5" in eff:
+                mult = 2.5
             dmg = int(player["atk"] * mult)
             if target:
                 target["hp"] = max(0, target["hp"] - dmg)
@@ -410,7 +404,6 @@ def boss_attack_players(battle, log):
         update_multi_battle(session_id, battle)
         return "active", log
 
-    # ========== Buff ==========
     elif action == "buff" and extra:
         buff_name = extra
         if buff_name not in BUFFS:
@@ -453,7 +446,6 @@ def boss_attack_players(battle, log):
     else:
         return None, "❌ اکشن نامعتبر."
 
-    # ========== چک پایان ==========
     team1_alive = [p for p in battle["team1"] if p["hp"] > 0]
     team2_alive = [p for p in battle["team2"] if p["hp"] > 0]
 
