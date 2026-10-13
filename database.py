@@ -51,9 +51,6 @@ def init_db():
         buff_name TEXT
     )""")
 
-    # پاک کردن جدول قبلی برای اضافه شدن ستون‌های جدید
-    c.execute("DROP TABLE IF EXISTS active_battles")
-
     c.execute("""CREATE TABLE IF NOT EXISTS active_battles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
@@ -229,4 +226,4 @@ def use_item(user_id, item_name):
         c.execute("UPDATE items SET quantity = quantity - 1 WHERE id=?", (row[0],))
     conn.commit()
     conn.close()
-    return True
+    return True.
