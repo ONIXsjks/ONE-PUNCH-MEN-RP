@@ -1,8 +1,10 @@
 import random
 import json
 import sqlite3
-from config import BOSSES, ABILITIES
-from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK
+from config import (BOSSES, ABILITIES, BUFFS, ITEMS,
+                    ABILITY_FA, BUFF_FA, ITEM_FA)
+from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK, ABILITIES_JJK
+from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
 from database import DB_NAME, add_coins
 from quests import update_quest_progress
 
@@ -109,7 +111,6 @@ def roll_damage(atk, defender_def=0, defending=0):
 
 
 def next_turn(battle):
-    """نوبت بعدی رو انتخاب کن — با رفع باگ"""
     players = battle["players"]
     if not players:
         battle["current_turn"] = None
@@ -145,6 +146,20 @@ def get_enemies(battle, team):
     return [p for p in battle["team1"] if p["hp"] > 0]
 
 
+def get_boss_atk(boss_name):
+    if boss_name in BLEACH_BOSSES:
+        return BLEACH_BOSSES[boss_name]["atk"]
+    if boss_name in BLEACH_FODDER:
+        return BLEACH_FODDER[boss_name]["atk"]
+    if boss_name in BOSSES_JJK:
+        return BOSSES_JJK[boss_name]["atk"]
+    if boss_name in FODDER_JJK:
+        return FODDER_JJK[boss_name]["atk"]
+    if boss_name in BOSSES:
+        return BOSSES[boss_name]["atk"]
+    return 100
+
+
 def build_battle_view(battle):
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
 
@@ -173,7 +188,7 @@ def build_battle_view(battle):
     return text
 
 
-def player_action(session_id, uid, action):
+def player_action(session_id, uid, action, extra=None):
     battle = get_multi_battle(session_id)
     if not battle:
         return None, "نبرد فعال نیست."
@@ -187,6 +202,7 @@ def player_action(session_id, uid, action):
 
     log = ""
 
+    # ========== حمله ==========
     if action == "attack":
         enemies = get_enemies(battle, team)
         if not enemies:
@@ -204,10 +220,12 @@ def player_action(session_id, uid, action):
         if target["hp"] <= 0:
             log += f"\n☠️ {target['name']} از نبرد خارج شد!"
 
+    # ========== دفاع ==========
     elif action == "defend":
         player["defending"] = 1
         log = f"🛡️ {player['name']} دفاع گرفت."
 
+    # ========== جاخالی ==========
     elif action == "dodge":
         if random.randint(1, 100) <= player["dodge"]:
             log = f"💨 {player['name']} جاخالی داد!"
@@ -215,6 +233,7 @@ def player_action(session_id, uid, action):
         else:
             log = f"❌ {player['name']} جاخالی ناموفق!"
 
+    # ========== Domain ==========
     elif action == "domain":
         char_name = player["name"]
         if char_name not in DOMAINS_JJK:
@@ -261,15 +280,224 @@ def player_action(session_id, uid, action):
             log += f"💚 {heal} HP برگشت\n"
 
         battle[cd_key] = domain["cooldown"]
-        battle["domain_active"] = True
-        battle["domain_caster"] = uid
-        battle["domain_turns"] = domain["duration"]
-        battle["domain_name"] = domain["name"]
 
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
 
+    # ========== Bankai (Bleach) ==========
+    elif action == "bankai":
+        char_name = player["name"]
+        if char_name not in BLEACH_BANKAI:
+            return None, "❌ این کاراکتر Bankai نداره!"
+
+        if battle.get(f"bankai_used_{uid}", 0) == 1:
+            return None, "❌ Bankai فقط یه بار در نبرد!"
+
+        bankai = BLEACH_BANKAI[char_name]
+        battle[f"bankai_used_{uid}"] = 1
+
+        log = f"⚔️ Bankai: {bankai['name']}!\n"
+
+        if "atk_boost" in bankai:
+            player["atk_boost"] = bankai["atk_boost"]
+            log += f"⚔️ ATK +{bankai['atk_boost']}٪\n"
+
+        if "dodge_boost" in bankai:
+            player["dodge"] += bankai["dodge_boost"]
+            log += f"💨 دوج +{bankai['dodge_boost']}٪\n"
+
+        if "def_boost" in bankai:
+            player["def"] += bankai["def_boost"]
+            log += f"🛡️ دفاع +{bankai['def_boost']}\n"
+
+        if "heal" in bankai:
+            heal = int(player["max_hp"] * bankai["heal"] / 100)
+            player["hp"] = min(player["max_hp"], player["hp"] + heal)
+            log += f"💚 {heal} HP برگشت\n"
+
+        if "self_dmg" in bankai:
+            dmg = int(player["max_hp"] * bankai["self_dmg"] / 100)
+            player["hp"] = max(0, player["hp"] - dmg)
+            log += f"🩸 خودت {dmg} HP از دست دادی\n"
+
+        # افکت روی دشمن‌ها
+        enemies = get_enemies(battle, team)
+        for target in enemies:
+            if "hp_drain" in bankai:
+                drain = int(target["max_hp"] * bankai["hp_drain"] / 100)
+                target["hp"] = max(0, target["hp"] - drain)
+                log += f"💀 {target['name']}: -{drain} HP\n"
+
+            if "freeze" in bankai:
+                target["frozen"] = bankai["freeze"]
+                log += f"❄️ {target['name']} فریز شد!\n"
+
+            if "dodge_debuff" in bankai:
+                target["dodge_debuff"] = bankai["dodge_debuff"]
+
+            if "enemy_atk_debuff" in bankai:
+                target["atk_debuff"] = bankai["enemy_atk_debuff"]
+
+        next_turn(battle)
+        update_multi_battle(session_id, battle)
+        return "active", log
+
+    # ========== Ability (JJK یا Bleach) ==========
+    elif action == "ability" and extra:
+        ability_name = extra
+
+        used_key = f"used_{uid}_{ability_name}"
+        if battle.get(used_key, 0) == 1:
+            return None, f"❌ {ability_name} قبلاً استفاده شده!"
+
+        char_name = player["name"]
+        jjk_abs = ABILITIES_JJK.get(char_name, {})
+        found_ab = None
+
+        for key in ["ability_1", "ability_2"]:
+            if key in jjk_abs and jjk_abs[key]["name"] == ability_name:
+                found_ab = jjk_abs[key]
+                break
+
+        # بررسی Ability های شاپ (Bleach + عمومی)
+        if not found_ab and ability_name in ABILITIES:
+            found_ab = {
+                "name": ability_name,
+                "effect": ABILITIES[ability_name]["effect"],
+                "type": "shop",
+            }
+
+        if not found_ab:
+            return None, "❌ Ability پیدا نشد."
+
+        enemies = get_enemies(battle, team)
+        target = random.choice(enemies) if enemies else None
+
+        log = f"🔥 {ability_name}!\n"
+        ab_type = found_ab.get("type", "damage")
+        eff = found_ab.get("effect", "")
+
+        if ab_type in ("damage", "shop"):
+            mult = 2
+            if "x6" in eff:
+                mult = 6
+            elif "x5" in eff:
+                mult = 5
+            elif "x4" in eff:
+                mult = 4
+            elif "x3.5" in eff:
+                mult = 3.5
+            elif "x3" in eff:
+                mult = 3
+            elif "x2.5" in eff:
+                mult = 2.5
+            dmg = int(player["atk"] * mult)
+            if target:
+                target["hp"] = max(0, target["hp"] - dmg)
+                log += f"⚔️ {dmg} آسیب\n"
+                if target["hp"] <= 0:
+                    log += f"☠️ {target['name']} از نبرد خارج شد!"
+            if "self" in eff and "20% HP" in eff:
+                dmg_self = int(player["max_hp"] * 0.2)
+                player["hp"] = max(0, player["hp"] - dmg_self)
+                log += f"\n🩸 خودت {dmg_self} HP از دست دادی"
+
+        elif ab_type == "dodge":
+            player["dodged_next"] = 1
+            log += "💨 جاخالی فعال\n"
+
+        elif ab_type == "multi":
+            hits = 3 if "3" in eff else 5 if "5" in eff else 2
+            total = sum(player["atk"] for _ in range(hits))
+            if target:
+                target["hp"] = max(0, target["hp"] - total)
+                log += f"⚔️ {hits} ضربه: {total} آسیب\n"
+                if target["hp"] <= 0:
+                    log += f"☠️ {target['name']} خارج شد!"
+
+        elif ab_type == "gamble":
+            if random.randint(1, 100) <= 50:
+                dmg = player["atk"] * 4
+                log += f"🎰 برنده! {dmg} آسیب"
+            else:
+                dmg = player["atk"] * 1
+                log += f"🎰 باختی! {dmg} آسیب"
+            if target:
+                target["hp"] = max(0, target["hp"] - dmg)
+
+        elif ab_type == "heal":
+            heal = int(player["max_hp"] * 0.3)
+            player["hp"] = min(player["max_hp"], player["hp"] + heal)
+            log += f"💚 {heal} HP برگشت\n"
+
+        elif ab_type == "freeze":
+            if target:
+                target["frozen"] = 1
+                log += f"❄️ {target['name']} فریز شد!\n"
+
+        elif ab_type == "buff":
+            player["atk_boost"] = 50
+            log += "⚔️ ATK +۵۰٪\n"
+
+        battle[used_key] = 1
+
+        next_turn(battle)
+        update_multi_battle(session_id, battle)
+        return "active", log
+
+    # ========== باف ==========
+    elif action == "buff" and extra:
+        buff_name = extra
+
+        if buff_name not in BUFFS:
+            return None, "❌ باف پیدا نشد."
+
+        used_key = f"buff_used_{uid}_{buff_name}"
+        if battle.get(used_key, 0) == 1:
+            return None, f"❌ {buff_name} قبلاً استفاده شده!"
+
+        eff = BUFFS[buff_name]["effect"]
+        log = f"🔥 {buff_name}!\n"
+
+        if "Max HP" in eff:
+            player["max_hp"] += 500
+            player["hp"] += 500
+            log += "❤️ Max HP +۵۰۰\n"
+        elif "ATK" in eff and "150" in eff:
+            player["atk"] += 150
+            log += "⚔️ ATK +۱۵۰\n"
+        elif "DEF" in eff:
+            player["def"] += 80
+            log += "🛡️ DEF +۸۰\n"
+        elif "DODGE" in eff:
+            player["dodge"] += 10
+            log += "💨 دوج +۱۰٪\n"
+        elif "Crit" in eff:
+            log += "🎯 شانس کریتیکال +۱۵٪\n"
+        elif "dmg = HP" in eff:
+            player["lifesteal"] = 10
+            log += "🩸 Lifesteal ۱۰٪\n"
+        elif "all +20" in eff:
+            player["max_hp"] += 200
+            player["hp"] += 200
+            player["atk"] += 50
+            player["def"] += 30
+            log += "🔥 همه +۲۰٪\n"
+        elif "all +50" in eff:
+            player["max_hp"] += 500
+            player["hp"] += 500
+            player["atk"] += 150
+            player["def"] += 80
+            log += "🔥 همه +۵۰٪\n"
+
+        battle[used_key] = 1
+
+        next_turn(battle)
+        update_multi_battle(session_id, battle)
+        return "active", log
+
+    # ========== بررسی پایان ==========
     team1_alive = [p for p in battle["team1"] if p["hp"] > 0]
     team2_alive = [p for p in battle["team2"] if p["hp"] > 0]
 
@@ -288,11 +516,7 @@ def player_action(session_id, uid, action):
                 target["frozen"] -= 1
                 log += f"\n❄️ {target['name']} فریزه!"
             else:
-                boss_atk = 100
-                if battle["boss_name"] in BOSSES_JJK:
-                    boss_atk = BOSSES_JJK[battle["boss_name"]]["atk"]
-                elif battle["boss_name"] in BOSSES:
-                    boss_atk = BOSSES[battle["boss_name"]]["atk"]
+                boss_atk = get_boss_atk(battle["boss_name"])
                 dmg, crit = roll_damage(boss_atk, target["def"], target.get("defending", 0))
                 target["defending"] = 0
                 target["hp"] = max(0, target["hp"] - dmg)
@@ -325,29 +549,36 @@ def finish_multi_battle(session_id):
     rewards = {}
 
     if battle["boss_name"] and status == "won":
-        if battle["boss_name"] in BOSSES_JJK:
-            reward = BOSSES_JJK[battle["boss_name"]]["reward"]
-        elif battle["boss_name"] in FODDER_JJK:
-            reward = FODDER_JJK[battle["boss_name"]]["reward"]
+        boss_name = battle["boss_name"]
+        if boss_name in BLEACH_BOSSES:
+            reward = BLEACH_BOSSES[boss_name]["reward"]
+        elif boss_name in BLEACH_FODDER:
+            reward = BLEACH_FODDER[boss_name]["reward"]
+        elif boss_name in BOSSES_JJK:
+            reward = BOSSES_JJK[boss_name]["reward"]
+        elif boss_name in FODDER_JJK:
+            reward = FODDER_JJK[boss_name]["reward"]
         else:
-            reward = BOSSES.get(battle["boss_name"], {}).get("reward", 100)
+            reward = BOSSES.get(boss_name, {}).get("reward", 5000)
         for p in battle["team1"] + battle["team2"]:
             add_coins(p["uid"], reward)
             rewards[p["uid"]] = reward
         end_multi_battle(session_id)
-        return {"type": "boss_win", "rewards": rewards, "boss": battle["boss_name"]}
+        return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
 
     if status == "team1_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
         for p in battle["team1"]:
-            add_coins(p["uid"], 1500)
-            rewards[p["uid"]] = 1500
+            add_coins(p["uid"], amount)
+            rewards[p["uid"]] = amount
         end_multi_battle(session_id)
         return {"type": "team1_win", "rewards": rewards}
 
     if status == "team2_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
         for p in battle["team2"]:
-            add_coins(p["uid"], 1500)
-            rewards[p["uid"]] = 1500
+            add_coins(p["uid"], amount)
+            rewards[p["uid"]] = amount
         end_multi_battle(session_id)
         return {"type": "team2_win", "rewards": rewards}
 
@@ -356,6 +587,4 @@ def finish_multi_battle(session_id):
             add_coins(p["uid"], 500)
             rewards[p["uid"]] = 500
         end_multi_battle(session_id)
-        return {"type": "draw", "rewards": rewards}
-
-    return None
+        return {"type": "d
