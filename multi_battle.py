@@ -586,7 +586,7 @@ def finish_multi_battle(session_id):
             rewards[p["uid"]] = amount
         end_multi_battle(session_id)
         return {"type": "team1_win", "rewards": rewards}
-      if status == "team2_won":
+          if status == "team2_won":"
     amount = 300 if battle["type"] == "pvp" else 1500
     for p in battle["team2"]:
         add_coins(p["uid"], amount)
