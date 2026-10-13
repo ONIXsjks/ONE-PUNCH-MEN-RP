@@ -32,7 +32,7 @@ def get_boss_data(boss_name):
         return {
             "hp": data["hp"],
             "atk": data["atk"],
-            "reward": data.get("reward", 100),
+            "reward": data.get("reward", 5000),
             "display_name": boss_name,
         }
     return None
@@ -92,7 +92,7 @@ def boss_action(action, boss, php, pmax, bhp, bmax, defending=0):
 
 
 # ============================================================
-# PLAYER ACTIONS (dict-based)
+# PLAYER ACTIONS
 # ============================================================
 
 def player_attack(battle, char):
@@ -107,7 +107,6 @@ def player_attack(battle, char):
 
     dmg, crit = roll_damage(char[6], 0, 0)
 
-    # ATK boost از Domain
     atk_boost = battle.get("domain_atk_boost", 0)
     if atk_boost:
         dmg = int(dmg * (1 + atk_boost / 100))
@@ -123,7 +122,6 @@ def player_attack(battle, char):
         battle["bhp"] = bhp
         return "won", text, battle
 
-    # نوبت باس
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n❄️ باس فریزه! حمله نمی‌کنه"
@@ -178,12 +176,11 @@ def player_dodge(battle, char):
     pmax = battle["pmax"]
     bmax = battle["bmax"]
 
-    dodge_chance = char[8] + battle.get("player_dodge_bonus", 0)
+    dodge_chance = char[8]
     success = random.randint(1, 100) <= dodge_chance
 
     if success:
         text = "💨 جاخالی دادی! باس ضربه‌اش بهت نخورد."
-        battle["player_dodge_bonus"] = 0
         battle["php"] = php
         battle["bhp"] = bhp
         return "active", text, battle
@@ -218,7 +215,6 @@ def player_ability(battle, char, ability_name):
 
     # ========== DOMAIN ==========
     if ability_name == "DOMAIN":
-        # چک ۱ بار مصرف
         if battle.get("domain_used", 0) == 1:
             return "active", "❌ گسترش قلمرو فقط یه بار در نبرد قابل استفاده‌ست!", battle
 
@@ -260,16 +256,16 @@ def player_ability(battle, char, ability_name):
 
         return "active", text, battle
 
-    # ========== چک کول‌داون ==========
-    cd_key = f"cd_{ability_name}"
-    if battle.get(cd_key, 0) > 0:
-        return "active", f"⏱️ {ability_name} کول‌داون: {battle[cd_key]} راند", battle
+    # ========== ۱ بار مصرف برای Ability های خریداری ==========
+    used_key = f"used_{ability_name}"
+    if battle.get(used_key, 0) == 1:
+        return "active", f"❌ {ability_name} قبلاً استفاده شده! هر Ability فقط یه بار در نبرد.", battle
 
     text = f"🔥 {ability_name} فعال شد!"
     new_bhp = bhp
     new_php = php
 
-    # ========== JJK Abilities ==========
+    # ========== JJK Abilities (۲ بار مصرف مجاز) ==========
     jjk_abs = ABILITIES_JJK.get(char_name, {})
     found_jjk = False
 
@@ -297,7 +293,6 @@ def player_ability(battle, char, ability_name):
                     text += f"\n💀 +{extra} آسیب مستقیم"
 
             elif ab_type == "dodge":
-                battle["player_dodge_bonus"] = 90
                 text += "\n💨 جاخالی +۹۰٪ برای ۱ راند"
 
             elif ab_type == "multi":
@@ -320,7 +315,6 @@ def player_ability(battle, char, ability_name):
                 new_bhp = max(0, bhp - dmg)
 
             elif ab_type == "debuff":
-                battle["boss_atk_debuff"] = 25
                 text += "\n🔻 ATK باس -۲۵٪ (۱ راند)"
 
             elif ab_type == "freeze":
@@ -338,20 +332,17 @@ def player_ability(battle, char, ability_name):
                 text += f"\n🔴 تکنیک کپی: {dmg} آسیب"
 
             elif ab_type == "disable":
-                battle["boss_disabled"] = 1
                 text += "\n🔨 ۱ Ability باس غیرفعال شد"
 
-            # کول‌داون
-            cd = 1 if key == "ability_1" else 2
-            battle[f"cd_{ability_name}"] = cd
             break
 
-    # ========== Ability عادی ==========
+    # ========== Ability عادی خریداری‌شده ==========
     if not found_jjk:
         info = ABILITIES.get(ability_name)
         if not info:
             return "active", "❌ Ability پیدا نشد", battle
         text += f"\n{info.get('effect_fa', info.get('effect', ''))}"
+        battle[used_key] = 1
 
     if new_bhp <= 0:
         battle["php"] = new_php
@@ -372,11 +363,6 @@ def player_ability(battle, char, ability_name):
 
     if new_php <= 0:
         return "lost", text, battle
-
-    # ========== کاهش کول‌داون ==========
-    for k in list(battle.keys()):
-        if k.startswith("cd_") and battle[k] > 0:
-            battle[k] -= 1
 
     # ========== Domain Round ==========
     if battle.get("domain_active", 0) == 1:
@@ -479,7 +465,7 @@ def build_battle_message(battle, char):
 def finish_battle(uid, boss_name, won):
     if won:
         boss = get_boss_data(boss_name)
-        reward = boss["reward"] if boss else 100
+        reward = boss["reward"] if boss else 5000
         add_coins(uid, reward)
         update_quest_progress(uid, "win_3_bosses")
         update_quest_progress(uid, "win_5_bosses")
