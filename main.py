@@ -377,16 +377,24 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg)
   
 
-# ============ BOSS BATTLE ============
-
-async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+# ============ BOSS BATTLE =async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
     if not char:
         await update.message.reply_text("No active character.")
         return
-    kb = [[InlineKeyboardButton(name, callback_data=f"solo_{name}")] for name in BOSSES]
-    await update.message.reply_text("⚔️ باس انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+
+    kb = []
+    for name in BOSSES:
+        kb.append([InlineKeyboardButton(name, callback_data=f"solo_{name}")])
+    for name, data in BOSSES_JJK.items():
+        display = data.get("display_name", name)
+        kb.append([InlineKeyboardButton(f"👹 {display}", callback_data=f"solo_{name}")])
+
+    await update.message.reply_text(
+        "⚔️ باس انتخاب کن:",
+        reply_markup=InlineKeyboardMarkup(kb)
+    )
 
 
 async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -435,7 +443,9 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
 
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))===========
+
+
 
 
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
