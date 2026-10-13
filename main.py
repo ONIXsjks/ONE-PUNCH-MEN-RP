@@ -21,6 +21,7 @@ from admin import (is_admin, get_all_users, get_user_stats,
                    give_coins, take_coins, reset_user,
                    ban_user, unban_user, is_banned)
 from gift import send_gift, get_gift_history, get_top_givers
+from anime_images import get_anime_image
 from jjk_data import CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK, DOMAINS_JJK
 
 PVP_SESSIONS = {}
