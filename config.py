@@ -2,10 +2,12 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
 from jjk_data import (
     CHARACTERS_JJK, CHAR_PRICES_JJK, ABILITIES_JJK,
     DOMAINS_JJK, BOSSES_JJK, FODDER_JJK, COOLDOWNS_JJK
 )
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "/data/game.db"
 
@@ -25,13 +27,14 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
+# ============ LEVEL COST (گرون‌تر) ============
 LEVEL_COST = [
-    (1, 10, 300),
-    (11, 30, 800),
-    (31, 50, 2000),
-    (51, 70, 5000),
-    (71, 90, 12000),
-    (91, 100, 25000),
+    (1, 10, 5000),
+    (11, 30, 15000),
+    (31, 50, 40000),
+    (51, 70, 80000),
+    (71, 90, 150000),
+    (91, 100, 300000),
 ]
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
@@ -172,7 +175,6 @@ BOSSES = {
 ADMIN_IDS = [
     7023690411,
 ]
-
 
 # ============ JJK MERGE ============
 CHARACTERS.update(CHARACTERS_JJK)
