@@ -716,10 +716,12 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         boss_hp = BOSSES[s["boss"]]["hp"]
 
     team1 = [
-        {"uid": p1_id, "name": get_username(p1_id), "hp": char1[5], "max_hp": char1[5],
+        {"uid": p1_id, "name": char1[2], "display": get_username(p1_id),
+         "hp": char1[5], "max_hp": char1[5],
          "atk": char1[6], "def": char1[7], "dodge": char1[8],
          "defending": 0, "dodged_next": 0},
-        {"uid": p2_id, "name": get_username(p2_id), "hp": char2[5], "max_hp": char2[5],
+        {"uid": p2_id, "name": char2[2], "display": get_username(p2_id),
+         "hp": char2[5], "max_hp": char2[5],
          "atk": char2[6], "def": char2[7], "dodge": char2[8],
          "defending": 0, "dodged_next": 0},
     ]
@@ -776,10 +778,12 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_host = get_active_character(s["host"])
 
-    team1 = [{"uid": s["host"], "name": get_username(s["host"]), "hp": char_host[5],
-              "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7],
+    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]),
+              "hp": char_host[5], "max_hp": char_host[5],
+              "atk": char_host[6], "def": char_host[7],
               "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
-    team2 = [{"uid": user_id, "name": get_username(user_id), "hp": char[5], "max_hp": char[5],
+    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id),
+              "hp": char[5], "max_hp": char[5],
               "atk": char[6], "def": char[7], "dodge": char[8],
               "defending": 0, "dodged_next": 0}]
 
@@ -883,10 +887,12 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Need {s['size']} each.")
         return
 
-    team1 = [{"uid": u, "name": get_username(u), "hp": c[5], "max_hp": c[5],
+    team1 = [{"uid": u, "name": c[2], "display": get_username(u),
+              "hp": c[5], "max_hp": c[5],
               "atk": c[6], "def": c[7], "dodge": c[8],
               "defending": 0, "dodged_next": 0} for u, c in s["team1"]]
-    team2 = [{"uid": u, "name": get_username(u), "hp": c[5], "max_hp": c[5],
+    team2 = [{"uid": u, "name": c[2], "display": get_username(u),
+              "hp": c[5], "max_hp": c[5],
               "atk": c[6], "def": c[7], "dodge": c[8],
               "defending": 0, "dodged_next": 0} for u, c in s["team2"]]
 
