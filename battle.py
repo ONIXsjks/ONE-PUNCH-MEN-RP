@@ -54,28 +54,64 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
     return "defend"
 
 
-def boss_action(action, boss, php, pmax, bhp, bmax, defending=0):
-    text = ""
-    new_php = php
-    new_bhp = bhp
-    if action == "attack":
-        dmg, crit = roll_damage(boss["atk"], 0, defending)
-        new_php = max(0, php - dmg)
-        text = f"👹 باس حمله کرد: {dmg} آسیب"
-        if crit:
-            text += " 🎯"
-        text += f"\n👤 HP تو: {new_php}/{pmax}"
-    elif action == "special":
-        dmg, _ = roll_damage(boss["atk"] * 2, 0, defending)
-        new_php = max(0, php - dmg)
-        text = f"💥 حمله ویژه: {dmg} آسیب!\n👤 HP تو: {new_php}/{pmax}"
-    elif action == "defend":
-        text = "🛡️ باس دفاع گرفت."
-    elif action == "heal":
-        heal = int(bmax * 0.1)
-        new_bhp = min(bmax, bhp + heal)
-        text = f"💚 باس درمان: +{heal}\n👹 HP باس: {new_bhp}/{bmax}"
-    return text, new_php, new_bhp
+# ============================================================
+# 🎯 تابع دفاع/جاخالی جدید
+# ============================================================
+
+def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
+    """
+    defense_type: "دفاع" یا "جاخالی"
+    return: (php, log_text)
+    """
+    roll = random.randint(1, 100)
+    
+    if roll <= 33:
+        # ۳۳٪ → دفاع کامل
+        log = f"✅ {defense_type} کامل! ۰ آسیب"
+        return php, log
+    elif roll <= 66:
+        # ۳۳٪ → دفاع جزئی (۵۰٪ آسیب)
+        partial = max(1, int(base_dmg * 0.5))
+        php = max(0, php - partial)
+        log = f"⚠️ {defense_type} جزئی! {partial} آسیب (۵۰٪ کم شد)"
+        return php, log
+    else:
+        # ۳۳٪ → ناموفق (آسیب کامل)
+        php = max(0, php - base_dmg)
+        log = f"❌ {defense_type} ناموفق! {base_dmg} آسیب کامل"
+        return php, log
+
+
+def boss_attack_player(boss, php, pmax, battle, defense_flag=None, char_dodge=0):
+    """
+    وقتی باس به بازیکن حمله می‌کنه
+    defense_flag: "defend" یا "dodge" یا None
+    """
+    base_dmg, crit = roll_damage(boss["atk"], 0, 0)
+    
+    # 1. اول لاگ حمله باس
+    text = f"👹 باس حمله کرد!"
+    if crit and not defense_flag:
+        text += " 🎯 کریتیکال!"
+    text += f"\n⚔️ آسیب پایه: {base_dmg}"
+    
+    # 2. اگه دفاع/جاخالی فعاله → چک کن
+    if defense_flag == "defend":
+        php, def_log = apply_defense_check(base_dmg, php, "دفاع")
+        text += f"\n{def_log}"
+    elif defense_flag == "dodge":
+        php, def_log = apply_defense_check(base_dmg, php, "جاخالی")
+        text += f"\n{def_log}"
+    else:
+        # بدون دفاع
+        php = max(0, php - base_dmg)
+        text += f"\n👤 HP تو: {php}/{pmax}"
+    
+    # 3. HP نهایی
+    if defense_flag:
+        text += f"\n👤 HP تو: {php}/{pmax}"
+    
+    return php, text, base_dmg
 
 
 def apply_bankai_round(battle):
@@ -145,6 +181,7 @@ def player_attack(battle, char):
         return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
+    
     dmg, crit = roll_damage(char[6], 0, 0)
     atk_boost = battle.get("domain_atk_boost", 0)
     if atk_boost:
@@ -159,25 +196,43 @@ def player_attack(battle, char):
     if bankai.get("extra_hit_chance"):
         if random.randint(1, 100) <= bankai["extra_hit_chance"]:
             dmg += int(dmg * 0.5)
+    
     bhp = max(0, bhp - dmg)
     text = f"⚔️ حمله: {dmg} آسیب"
     if crit:
         text += " 🎯"
     text += f"\n👹 HP باس: {bhp}/{bmax}"
+    
     if bhp <= 0:
         battle["php"] = php; battle["bhp"] = bhp
         return "won", text, battle
+    
+    # نوبت باس (بدون دفاع)
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n❄️ باس فریزه!"
     else:
         action = boss_ai(battle["boss_name"], bhp, bmax)
-        boss_text, php, bhp = boss_action(action, boss, php, pmax, bhp, bmax, 0)
-        text += f"\n\n{boss_text}"
+        if action == "attack":
+            php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, None)
+            text += f"\n\n{boss_text}"
+        elif action == "special":
+            base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+            php = max(0, php - base_dmg)
+            text += f"\n\n💥 حمله ویژه باس: {base_dmg} آسیب!\n👤 HP تو: {php}/{pmax}"
+        elif action == "defend":
+            text += "\n\n🛡️ باس دفاع گرفت."
+        elif action == "heal":
+            heal = int(bmax * 0.1)
+            bhp = min(bmax, bhp + heal)
+            text += f"\n\n💚 باس درمان: +{heal}\n👹 HP باس: {bhp}/{bmax}"
+    
+    # Bankai round
     battle = apply_bankai_round(battle)
     php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
     if bt:
         text += f"\n{bt}"
+    
     battle["php"] = php; battle["bhp"] = bhp
     if bhp <= 0:
         return "won", text, battle
@@ -192,18 +247,33 @@ def player_defend(battle, char):
         return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
-    text = "🛡️ دفاع گرفتی."
+    
+    text = "🛡️ دفاع گرفتی! (۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق)"
+    
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n❄️ باس فریزه!"
     else:
         action = boss_ai(battle["boss_name"], bhp, bmax)
-        boss_text, php, bhp = boss_action(action, boss, php, pmax, bhp, bmax, 1)
-        text += f"\n\n{boss_text}"
+        if action == "attack":
+            php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, "defend")
+            text += f"\n\n{boss_text}"
+        elif action == "special":
+            base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+            php, def_log = apply_defense_check(base_dmg, php, "دفاع")
+            text += f"\n\n💥 حمله ویژه باس!\n⚔️ آسیب پایه: {base_dmg}\n{def_log}\n👤 HP تو: {php}/{pmax}"
+        elif action == "defend":
+            text += "\n\n🛡️ باس دفاع گرفت."
+        elif action == "heal":
+            heal = int(bmax * 0.1)
+            bhp = min(bmax, bhp + heal)
+            text += f"\n\n💚 باس درمان: +{heal}\n👹 HP باس: {bhp}/{bmax}"
+    
     battle = apply_bankai_round(battle)
     php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
     if bt:
         text += f"\n{bt}"
+    
     battle["php"] = php; battle["bhp"] = bhp
     if bhp <= 0:
         return "won", text, battle
@@ -218,22 +288,33 @@ def player_dodge(battle, char):
         return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
-    dodge_chance = char[8] + battle.get("bankai_dodge_current", 0)
-    success = random.randint(1, 100) <= dodge_chance
-    if success:
-        text = "💨 جاخالی دادی!"
+    
+    text = "💨 جاخالی می‌زنی! (۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق)"
+    
+    if battle.get("boss_frozen", 0) > 0:
+        battle["boss_frozen"] -= 1
+        text += "\n❄️ باس فریزه!"
     else:
-        text = "❌ جاخالی ناموفق!"
-        if battle.get("boss_frozen", 0) > 0:
-            battle["boss_frozen"] -= 1
-        else:
-            action = boss_ai(battle["boss_name"], bhp, bmax)
-            boss_text, php, bhp = boss_action(action, boss, php, pmax, bhp, bmax, 0)
+        action = boss_ai(battle["boss_name"], bhp, bmax)
+        if action == "attack":
+            php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, "dodge")
             text += f"\n\n{boss_text}"
+        elif action == "special":
+            base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+            php, def_log = apply_defense_check(base_dmg, php, "جاخالی")
+            text += f"\n\n💥 حمله ویژه باس!\n⚔️ آسیب پایه: {base_dmg}\n{def_log}\n👤 HP تو: {php}/{pmax}"
+        elif action == "defend":
+            text += "\n\n🛡️ باس دفاع گرفت."
+        elif action == "heal":
+            heal = int(bmax * 0.1)
+            bhp = min(bmax, bhp + heal)
+            text += f"\n\n💚 باس درمان: +{heal}\n👹 HP باس: {bhp}/{bmax}"
+    
     battle = apply_bankai_round(battle)
     php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
     if bt:
         text += f"\n{bt}"
+    
     battle["php"] = php; battle["bhp"] = bhp
     if bhp <= 0:
         return "won", text, battle
@@ -264,6 +345,10 @@ def player_ability(battle, char, ability_name):
         battle["domain_atk_boost"] = domain["effects"].get("atk_boost", 0)
         text = f"🌀 {domain['name']}!"
         effects = domain["effects"]
+        if "damage_mult" in effects:
+            dmg = int(char[6] * effects["damage_mult"])
+            bhp = max(0, bhp - dmg)
+            text += f"\n⚔️ ضربه Domain: {dmg} آسیب"
         if "hp_drain" in effects:
             drain = int(bmax * effects["hp_drain"] / 100)
             bhp = max(0, bhp - drain)
@@ -394,8 +479,19 @@ def player_ability(battle, char, ability_name):
         text += "\n❄️ باس فریزه!"
     else:
         action = boss_ai(battle["boss_name"], new_bhp, bmax)
-        boss_text, new_php, new_bhp = boss_action(action, boss, new_php, pmax, new_bhp, bmax, 0)
-        text += f"\n\n{boss_text}"
+        if action == "attack":
+            new_php, boss_text, _ = boss_attack_player(boss, new_php, pmax, battle, None)
+            text += f"\n\n{boss_text}"
+        elif action == "special":
+            base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+            new_php = max(0, new_php - base_dmg)
+            text += f"\n\n💥 حمله ویژه: {base_dmg} آسیب!\n👤 HP تو: {new_php}/{pmax}"
+        elif action == "defend":
+            text += "\n\n🛡️ باس دفاع گرفت."
+        elif action == "heal":
+            heal = int(bmax * 0.1)
+            new_bhp = min(bmax, new_bhp + heal)
+            text += f"\n\n💚 باس درمان: +{heal}\n👹 HP باس: {new_bhp}/{bmax}"
 
     battle = apply_bankai_round(battle)
     new_php, new_bhp, bt = apply_bankai_effects(battle, new_php, pmax, new_bhp, bmax)
@@ -441,8 +537,19 @@ def player_item(battle, char, item_name):
         battle["php"] = new_php; battle["bhp"] = new_bhp
         return "won", text, battle
     action = boss_ai(battle["boss_name"], new_bhp, bmax)
-    boss_text, new_php, new_bhp = boss_action(action, boss, new_php, pmax, new_bhp, bmax, 0)
-    text += f"\n\n{boss_text}"
+    if action == "attack":
+        new_php, boss_text, _ = boss_attack_player(boss, new_php, pmax, battle, None)
+        text += f"\n\n{boss_text}"
+    elif action == "special":
+        base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+        new_php = max(0, new_php - base_dmg)
+        text += f"\n\n💥 حمله ویژه: {base_dmg}!\n👤 HP تو: {new_php}/{pmax}"
+    elif action == "defend":
+        text += "\n\n🛡️ باس دفاع گرفت."
+    elif action == "heal":
+        heal = int(bmax * 0.1)
+        new_bhp = min(bmax, new_bhp + heal)
+        text += f"\n\n💚 باس درمان: +{heal}"
     battle = apply_bankai_round(battle)
     new_php, new_bhp, bt = apply_bankai_effects(battle, new_php, pmax, new_bhp, bmax)
     if bt:
