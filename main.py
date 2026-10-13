@@ -411,9 +411,8 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     existing = get_battle(user_id)
     if existing:
-        end_battle(existing[0])
+        end_battle(existing["id"])
 
-    # چک انواع باس
     if boss_name in BOSSES_JJK:
         boss_data = BOSSES_JJK[boss_name]
         create_battle(user_id, boss_name, char[5], boss_data["hp"])
@@ -461,7 +460,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if action == "surrender":
-        end_battle(battle[0])
+        end_battle(battle["id"])
         try:
             await q.edit_message_text("🏳️ تسلیم شدی!")
         except Exception:
@@ -469,11 +468,11 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if action == "attack":
-        status, text, php, bhp = player_attack(battle, char)
+        status, text, battle = player_attack(battle, char)
     elif action == "defend":
-        status, text, php, bhp = player_defend(battle, char)
+        status, text, battle = player_defend(battle, char)
     elif action == "dodge":
-        status, text, php, bhp = player_dodge(battle, char)
+        status, text, battle = player_dodge(battle, char)
     elif action == "ability":
         abilities = get_abilities(user_id, char[2])
         if not abilities:
@@ -497,63 +496,33 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
         return
     elif action == "domain":
-        from domain_system import has_domain, can_use_domain
-        if not has_domain(char[2]):
+        if char[2] not in DOMAINS_JJK:
             await q.answer("❌ این کاراکتر گسترش قلمرو نداره!", show_alert=True)
             return
-        allowed, msg = can_use_domain(battle, char[2])
-        if not allowed:
-            await q.answer(msg, show_alert=True)
-            return
-        status, text, php, bhp = player_ability(battle, char, "DOMAIN")
-        if status == "won":
-            reward = finish_battle(user_id, battle[2], True)
-            end_battle(battle[0])
-            try:
-                await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
-            except Exception:
-                await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
-            return
-        elif status == "lost":
-            end_battle(battle[0])
-            try:
-                await q.edit_message_text(f"{text}\n\n💀 باختی!")
-            except Exception:
-                await q.message.reply_text(f"{text}\n\n💀 باختی!")
-            return
-        update_battle(battle[0], php, bhp, 0, 0, 'active')
-        new_battle = get_battle(user_id)
-        full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-        return
+        status, text, battle = player_ability(battle, char, "DOMAIN")
     else:
         return
 
     if status == "won":
-        reward = finish_battle(user_id, battle[2], True)
-        end_battle(battle[0])
-        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         return
     elif status == "lost":
-        end_battle(battle[0])
-        msg = f"{text}\n\n💀 باختی!"
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
 
-    update_battle(battle[0], php, bhp, 0, 0, 'active')
-    new_battle = get_battle(user_id)
-    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-
+    update_battle(battle)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
-
     try:
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
@@ -570,33 +539,28 @@ async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not battle:
         return
 
-    status, text, php, bhp = player_ability(battle, char, ability_name)
+    status, text, battle = player_ability(battle, char, ability_name)
 
     if status == "won":
-        reward = finish_battle(user_id, battle[2], True)
-        end_battle(battle[0])
-        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         return
     elif status == "lost":
-        end_battle(battle[0])
-        msg = f"{text}\n\n💀 باختی!"
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
 
-    update_battle(battle[0], php, bhp, 0, 0, 'active')
-    new_battle = get_battle(user_id)
-    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-
+    update_battle(battle)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
-
     try:
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
@@ -617,33 +581,28 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("❌ آیتم نداری.")
         return
 
-    status, text, php, bhp = player_item(battle, char, item_name)
+    status, text, battle = player_item(battle, char, item_name)
 
     if status == "won":
-        reward = finish_battle(user_id, battle[2], True)
-        end_battle(battle[0])
-        msg = f"{text}\n\n🏆 بردی!\n💰 +{reward} coin"
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
         return
     elif status == "lost":
-        end_battle(battle[0])
-        msg = f"{text}\n\n💀 باختی!"
+        end_battle(battle["id"])
         try:
-            await q.edit_message_text(msg)
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception:
-            await q.message.reply_text(msg)
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
 
-    update_battle(battle[0], php, bhp, 0, 0, 'active')
-    new_battle = get_battle(user_id)
-    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(new_battle, char)
-
+    update_battle(battle)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
-
     try:
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
@@ -1386,7 +1345,7 @@ async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     fdata = FODDER_JJK[fodder_name]
     existing = get_battle(user_id)
     if existing:
-        end_battle(existing[0])
+        end_battle(existing["id"])
     create_battle(user_id, fodder_name, char[5], fdata["hp"])
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
@@ -1408,7 +1367,7 @@ async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     bdata = BOSSES_JJK[boss_name]
     existing = get_battle(user_id)
     if existing:
-        end_battle(existing[0])
+        end_battle(existing["id"])
     create_battle(user_id, boss_name, char[5], bdata["hp"])
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
