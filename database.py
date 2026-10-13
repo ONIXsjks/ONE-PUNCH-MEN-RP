@@ -51,6 +51,9 @@ def init_db():
         buff_name TEXT
     )""")
 
+    # پاک کردن جدول قبلی برای اضافه شدن ستون‌های جدید
+    c.execute("DROP TABLE IF EXISTS active_battles")
+
     c.execute("""CREATE TABLE IF NOT EXISTS active_battles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
