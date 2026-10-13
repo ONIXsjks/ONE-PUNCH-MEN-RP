@@ -2,6 +2,8 @@ import sqlite3
 from config import DB_NAME
 
 
+# ============ INIT ============
+
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -75,19 +77,43 @@ def init_db():
     conn.close()
 
 
+# ============ USERS ============
+
 def get_user(user_id, username=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
     u = c.fetchone()
+
     if not u:
         c.execute("INSERT INTO users (user_id, username, coins) VALUES (?,?,0)",
                   (user_id, username or "Player"))
         conn.commit()
         c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
         u = c.fetchone()
+    else:
+        # اگه یوزرنیم جدید داده شد و قبلی خالی/Player بود، آپدیت کن
+        if username and (not u[1] or u[1] == "Player"):
+            c.execute("UPDATE users SET username=? WHERE user_id=?", (username, user_id))
+            conn.commit()
+            c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
+            u = c.fetchone()
+
     conn.close()
     return u
+
+
+def get_username(user_id):
+    """برگرداندن یوزرنیم با @ یا 'ناشناس' اگه نبود"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT username FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+
+    if row and row[0] and row[0] != "Player":
+        return f"@{row[0]}"
+    return "ناشناس"
 
 
 def add_coins(user_id, amount):
@@ -192,6 +218,8 @@ def end_battle(battle_id):
     conn.commit()
     conn.close()
 
+
+# ============ ABILITIES & ITEMS ============
 
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
