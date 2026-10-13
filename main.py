@@ -21,8 +21,8 @@ from admin import (is_admin, get_all_users, get_user_stats,
                    give_coins, take_coins, reset_user,
                    ban_user, unban_user, is_banned)
 from gift import send_gift, get_gift_history, get_top_givers
-from anime_images import get_anime_image
 from jjk_data import CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK, DOMAINS_JJK
+from anime_images import get_anime_image
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
@@ -124,6 +124,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not char:
         await update.message.reply_text("No active character. /start")
         return
+
     text = (
         f"Character: {char[2]} ({char[3]} Rank)\n"
         f"Level: {char[4]}\n"
@@ -134,6 +135,15 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"Slots: {char[9]}\n"
         f"Coins: {get_coins(user_id)}"
     )
+
+    img_url = get_anime_image(char[2])
+    if img_url:
+        try:
+            await update.message.reply_photo(photo=img_url, caption=text)
+            return
+        except Exception:
+            pass
+
     await update.message.reply_text(text)
 
 
@@ -434,7 +444,17 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     text = build_battle_message(battle_data, char)
 
-    if boss_name == "Saitama Phase 1":
+    # گرفتن عکس باس از Jikan
+    boss_img = get_anime_image(boss_name)
+    if boss_img:
+        try:
+            await q.message.reply_photo(
+                photo=boss_img,
+                caption=f"👹 {boss_name}"
+            )
+        except Exception:
+            pass
+    elif boss_name == "Saitama Phase 1":
         try:
             await q.message.reply_photo(photo=IMAGES["saitama_normal"])
         except Exception:
@@ -1350,6 +1370,15 @@ async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     create_battle(user_id, fodder_name, char[5], fdata["hp"])
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
+
+    # عکس نوچه از Jikan
+    img = get_anime_image(fodder_name)
+    if img:
+        try:
+            await q.message.reply_photo(photo=img, caption=f"🐾 {fodder_name}")
+        except Exception:
+            pass
+
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
@@ -1372,6 +1401,15 @@ async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     create_battle(user_id, boss_name, char[5], bdata["hp"])
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
+
+    # عکس باس از Jikan
+    img = get_anime_image(boss_name)
+    if img:
+        try:
+            await q.message.reply_photo(photo=img, caption=f"👹 {boss_name}")
+        except Exception:
+            pass
+
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
   
 
