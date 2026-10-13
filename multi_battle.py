@@ -61,6 +61,7 @@ def get_multi_battle(session_id):
     conn.close()
     if not row:
         return None
+
     try:
         extra = json.loads(row[13]) if row[13] else {}
     except Exception:
@@ -81,7 +82,7 @@ def get_multi_battle(session_id):
         "turn_index": row[11],
         "status": row[12],
     }
-    battle.update(extra)  # برگرداندن کول‌داون‌ها و افکت‌ها
+    battle.update(extra)
     return battle
 
 
@@ -89,11 +90,10 @@ def update_multi_battle(session_id, data):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # جدا کردن فیلدهای اصلی از فیلدهای اضافی (کول‌داون‌ها، bankai_used و ...)
-    main_keys = {"team1", "team2", "boss_hp", "current_turn", "turn_index", "status"}
-    extra = {k: v for k, v in data.items() if k not in main_keys and k not in
-             ("id", "session_id", "type", "host", "players", "boss_name",
-              "boss_max_hp")}
+    main_keys = {"team1", "team2", "boss_hp", "current_turn", "turn_index", "status",
+                 "id", "session_id", "type", "host", "players", "boss_name", "boss_max_hp"}
+
+    extra = {k: v for k, v in data.items() if k not in main_keys}
 
     c.execute("""UPDATE multi_battles SET
         team1=?, team2=?, boss_hp=?, current_turn=?, turn_index=?, status=?, extra_data=?
@@ -585,4 +585,8 @@ def finish_multi_battle(session_id):
             add_coins(p["uid"], amount)
             rewards[p["uid"]] = amount
         end_multi_battle(session_id)
-        return {"type": 
+        return {"type": "team1_win", "rewards": rewards}
+
+    if status == "team2_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
+        for p
