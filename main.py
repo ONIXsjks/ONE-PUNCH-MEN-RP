@@ -78,7 +78,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 callback_data=f"first_{c_name}"
             )])
         await update.message.reply_text(
-            "🎮 به ONE PUNCH MEN RP خوش اومدی!\n\n"
+            "🎮 به BANG BANG RP خوش اومدی!\n\n"
             "یه کاراکتر رایگان انتخاب کن (C Rank):",
             reply_markup=InlineKeyboardMarkup(kb)
         )
@@ -249,11 +249,16 @@ async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = q.from_user.id
     char = get_active_character(user_id)
     if not char:
-        await q.answer("❌ کاراکتر فعال نداری. /start", show_alert=True)
+        await q.message.reply_text("❌ کاراکتر فعال نداری. /start")
         return
     result = buy_ability(user_id, char[2], ability_name)
     fa = ABILITY_FA.get(ability_name, ability_name)
-    await q.answer(f"{fa}\n{result}", show_alert=True)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.message.reply_text(f"❌ {fa}\n💰 پولت کمه!")
+    elif "Already" in str(result) or "قبلاً" in str(result):
+        await q.message.reply_text(f"⚠️ {fa}\nقبلاً خریدیش!")
+    else:
+        await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
 
 async def buy_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -263,7 +268,10 @@ async def buy_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = q.from_user.id
     result = buy_item(user_id, item_name)
     fa = ITEM_FA.get(item_name, item_name)
-    await q.answer(f"{fa}\n{result}", show_alert=True)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.message.reply_text(f"❌ {fa}\n💰 پولت کمه!")
+    else:
+        await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
 
 async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -273,11 +281,14 @@ async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = q.from_user.id
     char = get_active_character(user_id)
     if not char:
-        await q.answer("❌ کاراکتر فعال نداری.", show_alert=True)
+        await q.message.reply_text("❌ کاراکتر فعال نداری.")
         return
     result = buy_buff(user_id, char[2], buff_name)
     fa = BUFF_FA.get(buff_name, buff_name)
-    await q.answer(f"{fa}\n{result}", show_alert=True)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.message.reply_text(f"❌ {fa}\n💰 پولت کمه!")
+    else:
+        await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
 
 async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -304,7 +315,10 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     rank = parts[1]
     user_id = q.from_user.id
     result = buy_character(user_id, char_name, rank)
-    await q.answer(f"{char_name} ({rank})\n{result}", show_alert=True)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.message.reply_text(f"❌ {char_name}\n💰 پولت کمه!")
+    else:
+        await q.message.reply_text(f"✅ {char_name} ({rank})\n🎉 خریدی!")
 
 
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -422,6 +436,7 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             pass
 
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
 
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -696,7 +711,7 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     p1_id, p2_id = s["players"][0], s["players"][1]
     char1 = get_active_character(p1_id)
     char2 = get_active_character(p2_id)
-    boss = BOSSES[s["boss"]]
+    boss = BOSSES.get(s["boss"], {"hp": 5000})
 
     team1 = [
         {"uid": p1_id, "name": char1[2], "hp": char1[5], "max_hp": char1[5],
@@ -715,7 +730,7 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         team1=team1,
         team2=[],
         boss_name=s["boss"],
-        boss_hp=boss["hp"]
+        boss_hp=boss.get("hp", 5000)
     )
 
     battle = get_multi_battle(session_id)
@@ -1340,7 +1355,10 @@ async def jjk_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     rank = parts[1]
     user_id = q.from_user.id
     result = buy_character(user_id, char_name, rank)
-    await q.answer(f"{char_name} ({rank})\n{result}", show_alert=True)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.message.reply_text(f"❌ {char_name}\n💰 پولت کمه!")
+    else:
+        await q.message.reply_text(f"✅ {char_name} ({rank})\n🎉 خریدی!")
 
 
 async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1390,7 +1408,7 @@ async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 # ============ HELP ============
 
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    text = "🎮 ONE PUNCH MEN RP — راهنما\n"
+    text = "🎮 BANG BANG RP — راهنما\n"
     text += "━━━━━━━━━━━━━━━━━━━\n\n"
 
     categories = {
