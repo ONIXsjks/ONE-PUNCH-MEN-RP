@@ -376,9 +376,18 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
     if not char:
-        await update.message.reply_text("No active character.")
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
         return
-    msg = upgrade_character(user_id, char[0])
+
+    target_level = None
+    if ctx.args:
+        try:
+            target_level = int(ctx.args[0])
+        except ValueError:
+            await update.message.reply_text("❌ عدد معتبر بده! مثال: /upgrade 15")
+            return
+
+    msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
   # ============ BOSS BATTLE ============
@@ -741,7 +750,7 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     view = build_battle_view(battle)
     kb = get_multi_kb(session_id)
     await update.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-  
+
 
 # ============ PVP ============
 
@@ -1699,4 +1708,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-          
