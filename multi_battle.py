@@ -9,10 +9,6 @@ from database import DB_NAME, add_coins, get_abilities
 from quests import update_quest_progress
 
 
-# ============================================================
-# 🎨 توابع کمکی نمایش
-# ============================================================
-
 def format_num(n):
     try:
         return f"{int(n):,}"
@@ -52,10 +48,6 @@ def box_simple(text, width=24):
         text = text[:width - 2]
     return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
 
-
-# ============================================================
-# 🗄️ دیتابیس
-# ============================================================
 
 def init_multi_table():
     conn = sqlite3.connect(DB_NAME)
@@ -139,10 +131,6 @@ def end_multi_battle(session_id):
     conn.close()
 
 
-# ============================================================
-# 🎲 توابع کمکی بازی
-# ============================================================
-
 def roll_damage(atk, defender_def=0, defending=0):
     base = atk * random.uniform(0.85, 1.15)
     crit = random.random() < 0.15
@@ -221,21 +209,18 @@ def get_boss_atk(boss_name):
 
 
 def build_battle_view(battle):
-    """نمای نبرد با کادر حرفه‌ای"""
     btype = battle.get("type", "").upper()
     type_icons = {"PVP": "⚔️ PVP BATTLE", "COOP": "👥 CO-OP BATTLE", "TEAM": "⚔️ TEAM BATTLE"}
     type_title = type_icons.get(btype, f"⚔️ {btype}")
 
     text = box_title(type_title, 26) + "\n"
 
-    # باس (اگه coop بود)
     if battle["boss_name"]:
         boss_name = battle["boss_name"]
         text += f"\n👹 {boss_name}\n"
         text += f"{hp_bar(battle['boss_hp'], battle['boss_max_hp'])}\n"
         text += "━━━━━━━━━━━━━━━━━━━━━━━━\n"
 
-    # Team 1
     text += "\n🟦 Team 1:\n"
     for p in battle["team1"]:
         if p["hp"] > 0:
@@ -246,7 +231,6 @@ def build_battle_view(battle):
         else:
             text += f"├ 💀 {disp(p)}\n└ خارج شد\n"
 
-    # Team 2
     if battle["team2"]:
         text += "\n🟥 Team 2:\n"
         for p in battle["team2"]:
@@ -270,6 +254,8 @@ def build_battle_view(battle):
         text += "⏳ در حال پردازش..."
 
     return text
+
+
 def boss_attack_players(battle, log):
     all_players = [p for p in battle["team1"] + battle["team2"] if p["hp"] > 0]
     if not all_players:
@@ -408,6 +394,7 @@ def player_action(session_id, uid, action, extra=None):
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
+
     # ========== Bankai ==========
     elif action == "bankai":
         char_name = player["name"]
@@ -599,11 +586,11 @@ def player_action(session_id, uid, action, extra=None):
                     p["bankai_bleed_current"] = min(mx, cur + p["bleed_per_round"])
                 bleed = int(battle["boss_max_hp"] * p["bankai_bleed_current"] / 100)
                 battle["boss_hp"] = max(0, battle["boss_hp"] - bleed)
-                log += f"\n\n🩸 {disp(p)} بانکای: باس {format_num(bleed)} HP"
+                log += f"\n\n🩸 {disp(p)} بانکای: باس -{format_num(bleed)} HP"
             if p["hp"] > 0 and p.get("heal_per_round"):
                 heal = int(p["max_hp"] * p["heal_per_round"] / 100)
                 p["hp"] = min(p["max_hp"], p["hp"] + heal)
-                log += f"\n💚 {disp(p)} بانکای: {format_num(heal)} HP"
+                log += f"\n💚 {disp(p)} بانکای: +{format_num(heal)} HP"
 
         if battle["boss_hp"] <= 0:
             battle["status"] = "won"
@@ -647,6 +634,11 @@ def finish_multi_battle(session_id):
         for p in battle["team1"] + battle["team2"]:
             add_coins(p["uid"], reward)
             rewards[p["uid"]] = reward
+            try:
+                from guild import give_guild_xp
+                give_guild_xp(p["uid"], 30)
+            except Exception:
+                pass
         end_multi_battle(session_id)
         return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
 
@@ -655,6 +647,12 @@ def finish_multi_battle(session_id):
         for p in battle["team1"]:
             add_coins(p["uid"], amount)
             rewards[p["uid"]] = amount
+            try:
+                from guild import give_guild_xp
+                xp = 25 if battle["type"] == "pvp" else 35
+                give_guild_xp(p["uid"], xp)
+            except Exception:
+                pass
         end_multi_battle(session_id)
         return {"type": "team1_win", "rewards": rewards}
 
@@ -663,6 +661,12 @@ def finish_multi_battle(session_id):
         for p in battle["team2"]:
             add_coins(p["uid"], amount)
             rewards[p["uid"]] = amount
+            try:
+                from guild import give_guild_xp
+                xp = 25 if battle["type"] == "pvp" else 35
+                give_guild_xp(p["uid"], xp)
+            except Exception:
+                pass
         end_multi_battle(session_id)
         return {"type": "team2_win", "rewards": rewards}
 
