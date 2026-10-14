@@ -3,7 +3,7 @@
 # ============================================================
 
 # ============================================================
-# CHARACTERS (23 characters)
+# CHARACTERS (24 characters)
 # ============================================================
 CHARACTERS_JJK = {
     "S": {
@@ -18,6 +18,7 @@ CHARACTERS_JJK = {
         "Hajime Kashimo": "Thunder God",
         "Yuji Modulo": "Modulo Form",
         "Uraume": "Ice Sorcerer",
+        "SUKUNA ITADORI BODY": "King of Curses",
     },
     "A": {
         "Yuji Itadori": "Vessel",
@@ -91,6 +92,10 @@ ABILITIES_JJK = {
     "Uraume": {
         "ability_1": {"name": "Ice Formation", "effect": "Enemy -25% ATK", "type": "debuff"},
         "ability_2": {"name": "Frost Strike", "effect": "ATK x3 + no dodge", "type": "damage"},
+    },
+    "SUKUNA ITADORI BODY": {
+        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
+        "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
     },
 
     # ============ A RANK ============
@@ -216,6 +221,17 @@ DOMAINS_JJK = {
         "effects": {
             "atk_boost": 20,
             "freeze": 1,
+            "dodge_debuff": 15,
+        },
+    },
+    "SUKUNA ITADORI BODY": {
+        "name": "Malevolent Shrine",
+        "type": "all",
+        "duration": 2,
+        "cooldown": 2,
+        "effects": {
+            "atk_boost": 20,
+            "hp_drain": 8,
             "dodge_debuff": 15,
         },
     },
