@@ -168,8 +168,10 @@ def get_boss_atk(boss_name):
     if boss_name in BOSSES:
         return BOSSES[boss_name]["atk"]
     return 100
-  def build_battle_view(battle):
-    text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
+
+
+def build_battle_view(battle):
+      text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
     if battle["boss_name"]:
         text += f"👹 {battle['boss_name']}\n"
         text += f"❤️ HP: {battle['boss_hp']}/{battle['boss_max_hp']}\n\n"
@@ -235,7 +237,9 @@ def boss_attack_players(battle, log):
     target["defense_action"] = None
 
     return log
-  def player_action(session_id, uid, action, extra=None):
+
+
+def player_action(session_id, uid, action, extra=None):
     battle = get_multi_battle(session_id)
     if not battle:
         return None, "نبرد فعال نیست."
