@@ -350,7 +350,7 @@ BOSSES_JJK = {
         "display_name": "Sukuna (Heian Form)",
         "hp": 50000,
         "atk": 2000,
-        "reward": 15000,
+        "reward": 150000,
         "fodder": ["Small Shadow", "Cursed Spirit", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
@@ -359,7 +359,7 @@ BOSSES_JJK = {
         "display_name": "Sukuna (Megumi's Body)",
         "hp": 45000,
         "atk": 1800,
-        "reward": 15000,
+        "reward": 150000,
         "fodder": ["Small Shadow", "Shadow Wolf", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Ten Shadows", "effect": "2 shadows x2 ATK", "type": "multi"},
@@ -368,7 +368,7 @@ BOSSES_JJK = {
         "display_name": "Divine General Mahoraga",
         "hp": 40000,
         "atk": 2500,
-        "reward": 15000,
+        "reward": 130000,
         "fodder": ["Shadow Wolf", "Shadow Wolf"],
         "ability_1": {"name": "Adaptation Wheel", "effect": "ATK +100 per turn", "type": "buff"},
         "ability_2": {"name": "Sword of Extermination", "effect": "ATK x5 (ignore DEF)", "type": "damage"},
@@ -377,7 +377,7 @@ BOSSES_JJK = {
         "display_name": "Mahito",
         "hp": 35000,
         "atk": 1500,
-        "reward": 15000,
+        "reward": 130000,
         "fodder": ["Cursed Spirit", "Cursed Spirit", "Small Shadow", "Small Shadow"],
         "ability_1": {"name": "Idle Transfiguration", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Soul Manipulation", "effect": "20% HP damage", "type": "damage"},
@@ -386,7 +386,7 @@ BOSSES_JJK = {
         "display_name": "Uraume",
         "hp": 30000,
         "atk": 1300,
-        "reward": 15000,
+        "reward": 130000,
         "fodder": ["Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Frozen Domain", "effect": "Freeze enemy (1 turn)", "type": "freeze"},
         "ability_2": {"name": "Ice Tomb", "effect": "ATK x4", "type": "damage"},
@@ -395,7 +395,7 @@ BOSSES_JJK = {
         "display_name": "Dabura",
         "hp": 28000,
         "atk": 1200,
-        "reward": 15000,
+        "reward": 130000,
         "fodder": ["Small Shadow", "Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Cursed Energy Blast", "effect": "ATK x4", "type": "damage"},
         "ability_2": {"name": "Dark Rift", "effect": "25% HP damage", "type": "damage"},
@@ -403,44 +403,44 @@ BOSSES_JJK = {
 }
 
 # ============================================================
-# FODDER (reward = 5000)
+# FODDER (reward = 50000)
 # ============================================================
 FODDER_JJK = {
     "Small Shadow": {
         "display_name": "سایه کوچک",
         "hp": 500,
         "atk": 40,
-        "reward": 5000,
+        "reward": 50000,
     },
     "Cursed Spirit": {
         "display_name": "روح سرگردان",
         "hp": 800,
         "atk": 60,
-        "reward": 5000,
+        "reward": 50000,
     },
     "Shadow Wolf": {
         "display_name": "گرگ سایه",
         "hp": 1200,
         "atk": 90,
-        "reward": 5000,
+        "reward": 50000,
     },
     "Weak Curse": {
         "display_name": "نفرین‌شده ضعیف",
         "hp": 2000,
         "atk": 150,
-        "reward": 5000,
+        "reward": 50000,
     },
     "Cursed Worm": {
         "display_name": "کرم نفرین‌شده",
         "hp": 3000,
         "atk": 200,
-        "reward": 5000,
+        "reward": 50000,
     },
     "Hell Spider": {
         "display_name": "عنکبوت جهنمی",
         "hp": 4000,
         "atk": 250,
-        "reward": 5000,
+        "reward": 50000,
     },
 }
 
