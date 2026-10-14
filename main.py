@@ -142,20 +142,98 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
     if not char:
-        await update.message.reply_text("No active character. /start")
+        await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
         return
 
+    user = get_user(user_id)
+    username = user[1] if user and user[1] else "ناشناس"
+
+    char_name = char[2]
+    rank = char[3]
+    level = char[4]
+    hp = char[5]
+    atk = char[6]
+    dfn = char[7]
+    dodge = char[8]
+    slots = char[9]
+
+    has_domain = "✅" if char_name in DOMAINS_JJK else "❌"
+    domain_name = ""
+    if char_name in DOMAINS_JJK:
+        domain_name = f" - {DOMAINS_JJK[char_name]['name']}"
+    has_bankai = "✅" if char_name in BLEACH_BANKAI else "❌"
+    bankai_name = ""
+    if char_name in BLEACH_BANKAI:
+        bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}"
+
     text = (
-        f"Character: {char[2]} ({char[3]} Rank)\n"
-        f"Level: {char[4]}\n"
-        f"HP: {char[5]}\n"
-        f"ATK: {char[6]}\n"
-        f"DEF: {char[7]}\n"
-        f"DODGE: {char[8]}%\n"
-        f"Slots: {char[9]}\n"
-        f"Coins: {get_coins(user_id)}"
+        f"╔══════════════════════════╗\n"
+        f"║      👤 @{username[:14].center(14)} ║\n"
+        f"╚══════════════════════════╝\n\n"
+        f"╭───── 🎭 کاراکتر فعال ─────╮\n"
+        f"│ 🦸 {char_name[:18].ljust(18)} │\n"
+        f"│ ⭐ Rank: {rank.ljust(14)} │\n"
+        f"│ 📊 Level: {str(level).ljust(13)} │\n"
+        f"╰────────────────────────────╯\n\n"
+        f"⚔️ آمار کاراکتر:\n"
+        f"├ ❤️ HP: {hp:,}\n"
+        f"├ ⚔️ ATK: {atk:,}\n"
+        f"├ 🛡️ DEF: {dfn:,}\n"
+        f"├ 💨 DODGE: {dodge}%\n"
+        f"└ 🎰 Slots: {slots}\n\n"
+        f"🔥 قابلیت‌ها:\n"
+        f"├ 🌀 Domain: {has_domain}{domain_name}\n"
+        f"└ ⚔️ Bankai: {has_bankai}{bankai_name}\n\n"
+        f"💰 سکه: {get_coins(user_id):,}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━"
     )
-    await update.message.reply_text(text)
+
+    kb = [
+        [InlineKeyboardButton("🎭 تغییر کاراکتر", callback_data="prof_select"),
+         InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
+        [InlineKeyboardButton("🏆 لیدربورد", callback_data="prof_lb"),
+         InlineKeyboardButton("🎁 هدیه", callback_data="prof_gift")],
+        [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle")],
+    ]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+
+    if data == "prof_select":
+        user_id = q.from_user.id
+        chars = get_user_characters(user_id)
+        if not chars:
+            await q.message.reply_text("❌ کاراکتری نداری.")
+            return
+        kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
+        await q.message.reply_text("🎭 انتخاب کاراکتر فعال:", reply_markup=InlineKeyboardMarkup(kb))
+
+    elif data == "prof_quests":
+        await q.message.reply_text("📜 برای دیدن کوئست‌ها: /quests")
+
+    elif data == "prof_lb":
+        kb = [
+            [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
+            [InlineKeyboardButton("Top by Level", callback_data="lb_level")],
+            [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")],
+        ]
+        await q.message.reply_text("🏆 لیدربورد:", reply_markup=InlineKeyboardMarkup(kb))
+
+    elif data == "prof_gift":
+        await q.message.reply_text(
+            "🎁 برای هدیه دادن:\n\n"
+            "روش ۱: روی پیام کسی ریپلای کن و بنویس:\n"
+            "  /gift 500\n\n"
+            "روش ۲: با آیدی:\n"
+            "  /gift 123456789 500"
+        )
+
+    elif data == "prof_battle":
+        await q.message.reply_text("⚔️ برای نبرد: /battle")
 
 
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -181,7 +259,6 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "🏪 شاپ:\nیه دسته انتخاب کن:",
             reply_markup=InlineKeyboardMarkup(kb)
         )
-
 
 async def edit_shop_msg(q, caption, keyboard):
     try:
@@ -347,7 +424,7 @@ async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     char_id = int(q.data.replace("sel_", ""))
     set_active(q.from_user.id, char_id)
-    await q.message.reply_text("Character selected!")
+    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 
 
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -390,7 +467,7 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
-  # ============ BOSS BATTLE ============
+# ============ BOSS BATTLE ============
 
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -634,7 +711,7 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
     except Exception:
         await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-      # ============ CO-OP ============
+# ============ CO-OP ============
 
 async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1149,7 +1226,7 @@ async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-      # ============ QUESTS ============
+# ============ QUESTS ============
 
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1212,7 +1289,7 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for i, (name, char, rank) in enumerate(rows, 1):
             text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
         await q.message.reply_text(text)
-      
+
 
 # ============ ADMIN ============
 
@@ -1593,7 +1670,7 @@ async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
-  
+
 
 # ============ HELP ============
 
@@ -1672,6 +1749,7 @@ def main():
 
     callbacks = [
         ("^first_", first_char_callback),
+        ("^prof_", profile_callback),
         ("^mb_domain_", multi_domain_callback),
         ("^mb_bankai_", multi_bankai_callback),
         ("^mb_ability_", multi_ability_menu_callback),
