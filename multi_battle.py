@@ -30,7 +30,7 @@ def init_multi_table():
     )""")
     conn.commit()
     conn.close()
-  def create_multi_battle(session_id, battle_type, host_id, players, team1, team2,
+def create_multi_battle(session_id, battle_type, host_id, players, team1, team2,
                         boss_name=None, boss_hp=0):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
