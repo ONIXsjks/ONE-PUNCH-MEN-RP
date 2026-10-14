@@ -615,3 +615,55 @@ def player_item(battle, char, item_name):
     if new_php <= 0:
         return "lost", text, battle
     return "active", text, battle
+def build_battle_message(battle, char):
+    boss = get_boss_data(battle["boss_name"])
+    boss_atk = boss["atk"] if boss else 0
+    boss_display = boss["display_name"] if boss else battle["boss_name"]
+
+    text = f"╔══════════════════════════╗\n"
+    text += f"║  👹 {boss_display[:20].center(20)} ║\n"
+    text += f"╚══════════════════════════╝\n\n"
+    text += f"{hp_bar(battle['bhp'], battle['bmax'])}\n"
+    text += f"⚔️ ATK: {format_num(boss_atk)}\n"
+
+    text += f"\n╭───── 👤 {char[2][:16]} ─────╮\n"
+    text += f"│ ⭐ {char[3]} Rank{' ' * (14 - len(char[3]))}│\n"
+    text += f"│ {hp_bar(battle['php'], battle['pmax'])} │\n"
+    text += f"│ ⚔️ ATK: {format_num(char[6])}{' ' * (13 - len(format_num(char[6])))}│\n"
+    text += f"│ 🛡️ DEF: {format_num(char[7])}{' ' * (13 - len(format_num(char[7])))}│\n"
+    text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n"
+    text += f"╰{'─' * 25}╯"
+
+    if battle.get("domain_active", 0) == 1:
+        text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
+    if battle.get("bankai_used", 0) == 1:
+        bankai = battle.get("bankai_data", {})
+        text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
+        atk_b = battle.get("bankai_atk_current", 0)
+        dodge_b = battle.get("bankai_dodge_current", 0)
+        if atk_b:
+            text += f" (ATK +{atk_b}٪"
+            if dodge_b:
+                text += f"، دوج +{dodge_b}٪)"
+            else:
+                text += ")"
+        elif dodge_b:
+            text += f" (دوج +{dodge_b}٪)"
+
+    text += f"\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 نوبت توئه!"
+    return text
+
+
+def finish_battle(uid, boss_name, won):
+    if won:
+        boss = get_boss_data(boss_name)
+        reward = boss["reward"] if boss else 5000
+        add_coins(uid, reward)
+        update_quest_progress(uid, "win_3_bosses")
+        update_quest_progress(uid, "win_5_bosses")
+        if boss_name == "Saitama Phase 1":
+            update_quest_progress(uid, "kill_saitama")
+        if boss_name.startswith("Goku"):
+            update_quest_progress(uid, "kill_goku")
+        return reward
+    return 0
