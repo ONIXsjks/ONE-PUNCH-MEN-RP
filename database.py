@@ -93,10 +93,48 @@ def init_db():
         joined_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
+    # ============ ADMIN TABLES ============
+    c.execute("""CREATE TABLE IF NOT EXISTS admins (
+        user_id INTEGER PRIMARY KEY,
+        role TEXT DEFAULT 'admin',
+        permissions TEXT DEFAULT '',
+        added_by INTEGER,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ============ HELP CONTENT ============
+    c.execute("""CREATE TABLE IF NOT EXISTS help_content (
+        key TEXT PRIMARY KEY,
+        text TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ============ CHAR IMAGES ============
+    c.execute("""CREATE TABLE IF NOT EXISTS char_images (
+        char_name TEXT PRIMARY KEY,
+        image_url TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ============ FORCE CHANNELS ============
+    c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        channel_id TEXT UNIQUE,
+        channel_name TEXT DEFAULT '',
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ============ CUSTOM QUESTS ============
+    c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
+        key TEXT PRIMARY KEY,
+        desc_text TEXT,
+        target INTEGER,
+        reward INTEGER,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
     conn.commit()
     conn.close()
-
-
 # ============ USERS ============
 
 def get_user(user_id, username=None):
@@ -157,6 +195,8 @@ def spend_coins(user_id, amount):
         return False
     add_coins(user_id, -amount)
     return True
+
+
 # ============ ACTIVE BATTLES ============
 
 def create_battle(user_id, boss_name, player_hp, boss_hp):
@@ -269,8 +309,6 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
-
-
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -340,7 +378,6 @@ def leave_guild(user_id):
     c.execute("DELETE FROM guild_members WHERE user_id=?", (user_id,))
     c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?",
               (gid,))
-    # اگه لیدر بود، کلن رو حذف کن
     if role == "leader":
         c.execute("DELETE FROM guild_members WHERE guild_id=?", (gid,))
         c.execute("DELETE FROM guilds WHERE id=?", (gid,))
@@ -413,6 +450,196 @@ def kick_guild_member(guild_id, user_id):
               (guild_id,))
     conn.commit()
     conn.close()
+
+
+def is_guild_leader(guild_id, user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT leader_id FROM guilds WHERE id=?", (guild_id,))
+    row = c.fetchone()
+    conn.close()
+    return row and row[0] == user_id
+
+
+def search_guilds(query):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, name, level, members_count FROM guilds WHERE name LIKE ? LIMIT 10",
+              (f"%{query}%",))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_top_guilds(limit=10):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""",
+              (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+# ============ ADMIN ============
+
+def add_admin_db(user_id, role="admin", permissions="", added_by=None):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT OR REPLACE INTO admins (user_id, role, permissions, added_by)
+                 VALUES (?,?,?,?)""",
+              (user_id, role, permissions, added_by))
+    conn.commit()
+    conn.close()
+
+
+def remove_admin_db(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM admins WHERE user_id=?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_admin_db(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT user_id, role, permissions FROM admins WHERE user_id=?",
+              (user_id,))
+    row = c.fetchone()
+    conn.close()
+    return row
+
+
+def get_all_admins_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT user_id, role, permissions FROM admins ORDER BY added_at")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def set_admin_perms_db(user_id, permissions):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE admins SET permissions=? WHERE user_id=?",
+              (permissions, user_id))
+    conn.commit()
+    conn.close()
+
+
+# ============ HELP CONTENT ============
+
+def set_help_db(key, text):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT OR REPLACE INTO help_content (key, text, updated_at)
+                 VALUES (?,?,CURRENT_TIMESTAMP)""",
+              (key, text))
+    conn.commit()
+    conn.close()
+
+
+def get_help_db(key):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT text FROM help_content WHERE key=?", (key,))
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
+def get_all_help_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, text FROM help_content")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+# ============ CHAR IMAGES ============
+
+def set_char_image_db(char_name, image_url):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT OR REPLACE INTO char_images (char_name, image_url, updated_at)
+                 VALUES (?,?,CURRENT_TIMESTAMP)""",
+              (char_name, image_url))
+    conn.commit()
+    conn.close()
+
+
+def get_char_image_db(char_name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT image_url FROM char_images WHERE char_name=?", (char_name,))
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
+# ============ FORCE CHANNELS ============
+
+def add_force_channel_db(channel_id, channel_name=""):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT OR REPLACE INTO force_channels (channel_id, channel_name)
+                 VALUES (?,?)""",
+              (channel_id, channel_name))
+    conn.commit()
+    conn.close()
+
+
+def remove_force_channel_db(channel_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM force_channels WHERE channel_id=?", (channel_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_force_channels_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT channel_id, channel_name FROM force_channels")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+# ============ CUSTOM QUESTS ============
+
+def set_custom_quest_db(key, desc_text, target, reward):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT OR REPLACE INTO custom_quests
+                 (key, desc_text, target, reward, updated_at)
+                 VALUES (?,?,?,?,CURRENT_TIMESTAMP)""",
+              (key, desc_text, target, reward))
+    conn.commit()
+    conn.close()
+
+
+def get_custom_quests_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_custom_quest_db(key):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?",
+              (key,))
+    row = c.fetchone()
+    conn.close()
+    return row
 # ============ GUILD HELPERS ============
 
 GUILD_MAX_MEMBERS = {
@@ -452,17 +679,7 @@ def get_guild_max_treasury(level):
     return GUILD_MAX_TREASURY.get(level, 5000000)
 
 
-def is_guild_leader(guild_id, user_id):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT leader_id FROM guilds WHERE id=?", (guild_id,))
-    row = c.fetchone()
-    conn.close()
-    return row and row[0] == user_id
-
-
 def can_upgrade_guild(guild_id):
-    """چک کن کلن می‌تونه ارتقا بده یا نه"""
     guild = get_guild_by_id(guild_id)
     if not guild:
         return False, "کلن پیدا نشد"
@@ -482,23 +699,66 @@ def can_upgrade_guild(guild_id):
     return True, ""
 
 
-def search_guilds(query):
-    """جستجوی کلن با اسم مشابه"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, name, level, members_count FROM guilds WHERE name LIKE ? LIMIT 10",
-              (f"%{query}%",))
-    rows = c.fetchall()
-    conn.close()
-    return rows
+# ============ ADMIN HELPERS ============
+
+PERMISSIONS_LIST = [
+    "manage_admins",
+    "manage_coins",
+    "manage_chars",
+    "manage_quests",
+    "manage_channels",
+    "manage_help",
+    "manage_images",
+    "ban_users",
+]
 
 
-def get_top_guilds(limit=10):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""",
-              (limit,))
-    rows = c.fetchall()
-    conn.close()
-    return rows
+def has_permission_db(user_id, permission):
+    """چک کن کاربر دسترسی داره یا نه (ادمین‌ها)"""
+    admin = get_admin_db(user_id)
+    if not admin:
+        return False
+    perms = admin[2] or ""
+    if "all" in perms:
+        return True
+    return permission in perms
+
+
+def get_admin_perms_list(user_id):
+    admin = get_admin_db(user_id)
+    if not admin:
+        return []
+    perms = admin[2] or ""
+    if "all" in perms:
+        return PERMISSIONS_LIST
+    return [p for p in perms.split(",") if p]
+
+
+# ============ HELP KEYS ============
+
+HELP_KEYS = [
+    "welcome",
+    "main_menu",
+    "battle_help",
+    "shop_help",
+    "guild_help",
+    "quest_help",
+    "jjk_help",
+    "opm_help",
+    "general",
+]
+
+
+def get_default_help(key):
+    defaults = {
+        "welcome": "🎮 به BANG BANG RP خوش اومدی!",
+        "main_menu": "منوی اصلی — یکی از دستورات رو انتخاب کن:",
+        "battle_help": "⚔️ برای نبرد: /battle بزن",
+        "shop_help": "🏪 برای شاپ: /shop بزن",
+        "guild_help": "🏰 برای کلن: /guild بزن",
+        "quest_help": "📜 برای کوئست: /quests بزن",
+        "jjk_help": "🌀 برای جوجوتسو: /jjk بزن",
+        "opm_help": "💪 برای One-Punch: /opm بزن",
+        "general": "برای راهنما: /help",
+    }
+    return defaults.get(key, "")
