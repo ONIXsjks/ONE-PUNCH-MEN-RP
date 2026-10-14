@@ -169,18 +169,18 @@ CHAR_PRICES = {"C": 8000, "B": 20000, "A": 50000, "S": 120000}
 
 # ============ BOSSES (جایزه جدید) ============
 BOSSES = {
-    "Wolf Monster":     {"hp": 500,  "atk": 40,  "entry": 0,    "reward": 5000},
-    "Tiger Beast":      {"hp": 1200, "atk": 80,  "entry": 0,    "reward": 5000},
-    "Demon Fish":       {"hp": 2500, "atk": 150, "entry": 500,  "reward": 5000},
-    "Sky King":         {"hp": 4000, "atk": 250, "entry": 1000, "reward": 5000},
-    "Deep Sea King":    {"hp": 6000, "atk": 350, "entry": 1500, "reward": 5000},
-    "Elder Centipede":  {"hp": 9000, "atk": 500, "entry": 2500, "reward": 5000},
-    "Monster Garou":    {"hp": 12000,"atk": 700, "entry": 4000, "reward": 5000},
-    "Saitama Phase 1":  {"hp": 5000, "atk": 9999,"entry": 5000, "reward": 15000},
-    "Goku Lv1":         {"hp": 1500, "atk": 150, "entry": 2500, "reward": 5000},
-    "Goku Lv2":         {"hp": 3000, "atk": 300, "entry": 4000, "reward": 15000},
-    "Goku Lv3":         {"hp": 5000, "atk": 500, "entry": 6000, "reward": 15000},
-    "Saitama + Goku":   {"hp": 7000, "atk": 9999,"entry": 10000,"reward": 15000},
+    "Wolf Monster":     {"hp": 500,  "atk": 40,  "entry": 0,    "reward": 100000},
+    "Tiger Beast":      {"hp": 1200, "atk": 80,  "entry": 0,    "reward": 100000},
+    "Demon Fish":       {"hp": 2500, "atk": 150, "entry": 500,  "reward": 100000},
+    "Sky King":         {"hp": 4000, "atk": 250, "entry": 1000, "reward": 100000},
+    "Deep Sea King":    {"hp": 6000, "atk": 350, "entry": 1500, "reward": 100000},
+    "Elder Centipede":  {"hp": 9000, "atk": 500, "entry": 2500, "reward": 130000},
+    "Monster Garou":    {"hp": 12000,"atk": 700, "entry": 4000, "reward": 130000},
+    "Saitama Phase 1":  {"hp": 5000, "atk": 9999,"entry": 5000, "reward": 150000},
+    "Goku Lv1":         {"hp": 1500, "atk": 150, "entry": 2500, "reward": 100000},
+    "Goku Lv2":         {"hp": 3000, "atk": 300, "entry": 4000, "reward": 130000},
+    "Goku Lv3":         {"hp": 5000, "atk": 500, "entry": 6000, "reward": 130000},
+    "Saitama + Goku":   {"hp": 7000, "atk": 9999,"entry": 10000,"reward": 150000},
 }
 
 # ============ ADMIN ============
