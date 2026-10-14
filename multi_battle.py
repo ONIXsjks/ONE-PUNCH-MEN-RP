@@ -537,7 +537,7 @@ def finish_multi_battle(session_id):
             reward = BOSSES.get(boss_name, {}).get("reward", 5000)
         for p in battle["team1"] + battle["team2"]:
               for p in battle["team1"] + battle["team2"]:
-        add_coins(p["uid"], reward)
+                    add_coins(p["uid"], reward)
         rewards[p["uid"]] = reward
     end_multi_battle(session_id)
     return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
