@@ -5,7 +5,7 @@ from config import (BOSSES, ABILITIES, BUFFS, ITEMS,
                     ABILITY_FA, BUFF_FA, ITEM_FA)
 from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK, ABILITIES_JJK
 from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
-from database import DB_NAME, add_coins
+from database import DB_NAME, add_coins, get_abilities
 from quests import update_quest_progress
 
 
@@ -117,6 +117,10 @@ def apply_defense_check(base_dmg, hp, defense_type):
 
 
 def next_turn(battle):
+    for key in list(battle.keys()):
+        if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
+            if battle[key] > 0:
+                battle[key] -= 1
     players = battle["players"]
     if not players:
         battle["current_turn"] = None
@@ -164,8 +168,7 @@ def get_boss_atk(boss_name):
     if boss_name in BOSSES:
         return BOSSES[boss_name]["atk"]
     return 100
-
-def build_battle_view(battle):
+  def build_battle_view(battle):
     text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
     if battle["boss_name"]:
         text += f"👹 {battle['boss_name']}\n"
@@ -232,9 +235,7 @@ def boss_attack_players(battle, log):
     target["defense_action"] = None
 
     return log
-
-
-def player_action(session_id, uid, action, extra=None):
+  def player_action(session_id, uid, action, extra=None):
     battle = get_multi_battle(session_id)
     if not battle:
         return None, "نبرد فعال نیست."
@@ -275,6 +276,8 @@ def player_action(session_id, uid, action, extra=None):
         char_name = player["name"]
         if char_name not in DOMAINS_JJK:
             return None, "❌ این کاراکتر Domain نداره!"
+        if battle.get(f"domain_used_{uid}", 0) == 1:
+            return None, "❌ Domain فقط یه بار در نبرد!"
         cd_key = f"domain_cd_{uid}"
         if battle.get(cd_key, 0) > 0:
             return None, f"⏱️ کول‌داون: {battle[cd_key]} راند"
@@ -309,7 +312,8 @@ def player_action(session_id, uid, action, extra=None):
             heal = int(player["max_hp"] * effects["heal"] / 100)
             player["hp"] = min(player["max_hp"], player["hp"] + heal)
             log += f"💚 {heal} HP\n"
-        battle[cd_key] = domain["cooldown"]
+        battle[f"domain_used_{uid}"] = 1
+        battle[cd_key] = 2
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
@@ -320,8 +324,12 @@ def player_action(session_id, uid, action, extra=None):
             return None, "❌ این کاراکتر Bankai نداره!"
         if battle.get(f"bankai_used_{uid}", 0) == 1:
             return None, "❌ Bankai فقط یه بار در نبرد!"
+        cd_key = f"bankai_cd_{uid}"
+        if battle.get(cd_key, 0) > 0:
+            return None, f"⏱️ کول‌داون: {battle[cd_key]} راند"
         bankai = BLEACH_BANKAI[char_name]
         battle[f"bankai_used_{uid}"] = 1
+        battle[cd_key] = 2
         log = f"⚔️ Bankai: {bankai['name']}!\n"
         if "atk_boost" in bankai:
             player["atk_boost"] = bankai["atk_boost"]
