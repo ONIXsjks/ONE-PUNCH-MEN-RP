@@ -73,6 +73,26 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
+    # ============ GUILD TABLES ============
+    c.execute("""CREATE TABLE IF NOT EXISTS guilds (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE,
+        leader_id INTEGER,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0,
+        treasury INTEGER DEFAULT 0,
+        members_count INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    c.execute("""CREATE TABLE IF NOT EXISTS guild_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER,
+        user_id INTEGER UNIQUE,
+        role TEXT DEFAULT 'member',
+        joined_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
     conn.commit()
     conn.close()
 
@@ -92,7 +112,6 @@ def get_user(user_id, username=None):
         c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
         u = c.fetchone()
     else:
-        # اگه یوزرنیم جدید داده شد و قبلی خالی/Player بود، آپدیت کن
         if username and (not u[1] or u[1] == "Player"):
             c.execute("UPDATE users SET username=? WHERE user_id=?", (username, user_id))
             conn.commit()
@@ -104,7 +123,6 @@ def get_user(user_id, username=None):
 
 
 def get_username(user_id):
-    """برگرداندن یوزرنیم با @ یا 'ناشناس' اگه نبود"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT username FROM users WHERE user_id=?", (user_id,))
@@ -139,8 +157,6 @@ def spend_coins(user_id, amount):
         return False
     add_coins(user_id, -amount)
     return True
-
-
 # ============ ACTIVE BATTLES ============
 
 def create_battle(user_id, boss_name, player_hp, boss_hp):
@@ -160,7 +176,6 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
 
 
 def get_battle(user_id):
-    """برگرداندن dict بجای tuple"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
@@ -193,7 +208,6 @@ def get_battle(user_id):
 
 
 def update_battle(battle, status='active'):
-    """برگرداندن dict"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""UPDATE active_battles SET
@@ -255,3 +269,236 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
+
+
+# ============ GUILD ============
+
+def get_guild_by_name(name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM guilds WHERE name=?", (name,))
+    row = c.fetchone()
+    conn.close()
+    return row
+
+
+def get_guild_by_id(guild_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM guilds WHERE id=?", (guild_id,))
+    row = c.fetchone()
+    conn.close()
+    return row
+
+
+def get_user_guild(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT g.id, g.name, g.leader_id, g.level, g.xp,
+                        g.treasury, g.members_count
+                 FROM guilds g
+                 JOIN guild_members gm ON g.id = gm.guild_id
+                 WHERE gm.user_id=?""", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    return row
+
+
+def create_guild(name, leader_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO guilds (name, leader_id, treasury, members_count) VALUES (?,?,0,1)",
+              (name, leader_id))
+    gid = c.lastrowid
+    c.execute("INSERT INTO guild_members (guild_id, user_id, role) VALUES (?,?,?)",
+              (gid, leader_id, "leader"))
+    conn.commit()
+    conn.close()
+    return gid
+
+
+def join_guild(guild_id, user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO guild_members (guild_id, user_id) VALUES (?,?)",
+              (guild_id, user_id))
+    c.execute("UPDATE guilds SET members_count = members_count + 1 WHERE id=?",
+              (guild_id,))
+    conn.commit()
+    conn.close()
+
+
+def leave_guild(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT guild_id, role FROM guild_members WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return False
+    gid, role = row[0], row[1]
+    c.execute("DELETE FROM guild_members WHERE user_id=?", (user_id,))
+    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?",
+              (gid,))
+    # اگه لیدر بود، کلن رو حذف کن
+    if role == "leader":
+        c.execute("DELETE FROM guild_members WHERE guild_id=?", (gid,))
+        c.execute("DELETE FROM guilds WHERE id=?", (gid,))
+    conn.commit()
+    conn.close()
+    return True
+
+
+def get_guild_members(guild_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT user_id, role FROM guild_members WHERE guild_id=?",
+              (guild_id,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def donate_to_guild(guild_id, amount):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE guilds SET treasury = treasury + ? WHERE id=?",
+              (amount, guild_id))
+    conn.commit()
+    conn.close()
+
+
+def add_guild_xp(guild_id, amount):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE guilds SET xp = xp + ? WHERE id=?", (amount, guild_id))
+    conn.commit()
+    conn.close()
+
+
+def upgrade_guild(guild_id, new_level, xp_cost, coin_cost):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""UPDATE guilds SET level=?, treasury = treasury - ?,
+                 xp = xp - ? WHERE id=?""",
+              (new_level, coin_cost, xp_cost, guild_id))
+    conn.commit()
+    conn.close()
+
+
+def spend_guild_treasury(guild_id, amount):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE guilds SET treasury = treasury - ? WHERE id=?",
+              (amount, guild_id))
+    conn.commit()
+    conn.close()
+
+
+def get_all_guilds():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, name, leader_id, level, xp, treasury, members_count FROM guilds ORDER BY treasury DESC LIMIT 20")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def kick_guild_member(guild_id, user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=?",
+              (guild_id, user_id))
+    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?",
+              (guild_id,))
+    conn.commit()
+    conn.close()
+# ============ GUILD HELPERS ============
+
+GUILD_MAX_MEMBERS = {
+    1: 5, 2: 10, 3: 15, 4: 20, 5: 30,
+    6: 40, 7: 50, 8: 75, 9: 100, 10: 150,
+}
+
+GUILD_UPGRADE_COST = {
+    1: (5000, 1000000),
+    2: (10000, 2500000),
+    3: (20000, 5000000),
+    4: (40000, 10000000),
+    5: (80000, 20000000),
+    6: (150000, 50000000),
+    7: (300000, 100000000),
+    8: (500000, 250000000),
+    9: (1000000, 500000000),
+}
+
+GUILD_MAX_TREASURY = {
+    1: 5000000, 2: 10000000, 3: 25000000, 4: 50000000,
+    5: 100000000, 6: 200000000, 7: 500000000,
+    8: 1000000000, 9: 2500000000, 10: 5000000000,
+}
+
+
+def get_guild_max_members(level):
+    return GUILD_MAX_MEMBERS.get(level, 5)
+
+
+def get_guild_upgrade_req(level):
+    """(xp_needed, coin_cost)"""
+    return GUILD_UPGRADE_COST.get(level, None)
+
+
+def get_guild_max_treasury(level):
+    return GUILD_MAX_TREASURY.get(level, 5000000)
+
+
+def is_guild_leader(guild_id, user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT leader_id FROM guilds WHERE id=?", (guild_id,))
+    row = c.fetchone()
+    conn.close()
+    return row and row[0] == user_id
+
+
+def can_upgrade_guild(guild_id):
+    """چک کن کلن می‌تونه ارتقا بده یا نه"""
+    guild = get_guild_by_id(guild_id)
+    if not guild:
+        return False, "کلن پیدا نشد"
+    level = guild[3]
+    if level >= 10:
+        return False, "کلن در حداکثر سطحه!"
+    req = get_guild_upgrade_req(level)
+    if not req:
+        return False, "خطا در محاسبه هزینه"
+    xp_needed, coin_cost = req
+    xp = guild[4]
+    treasury = guild[5]
+    if xp < xp_needed:
+        return False, f"❌ XP کافی نیست!\n⚡ لازم: {xp_needed:,}\n💫 داری: {xp:,}"
+    if treasury < coin_cost:
+        return False, f"❌ خزانه کافی نیست!\n💰 لازم: {coin_cost:,}\n💵 داری: {treasury:,}"
+    return True, ""
+
+
+def search_guilds(query):
+    """جستجوی کلن با اسم مشابه"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, name, level, members_count FROM guilds WHERE name LIKE ? LIMIT 10",
+              (f"%{query}%",))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_top_guilds(limit=10):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""",
+              (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
