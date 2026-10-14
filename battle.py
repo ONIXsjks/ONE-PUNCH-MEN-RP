@@ -59,7 +59,6 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
 # ============================================================
 
 def hp_bar(current, maximum, length=10):
-    """نوار HP ۱۰ تیکه با رنگ‌بندی هوشمند"""
     if maximum <= 0:
         return "💔 [" + "░" * length + "] ۰/۰"
     pct = current / maximum
@@ -77,28 +76,26 @@ def hp_bar(current, maximum, length=10):
 
 
 def format_num(n):
-    """عدد رو با کاما جدا می‌کنه"""
-    return f"{n:,}"
+    try:
+        return f"{int(n):,}"
+    except Exception:
+        return str(n)
 
 
 def box_title(text, width=26):
-    """کادر بالا با ╔══╗"""
-    pad = width - len(text) - 2
+    pad = width - len(text)
+    if pad < 0:
+        text = text[:width]
+        pad = 0
     left = pad // 2
     right = pad - left
     return f"╔{'═' * width}╗\n║{' ' * left}{text}{' ' * right}║\n╚{'═' * width}╝"
 
 
 def box_simple(text, width=24):
-    """کادر ساده با ┌─┐"""
+    if len(text) > width - 2:
+        text = text[:width - 2]
     return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
-
-
-def box_player(name, rank):
-    """کادر بازیکن با ╭─╮"""
-    title = f"👤 {name}"
-    line = "─" * max(1, 24 - len(title))
-    return f"╭─{title} ─{line}╮"
 
 
 # ============================================================
@@ -383,7 +380,9 @@ def player_ability(battle, char, ability_name):
         battle["domain_name"] = domain["name"]
         battle["domain_atk_boost"] = domain["effects"].get("atk_boost", 0)
 
-        text = f"╔══════════════════════════╗\n║   🌀 گسترش قلمرو!      ║\n║   {domain['name'][:22].center(22)} ║\n╚══════════════════════════╝"
+        dname = domain["name"][:22]
+        text = f"╔══════════════════════════╗\n║   🌀 گسترش قلمرو!      ║\n║   {dname.center(22)} ║\n╚══════════════════════════╝"
+
         effects = domain["effects"]
         if "damage_mult" in effects:
             dmg = int(char[6] * effects["damage_mult"])
@@ -426,7 +425,9 @@ def player_ability(battle, char, ability_name):
         battle["bankai_enemy_debuff_current"] = 0
         battle["bankai_self_dmg_current"] = 0
 
-        text = f"╔══════════════════════════╗\n║      ⚔️ BANKAI!         ║\n║   {bankai['name'][:22].center(22)} ║\n╚══════════════════════════╝"
+        bname = bankai['name'][:22]
+        text = f"╔══════════════════════════╗\n║      ⚔️ BANKAI!         ║\n║   {bname.center(22)} ║\n╚══════════════════════════╝"
+
         if "atk_per_round" in bankai:
             text += f"\n⚔️ ATK +{bankai['atk_per_round']}٪/راند"
         if "dodge_per_round" in bankai:
@@ -665,5 +666,24 @@ def finish_battle(uid, boss_name, won):
             update_quest_progress(uid, "kill_saitama")
         if boss_name.startswith("Goku"):
             update_quest_progress(uid, "kill_goku")
+
+        # 🏰 XP کلن
+        try:
+            from guild import give_guild_xp
+            xp_amount = 5  # پیش‌فرض
+            if boss:
+                boss_hp = boss.get("hp", 0)
+                if boss_hp >= 40000:
+                    xp_amount = 20  # قوی
+                elif boss_hp >= 20000:
+                    xp_amount = 10  # متوسط
+                elif boss_hp >= 5000:
+                    xp_amount = 5   # ضعیف
+                else:
+                    xp_amount = 2   # فادر
+            give_guild_xp(uid, xp_amount)
+        except Exception:
+            pass
+
         return reward
     return 0
