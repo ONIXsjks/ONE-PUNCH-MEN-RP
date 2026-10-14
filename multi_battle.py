@@ -30,6 +30,8 @@ def init_multi_table():
     )""")
     conn.commit()
     conn.close()
+
+
 def create_multi_battle(session_id, battle_type, host_id, players, team1, team2,
                         boss_name=None, boss_hp=0):
     conn = sqlite3.connect(DB_NAME)
@@ -112,7 +114,9 @@ def apply_defense_check(base_dmg, hp, defense_type):
     else:
         hp = max(0, hp - base_dmg)
         return hp, f"❌ {defense_type} ناموفق! {base_dmg} آسیب کامل"
-    def next_turn(battle):
+
+
+def next_turn(battle):
     for key in list(battle.keys()):
         if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
             if battle[key] > 0:
@@ -531,4 +535,31 @@ def finish_multi_battle(session_id):
             reward = BOSSES.get(boss_name, {}).get("reward", 5000)
         for p in battle["team1"] + battle["team2"]:
             add_coins(p["uid"], reward)
-            rewards[p["uid"]] = 
+            rewards[p["uid"]] = reward
+        end_multi_battle(session_id)
+        return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
+
+    if status == "team1_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
+        for p in battle["team1"]:
+            add_coins(p["uid"], amount)
+            rewards[p["uid"]] = amount
+        end_multi_battle(session_id)
+        return {"type": "team1_win", "rewards": rewards}
+
+    if status == "team2_won":
+        amount = 300 if battle["type"] == "pvp" else 1500
+        for p in battle["team2"]:
+            add_coins(p["uid"], amount)
+            rewards[p["uid"]] = amount
+        end_multi_battle(session_id)
+        return {"type": "team2_win", "rewards": rewards}
+
+    if status == "draw":
+        for p in battle["team1"] + battle["team2"]:
+            add_coins(p["uid"], 500)
+            rewards[p["uid"]] = 500
+        end_multi_battle(session_id)
+        return {"type": "draw", "rewards": rewards}
+
+    return None
