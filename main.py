@@ -3,10 +3,14 @@ from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQuer
 from config import *
 from database import (init_db, get_user, add_coins, get_coins,
                       create_battle, get_battle, update_battle, end_battle,
-                      get_abilities, get_items, use_item, get_username)
+                      get_abilities, get_items, use_item, get_username,
+                      get_user_guild, get_top_guilds)
 from characters import (create_character, get_user_characters,
                         get_active_character, set_active, buy_character)
 from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
+from guild import (create_new_guild, join_existing_guild, leave_current_guild,
+                   donate, try_upgrade_guild, kick_member, give_guild_xp,
+                   format_guild, format_members, GUILD_CREATE_COST, GUILD_MIN_LEVEL)
 from battle import (player_attack, player_defend, player_dodge,
                     player_ability, player_item, build_battle_message,
                     finish_battle)
@@ -90,6 +94,7 @@ COMMAND_DESCRIPTIONS = {
     "gifthistory": "تاریخچه هدیه‌ها",
     "topgivers": "برترین هدیه‌دهنده‌ها",
     "jjk": "منوی جوجوتسو",
+    "guild": "کلن و مدیریت",
 }
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -193,7 +198,8 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
         [InlineKeyboardButton("🏆 لیدربورد", callback_data="prof_lb"),
          InlineKeyboardButton("🎁 هدیه", callback_data="prof_gift")],
-        [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle")],
+        [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"),
+         InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
     ]
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
@@ -235,12 +241,13 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "prof_battle":
         await q.message.reply_text("⚔️ برای نبرد: /battle")
 
+    elif data == "prof_guild":
+        await guild_cmd(update, ctx)
+
 
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c}")
-
-
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -259,6 +266,7 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             "🏪 شاپ:\nیه دسته انتخاب کن:",
             reply_markup=InlineKeyboardMarkup(kb)
         )
+
 
 async def edit_shop_msg(q, caption, keyboard):
     try:
@@ -467,6 +475,173 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
+# ============ GUILD ============
+
+async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    guild = get_user_guild(user_id)
+    if not guild:
+        await update.message.reply_text(
+            "🏰 تو توی هیچ کلنی نیستی!\n\n"
+            "📝 ساخت کلن: /guild_create <name>\n"
+            "🔍 پیوستن: /guild_join <name>\n"
+            "📋 لیست کلن‌ها: /guild_list\n\n"
+            f"💰 هزینه ساخت: {GUILD_CREATE_COST:,} سکه\n"
+            f"⭐ حداقل لول: {GUILD_MIN_LEVEL}"
+        )
+        return
+
+    text = format_guild(guild)
+    kb = [
+        [InlineKeyboardButton("👥 اعضا", callback_data="guild_members"),
+         InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")],
+        [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"),
+         InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")],
+        [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")],
+    ]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def guild_create(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not ctx.args:
+        await update.message.reply_text("❌ Usage: /guild_create <name>")
+        return
+    name = " ".join(ctx.args)
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری!")
+        return
+    char_level = char[4]
+    msg = create_new_guild(user_id, name, char_level)
+    await update.message.reply_text(msg)
+
+
+async def guild_join(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not ctx.args:
+        await update.message.reply_text("❌ Usage: /guild_join <name>")
+        return
+    name = " ".join(ctx.args)
+    msg = join_existing_guild(user_id, name)
+    await update.message.reply_text(msg)
+
+
+async def guild_leave(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    msg = leave_current_guild(user_id)
+    await update.message.reply_text(msg)
+
+
+async def guild_donate(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not ctx.args:
+        await update.message.reply_text("❌ Usage: /guild_donate <amount>")
+        return
+    try:
+        amount = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ عدد معتبر بده!")
+        return
+    msg = donate(user_id, amount)
+    await update.message.reply_text(msg)
+
+
+async def guild_upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    msg = try_upgrade_guild(user_id)
+    await update.message.reply_text(msg)
+
+
+async def guild_members_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    guild = get_user_guild(user_id)
+    if not guild:
+        await update.message.reply_text("❌ تو توی کلنی نیستی!")
+        return
+    text = format_members(guild)
+    await update.message.reply_text(text)
+
+
+async def guild_kick(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not ctx.args:
+        await update.message.reply_text("❌ Usage: /guild_kick <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده!")
+        return
+    msg = kick_member(user_id, target_id)
+    await update.message.reply_text(msg)
+
+
+async def guild_list(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guilds = get_top_guilds(10)
+    if not guilds:
+        await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+        return
+    text = "🏰 کلن‌های برتر:\n━━━━━━━━━━━━━━━━━━━\n\n"
+    for i, g in enumerate(guilds, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
+    await update.message.reply_text(text)
+
+
+async def guild_leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guilds = get_top_guilds(10)
+    if not guilds:
+        await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+        return
+    text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
+    for i, g in enumerate(guilds, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {g[1]}\n"
+        text += f"   ⭐ سطح {g[3]} | ⚡ {g[4]:,} XP | 💰 {g[5]:,}\n\n"
+    await update.message.reply_text(text)
+
+
+async def guild_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+    user_id = q.from_user.id
+
+    if data == "guild_members":
+        guild = get_user_guild(user_id)
+        if not guild:
+            await q.message.reply_text("❌ تو توی کلنی نیستی!")
+            return
+        text = format_members(guild)
+        await q.message.reply_text(text)
+
+    elif data == "guild_donate_info":
+        await q.message.reply_text(
+            "💰 دونیت به خزانه کلن\n\n"
+            "دستور: /guild_donate <amount>\n"
+            "مثال: /guild_donate 50000\n\n"
+            "🎁 جایزه: هر ۵۰,۰۰۰ سکه = ۵ XP به کلن"
+        )
+
+    elif data == "guild_upgrade":
+        msg = try_upgrade_guild(user_id)
+        await q.message.reply_text(msg)
+
+    elif data == "guild_leave":
+        msg = leave_current_guild(user_id)
+        await q.message.reply_text(msg)
+
+    elif data == "guild_top":
+        guilds = get_top_guilds(10)
+        if not guilds:
+            await q.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+            return
+        text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
+        for i, g in enumerate(guilds, 1):
+            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+            text += f"{medal} {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
+        await q.message.reply_text(text)
 # ============ BOSS BATTLE ============
 
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -611,9 +786,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reward = finish_battle(user_id, battle["boss_name"], True)
         end_battle(battle["id"])
         try:
-            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         except Exception:
-            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         return
     elif status == "lost":
         end_battle(battle["id"])
@@ -649,9 +824,9 @@ async def ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reward = finish_battle(user_id, battle["boss_name"], True)
         end_battle(battle["id"])
         try:
-            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         except Exception:
-            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         return
     elif status == "lost":
         end_battle(battle["id"])
@@ -691,9 +866,9 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         reward = finish_battle(user_id, battle["boss_name"], True)
         end_battle(battle["id"])
         try:
-            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         except Exception:
-            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward} coin")
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
         return
     elif status == "lost":
         end_battle(battle["id"])
@@ -1029,7 +1204,7 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
             text += f"{log}\n\n💰 جوایز:\n"
             for uid, amount in result["rewards"].items():
-                text += f"👤 {get_username(uid)}: +{amount} coin\n"
+                text += f"👤 {get_username(uid)}: +{amount:,} coin\n"
             try:
                 await q.edit_message_text(text)
             except Exception:
@@ -1275,7 +1450,7 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         rows = get_top_by_coins(10)
         text = "Top 10 by Coins:\n\n"
         for i, (name, coins) in enumerate(rows, 1):
-            text += f"{i}. {name or 'Unknown'} - {coins} coins\n"
+            text += f"{i}. {name or 'Unknown'} - {coins:,} coins\n"
         await q.message.reply_text(text)
     elif data == "lb_level":
         rows = get_top_by_level(10)
@@ -1327,7 +1502,7 @@ async def give_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ اعداد معتبر بده.")
         return
     give_coins(target_id, amount)
-    await update.message.reply_text(f"✅ {amount} coin به {target_id} دادی.")
+    await update.message.reply_text(f"✅ {amount:,} coin به {target_id} دادی.")
 
 
 async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1343,7 +1518,7 @@ async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ اعداد معتبر بده.")
         return
     if take_coins(target_id, amount):
-        await update.message.reply_text(f"✅ {amount} coin از {target_id} گرفتی.")
+        await update.message.reply_text(f"✅ {amount:,} coin از {target_id} گرفتی.")
     else:
         await update.message.reply_text("❌ کاربر Coin کافی نداره.")
 
@@ -1365,7 +1540,7 @@ async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     text = f"👤 کاربر: {user[0] or 'Unknown'}\n"
     text += f"🆔 ID: {target_id}\n"
-    text += f"💰 Coins: {user[1]}\n\n"
+    text += f"💰 Coins: {user[1]:,}\n\n"
     text += "🦸 کاراکترها:\n"
     if not chars:
         text += "  ❌ هیچ کاراکتری نداره\n"
@@ -1381,7 +1556,7 @@ async def allusers_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     rows = get_all_users()
     text = f"📋 کل کاربران: {len(rows)}\n\n"
     for i, (uid, name, coins) in enumerate(rows[:30], 1):
-        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins} 💰\n"
+        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins:,} 💰\n"
     if len(rows) > 30:
         text += f"\n... و {len(rows) - 30} نفر دیگه"
     await update.message.reply_text(text)
@@ -1479,9 +1654,9 @@ async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = "🎁 تاریخچه هدیه‌ها:\n\n"
     for from_id, to_id, amount, date in rows:
         if from_id == user_id:
-            text += f"📤 تو → {to_id}: {amount} 💰\n"
+            text += f"📤 تو → {to_id}: {amount:,} 💰\n"
         else:
-            text += f"📥 {from_id} → تو: {amount} 💰\n"
+            text += f"📥 {from_id} → تو: {amount:,} 💰\n"
     await update.message.reply_text(text)
 
 
@@ -1493,10 +1668,8 @@ async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
     for i, (uid, total) in enumerate(rows, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {uid} — {total} 💰\n"
+        text += f"{medal} {uid} — {total:,} 💰\n"
     await update.message.reply_text(text)
-
-
 # ============ JJK MENU ============
 
 async def jjk_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1524,7 +1697,7 @@ async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for rank in ["S", "A", "B"]:
             if rank in CHARACTERS_JJK:
                 kb.append([InlineKeyboardButton(
-                    f"📦 {rank} Rank — {CHAR_PRICES.get(rank, 0)} 💰",
+                    f"📦 {rank} Rank — {CHAR_PRICES.get(rank, 0):,} 💰",
                     callback_data=f"jjkrank_{rank}"
                 )])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
@@ -1537,7 +1710,7 @@ async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb = []
         for fname, fdata in FODDER_JJK.items():
             kb.append([InlineKeyboardButton(
-                f"{fdata['display_name']} (HP {fdata['hp']}) — {fdata['reward']} 💰",
+                f"{fdata['display_name']} (HP {fdata['hp']:,}) — {fdata['reward']:,} 💰",
                 callback_data=f"jjkfodder_{fname}"
             )])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
@@ -1550,7 +1723,7 @@ async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb = []
         for bname, bdata in BOSSES_JJK.items():
             kb.append([InlineKeyboardButton(
-                f"{bdata['display_name']} (HP {bdata['hp']})",
+                f"{bdata['display_name']} (HP {bdata['hp']:,})",
                 callback_data=f"jjkboss_{bname}"
             )])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
@@ -1563,7 +1736,7 @@ async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb = []
         for bname, bdata in BLEACH_BOSSES.items():
             kb.append([InlineKeyboardButton(
-                f"⚔️ {bdata['display_name']} (HP {bdata['hp']})",
+                f"⚔️ {bdata['display_name']} (HP {bdata['hp']:,})",
                 callback_data=f"jjkboss_{bname}"
             )])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
@@ -1593,7 +1766,7 @@ async def jjk_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for name, title in CHARACTERS_JJK.get(rank, {}).items():
         price = CHAR_PRICES.get(rank, 0)
         kb.append([InlineKeyboardButton(
-            f"{name} — {price} 💰",
+            f"{name} — {price:,} 💰",
             callback_data=f"jjkbuy_{name}_{rank}"
         )])
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_chars")])
@@ -1683,6 +1856,9 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🏪 شاپ و خرید": ["shop", "buy", "upgrade"],
         "⚔️ نبرد": ["battle", "coop", "join", "startcoop",
                     "pvp", "joinpvp", "team", "jointeam", "startteam"],
+        "🏰 کلن": ["guild", "guild_create", "guild_join", "guild_leave",
+                   "guild_donate", "guild_upgrade", "guild_members",
+                   "guild_list", "guild_leaderboard", "guild_kick"],
         "📜 کوئست و رتبه": ["quests", "claim", "leaderboard"],
         "🎁 هدیه": ["gift", "gifthistory", "topgivers"],
         "🌀 جوجوتسو": ["jjk"],
@@ -1743,6 +1919,16 @@ def main():
         ("ban", ban_cmd),
         ("unban", unban_cmd),
         ("jjk", jjk_menu),
+        ("guild", guild_cmd),
+        ("guild_create", guild_create),
+        ("guild_join", guild_join),
+        ("guild_leave", guild_leave),
+        ("guild_donate", guild_donate),
+        ("guild_upgrade", guild_upgrade),
+        ("guild_members", guild_members_cmd),
+        ("guild_kick", guild_kick),
+        ("guild_list", guild_list),
+        ("guild_leaderboard", guild_leaderboard),
     ]
     for cmd, fn in handlers:
         app.add_handler(CommandHandler(cmd, fn))
@@ -1750,6 +1936,7 @@ def main():
     callbacks = [
         ("^first_", first_char_callback),
         ("^prof_", profile_callback),
+        ("^guild_", guild_callback),
         ("^mb_domain_", multi_domain_callback),
         ("^mb_bankai_", multi_bankai_callback),
         ("^mb_ability_", multi_ability_menu_callback),
