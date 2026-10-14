@@ -112,7 +112,7 @@ def apply_defense_check(base_dmg, hp, defense_type):
     else:
         hp = max(0, hp - base_dmg)
         return hp, f"❌ {defense_type} ناموفق! {base_dmg} آسیب کامل"
-      def next_turn(battle):
+    def next_turn(battle):
     for key in list(battle.keys()):
         if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
             if battle[key] > 0:
