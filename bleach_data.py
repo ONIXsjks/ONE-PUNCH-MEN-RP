@@ -96,14 +96,13 @@ BLEACH_BANKAI = {
     "Retsu Unohana": {"name": "Minazuki", "atk_per_round": 6, "heal_per_round": 5, "max_atk": 30, "max_heal": 20},
     "Marechiyo Omaeda": {"name": "Jizō Engaku", "atk_per_round": 4, "dodge_per_round": 3, "max_atk": 20, "max_dodge": 15},
 }
-
 BLEACH_BOSSES = {
-    "Aizen (Final Form)": {"display_name": "Sosuke Aizen (Final)", "hp": 60000, "atk": 2500, "reward": 15000},
-    "Yhwach (Soul King)": {"display_name": "Yhwach (Soul King)", "hp": 70000, "atk": 2800, "reward": 15000},
-    "Ichigo (Vasto Lorde)": {"display_name": "Ichigo (Vasto Lorde)", "hp": 45000, "atk": 2200, "reward": 15000},
-    "Yamamoto (Bankai)": {"display_name": "Yamamoto (Bankai)", "hp": 50000, "atk": 2400, "reward": 15000},
-    "Ulquiorra (Segunda Etapa)": {"display_name": "Ulquiorra (2nd Etapa)", "hp": 40000, "atk": 2000, "reward": 15000},
-    "Gerard Valkyrie": {"display_name": "Gerard (Miracle)", "hp": 55000, "atk": 2300, "reward": 15000},
+    "Aizen (Final Form)": {"display_name": "Sosuke Aizen (Final)", "hp": 60000, "atk": 2500, "reward": 150000},
+    "Yhwach (Soul King)": {"display_name": "Yhwach (Soul King)", "hp": 70000, "atk": 2800, "reward": 150000},
+    "Ichigo (Vasto Lorde)": {"display_name": "Ichigo (Vasto Lorde)", "hp": 45000, "atk": 2200, "reward": 130000},
+    "Yamamoto (Bankai)": {"display_name": "Yamamoto (Bankai)", "hp": 50000, "atk": 2400, "reward": 130000},
+    "Ulquiorra (Segunda Etapa)": {"display_name": "Ulquiorra (2nd Etapa)", "hp": 40000, "atk": 2000, "reward": 100000},
+    "Gerard Valkyrie": {"display_name": "Gerard (Miracle)", "hp": 55000, "atk": 2300, "reward": 150000},
 }
 
 BLEACH_FODDER = {
