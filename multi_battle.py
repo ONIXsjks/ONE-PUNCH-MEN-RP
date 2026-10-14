@@ -171,7 +171,7 @@ def get_boss_atk(boss_name):
 
 
 def build_battle_view(battle):
-      text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
+    text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
     if battle["boss_name"]:
         text += f"👹 {battle['boss_name']}\n"
         text += f"❤️ HP: {battle['boss_hp']}/{battle['boss_max_hp']}\n\n"
@@ -536,32 +536,33 @@ def finish_multi_battle(session_id):
         else:
             reward = BOSSES.get(boss_name, {}).get("reward", 5000)
         for p in battle["team1"] + battle["team2"]:
-            add_coins(p["uid"], reward)
-            rewards[p["uid"]] = reward
-        end_multi_battle(session_id)
-        return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
+              for p in battle["team1"] + battle["team2"]:
+        add_coins(p["uid"], reward)
+        rewards[p["uid"]] = reward
+    end_multi_battle(session_id)
+    return {"type": "boss_win", "rewards": rewards, "boss": boss_name}
 
-    if status == "team1_won":
-        amount = 300 if battle["type"] == "pvp" else 1500
-        for p in battle["team1"]:
-            add_coins(p["uid"], amount)
-            rewards[p["uid"]] = amount
-        end_multi_battle(session_id)
-        return {"type": "team1_win", "rewards": rewards}
+if status == "team1_won":
+    amount = 300 if battle["type"] == "pvp" else 1500
+    for p in battle["team1"]:
+        add_coins(p["uid"], amount)
+        rewards[p["uid"]] = amount
+    end_multi_battle(session_id)
+    return {"type": "team1_win", "rewards": rewards}
 
-    if status == "team2_won":
-        amount = 300 if battle["type"] == "pvp" else 1500
-        for p in battle["team2"]:
-            add_coins(p["uid"], amount)
-            rewards[p["uid"]] = amount
-        end_multi_battle(session_id)
-        return {"type": "team2_win", "rewards": rewards}
+if status == "team2_won":
+    amount = 300 if battle["type"] == "pvp" else 1500
+    for p in battle["team2"]:
+        add_coins(p["uid"], amount)
+        rewards[p["uid"]] = amount
+    end_multi_battle(session_id)
+    return {"type": "team2_win", "rewards": rewards}
 
-    if status == "draw":
-        for p in battle["team1"] + battle["team2"]:
-            add_coins(p["uid"], 500)
-            rewards[p["uid"]] = 500
-        end_multi_battle(session_id)
-        return {"type": "draw", "rewards": rewards}
+if status == "draw":
+    for p in battle["team1"] + battle["team2"]:
+        add_coins(p["uid"], 500)
+        rewards[p["uid"]] = 500
+    end_multi_battle(session_id)
+    return {"type": "draw", "rewards": rewards}
 
-    return None
+return None
