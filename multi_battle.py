@@ -9,6 +9,54 @@ from database import DB_NAME, add_coins, get_abilities
 from quests import update_quest_progress
 
 
+# ============================================================
+# 🎨 توابع کمکی نمایش
+# ============================================================
+
+def format_num(n):
+    try:
+        return f"{int(n):,}"
+    except Exception:
+        return str(n)
+
+
+def hp_bar(current, maximum, length=10):
+    if maximum <= 0:
+        return "💔 [" + "░" * length + "] ۰/۰"
+    pct = current / maximum
+    filled = int(pct * length)
+    filled = max(0, min(length, filled))
+    empty = length - filled
+    bar = "█" * filled + "░" * empty
+    if pct > 0.6:
+        icon = "❤️"
+    elif pct > 0.3:
+        icon = "🧡"
+    else:
+        icon = "💔"
+    return f"{icon} [{bar}] {format_num(current)}/{format_num(maximum)}"
+
+
+def box_title(text, width=26):
+    pad = width - len(text)
+    if pad < 0:
+        text = text[:width]
+        pad = 0
+    left = pad // 2
+    right = pad - left
+    return f"╔{'═' * width}╗\n║{' ' * left}{text}{' ' * right}║\n╚{'═' * width}╝"
+
+
+def box_simple(text, width=24):
+    if len(text) > width - 2:
+        text = text[:width - 2]
+    return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
+
+
+# ============================================================
+# 🗄️ دیتابیس
+# ============================================================
+
 def init_multi_table():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -91,6 +139,10 @@ def end_multi_battle(session_id):
     conn.close()
 
 
+# ============================================================
+# 🎲 توابع کمکی بازی
+# ============================================================
+
 def roll_damage(atk, defender_def=0, defending=0):
     base = atk * random.uniform(0.85, 1.15)
     crit = random.random() < 0.15
@@ -110,12 +162,10 @@ def apply_defense_check(base_dmg, hp, defense_type):
     elif roll <= 66:
         partial = max(1, int(base_dmg * 0.5))
         hp = max(0, hp - partial)
-        return hp, f"⚠️ {defense_type} جزئی! {partial} آسیب (۵۰٪)"
+        return hp, f"⚠️ {defense_type} جزئی! {format_num(partial)} آسیب (۵۰٪)"
     else:
         hp = max(0, hp - base_dmg)
-        return hp, f"❌ {defense_type} ناموفق! {base_dmg} آسیب کامل"
-
-
+        return hp, f"❌ {defense_type} ناموفق! {format_num(base_dmg)} آسیب کامل"
 def next_turn(battle):
     for key in list(battle.keys()):
         if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
@@ -171,25 +221,45 @@ def get_boss_atk(boss_name):
 
 
 def build_battle_view(battle):
-    text = f"⚔️ نوع: {battle['type'].upper()}\n\n"
+    """نمای نبرد با کادر حرفه‌ای"""
+    btype = battle.get("type", "").upper()
+    type_icons = {"PVP": "⚔️ PVP BATTLE", "COOP": "👥 CO-OP BATTLE", "TEAM": "⚔️ TEAM BATTLE"}
+    type_title = type_icons.get(btype, f"⚔️ {btype}")
+
+    text = box_title(type_title, 26) + "\n"
+
+    # باس (اگه coop بود)
     if battle["boss_name"]:
-        text += f"👹 {battle['boss_name']}\n"
-        text += f"❤️ HP: {battle['boss_hp']}/{battle['boss_max_hp']}\n\n"
+        boss_name = battle["boss_name"]
+        text += f"\n👹 {boss_name}\n"
+        text += f"{hp_bar(battle['boss_hp'], battle['boss_max_hp'])}\n"
+        text += "━━━━━━━━━━━━━━━━━━━━━━━━\n"
 
-    text += "🟦 Team 1:\n"
+    # Team 1
+    text += "\n🟦 Team 1:\n"
     for p in battle["team1"]:
-        status = "✅" if p["hp"] > 0 else "💀"
-        mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
-        text += f"  {status} {disp(p)} — HP {p['hp']}/{p['max_hp']}{mark}\n"
+        if p["hp"] > 0:
+            status = "🎯 نوبت" if str(p["uid"]) == str(battle["current_turn"]) else "⏳"
+            text += f"├ 👤 {disp(p)}\n"
+            text += f"│ {hp_bar(p['hp'], p['max_hp'])}\n"
+            text += f"└ {status}\n"
+        else:
+            text += f"├ 💀 {disp(p)}\n└ خارج شد\n"
 
+    # Team 2
     if battle["team2"]:
         text += "\n🟥 Team 2:\n"
         for p in battle["team2"]:
-            status = "✅" if p["hp"] > 0 else "💀"
-            mark = " 🎯" if str(p["uid"]) == str(battle["current_turn"]) else ""
-            text += f"  {status} {disp(p)} — HP {p['hp']}/{p['max_hp']}{mark}\n"
+            if p["hp"] > 0:
+                status = "🎯 نوبت" if str(p["uid"]) == str(battle["current_turn"]) else "⏳"
+                text += f"├ 👤 {disp(p)}\n"
+                text += f"│ {hp_bar(p['hp'], p['max_hp'])}\n"
+                text += f"└ {status}\n"
+            else:
+                text += f"├ 💀 {disp(p)}\n└ خارج شد\n"
 
-    text += f"\n━━━━━━━━━━━━━━━━\n"
+    text += "\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
+
     if battle["current_turn"]:
         p, _ = get_player(battle, battle["current_turn"])
         if p:
@@ -198,9 +268,8 @@ def build_battle_view(battle):
             text += f"🎯 نوبت: {battle['current_turn']}"
     else:
         text += "⏳ در حال پردازش..."
+
     return text
-
-
 def boss_attack_players(battle, log):
     all_players = [p for p in battle["team1"] + battle["team2"] if p["hp"] > 0]
     if not all_players:
@@ -211,28 +280,30 @@ def boss_attack_players(battle, log):
 
     if target.get("frozen", 0) > 0:
         target["frozen"] -= 1
-        log += f"\n❄️ {disp(target)} فریزه!"
+        log += f"\n\n❄️ {disp(target)} فریزه! (نوبت از دست داد)"
         return log
 
     base_dmg, crit = roll_damage(boss_atk, 0, 0)
-    crit_str = " 🎯" if crit else ""
-    log += f"\n👹 باس → {disp(target)}!\n⚔️ آسیب پایه: {base_dmg}{crit_str}"
+
+    log += f"\n\n{box_simple('👹 باس حمله کرد!')}"
+    if crit:
+        log += f"\n\n⚡ CRITICAL HIT! ⚡"
+    log += f"\n\n💢 آسیب پایه: {format_num(base_dmg)}"
 
     defense = target.get("defense_action", None)
     if defense == "defend":
         target["hp"], def_log = apply_defense_check(base_dmg, target["hp"], "دفاع")
         log += f"\n{def_log}"
-        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
     elif defense == "dodge":
         target["hp"], def_log = apply_defense_check(base_dmg, target["hp"], "جاخالی")
         log += f"\n{def_log}"
-        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
     else:
         target["hp"] = max(0, target["hp"] - base_dmg)
-        log += f"\n👤 HP {disp(target)}: {target['hp']}/{target['max_hp']}"
+
+    log += f"\n\n👤 {disp(target)}\n{hp_bar(target['hp'], target['max_hp'])}"
 
     if target["hp"] <= 0:
-        log += f"\n☠️ {disp(target)} خارج شد!"
+        log += f"\n\n☠️ {disp(target)} خارج شد!"
 
     target["defense_action"] = None
 
@@ -251,6 +322,7 @@ def player_action(session_id, uid, action, extra=None):
 
     log = ""
 
+    # ========== حمله ==========
     if action == "attack":
         enemies = get_enemies(battle, team)
         if not enemies:
@@ -261,19 +333,31 @@ def player_action(session_id, uid, action, extra=None):
         if atk_boost:
             dmg = int(dmg * (1 + atk_boost / 100))
         target["hp"] = max(0, target["hp"] - dmg)
-        crit_str = " 🎯 CRIT!" if crit else ""
-        log = f"⚔️ {disp(player)} → {disp(target)}: {dmg}{crit_str}"
-        if target["hp"] <= 0:
-            log += f"\n☠️ {disp(target)} خارج شد!"
 
+        if crit:
+            log = box_simple("⚡ CRITICAL HIT! ⚡")
+        else:
+            log = box_simple("⚔️ حمله!")
+        log += f"\n\n💥 {disp(player)} → {disp(target)}"
+        log += f"\n💢 {format_num(dmg)} آسیب 💥"
+        log += f"\n\n👤 {disp(target)}\n{hp_bar(target['hp'], target['max_hp'])}"
+
+        if target["hp"] <= 0:
+            log += f"\n\n☠️ {disp(target)} خارج شد!"
+
+    # ========== دفاع ==========
     elif action == "defend":
         player["defense_action"] = "defend"
-        log = f"🛡️ {disp(player)} دفاع گرفت. (۳۳٪ کامل / ۳۳٪ جزئی)"
+        log = box_simple("🛡️ دفاع گرفتی!")
+        log += "\n\n🎲 ۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق"
 
+    # ========== جاخالی ==========
     elif action == "dodge":
         player["defense_action"] = "dodge"
-        log = f"💨 {disp(player)} جاخالی می‌زنه. (۳۳٪ کامل / ۳۳٪ جزئی)"
+        log = box_simple("💨 جاخالی می‌زنی!")
+        log += "\n\n🎲 ۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق"
 
+    # ========== Domain ==========
     elif action == "domain":
         char_name = player["name"]
         if char_name not in DOMAINS_JJK:
@@ -292,34 +376,39 @@ def player_action(session_id, uid, action, extra=None):
             targets = enemies[:2]
         else:
             targets = enemies
-        log = f"🌀 {domain['name']}!\n"
+
+        log = box_title(f"🌀 {domain['name'][:20]}", 26)
+
         for target in targets:
             if "damage_mult" in effects:
                 dmg = int(player["atk"] * effects["damage_mult"])
                 target["hp"] = max(0, target["hp"] - dmg)
-                log += f"⚔️ {disp(target)}: {dmg} آسیب\n"
+                log += f"\n\n⚔️ {disp(target)}: {format_num(dmg)} آسیب 💥"
             if "hp_drain" in effects:
                 drain = int(target["max_hp"] * effects["hp_drain"] / 100)
                 target["hp"] = max(0, target["hp"] - drain)
-                log += f"💀 {disp(target)}: -{drain} HP\n"
+                log += f"\n💀 {disp(target)}: -{format_num(drain)} HP"
             if "freeze" in effects:
                 target["frozen"] = effects["freeze"]
-                log += f"❄️ {disp(target)} فریز!\n"
+                log += f"\n❄️ {disp(target)} فریز!"
             if "dodge_debuff" in effects:
                 target["dodge_debuff"] = effects["dodge_debuff"]
+            log += f"\n{hp_bar(target['hp'], target['max_hp'])}"
+
         if "atk_boost" in effects:
             player["atk_boost"] = effects["atk_boost"]
-            log += f"⚔️ ATK +{effects['atk_boost']}٪\n"
+            log += f"\n\n⚔️ ATK +{effects['atk_boost']}٪"
         if "heal" in effects:
             heal = int(player["max_hp"] * effects["heal"] / 100)
             player["hp"] = min(player["max_hp"], player["hp"] + heal)
-            log += f"💚 {heal} HP\n"
+            log += f"\n💚 {format_num(heal)} HP"
+
         battle[f"domain_used_{uid}"] = 1
         battle[cd_key] = 2
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
-
+    # ========== Bankai ==========
     elif action == "bankai":
         char_name = player["name"]
         if char_name not in BLEACH_BANKAI:
@@ -332,34 +421,43 @@ def player_action(session_id, uid, action, extra=None):
         bankai = BLEACH_BANKAI[char_name]
         battle[f"bankai_used_{uid}"] = 1
         battle[cd_key] = 2
-        log = f"⚔️ Bankai: {bankai['name']}!\n"
+
+        log = box_title(f"⚔️ {bankai['name'][:20]}", 26)
+
         if "atk_boost" in bankai:
             player["atk_boost"] = bankai["atk_boost"]
-            log += f"⚔️ ATK +{bankai['atk_boost']}٪\n"
+            log += f"\n\n⚔️ ATK +{bankai['atk_boost']}٪"
         if "atk_per_round" in bankai:
             player["atk_per_round"] = bankai["atk_per_round"]
             player["bankai_max_atk"] = bankai.get("max_atk", 50)
             player["bankai_atk_current"] = 0
-            log += f"⚔️ ATK +{bankai['atk_per_round']}٪/راند\n"
+            log += f"\n⚔️ ATK +{bankai['atk_per_round']}٪/راند"
         if "dodge_per_round" in bankai:
             player["dodge_per_round"] = bankai["dodge_per_round"]
             player["bankai_max_dodge"] = bankai.get("max_dodge", 25)
             player["bankai_dodge_current"] = 0
-            log += f"💨 دوج +{bankai['dodge_per_round']}٪/راند\n"
+            log += f"\n💨 دوج +{bankai['dodge_per_round']}٪/راند"
         if "heal_per_round" in bankai:
             player["heal_per_round"] = bankai["heal_per_round"]
+            log += f"\n💚 HP +{bankai['heal_per_round']}٪/راند"
         if "bleed_per_round" in bankai:
             player["bleed_per_round"] = bankai["bleed_per_round"]
             player["bankai_bleed_current"] = 0
             player["bankai_max_bleed"] = bankai.get("max_bleed", 8)
+            log += f"\n🩸 باس -{bankai['bleed_per_round']}٪/راند"
         if "crit_chance" in bankai:
             player["crit_chance"] = bankai["crit_chance"]
+            log += f"\n🎯 کریتیکال +{bankai['crit_chance']}٪"
         if "extra_hit_chance" in bankai:
             player["extra_hit_chance"] = bankai["extra_hit_chance"]
+            log += f"\n⚡ ضربه اضافه {bankai['extra_hit_chance']}٪"
+        log += "\n\n⏳ تا پایان نبرد"
+
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
 
+    # ========== Ability ==========
     elif action == "ability" and extra:
         ability_name = extra
         used_key = f"used_{uid}_{ability_name}"
@@ -376,11 +474,14 @@ def player_action(session_id, uid, action, extra=None):
             found_ab = {"name": ability_name, "effect": ABILITIES[ability_name]["effect"], "type": "shop"}
         if not found_ab:
             return None, "❌ Ability پیدا نشد."
+
         enemies = get_enemies(battle, team)
         target = random.choice(enemies) if enemies else None
-        log = f"🔥 {ability_name}!\n"
+
+        log = box_simple(f"🔥 {ability_name}!")
         ab_type = found_ab.get("type", "damage")
         eff = found_ab.get("effect", "")
+
         if ab_type in ("damage", "shop"):
             mult = 2
             if "x6" in eff:
@@ -398,25 +499,29 @@ def player_action(session_id, uid, action, extra=None):
             dmg = int(player["atk"] * mult)
             if target:
                 target["hp"] = max(0, target["hp"] - dmg)
-                log += f"⚔️ {dmg} آسیب\n"
+                log += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"
+                log += f"\n\n👤 {disp(target)}\n{hp_bar(target['hp'], target['max_hp'])}"
                 if target["hp"] <= 0:
-                    log += f"☠️ {disp(target)} خارج شد!"
+                    log += f"\n☠️ {disp(target)} خارج شد!"
         elif ab_type == "heal":
             heal = int(player["max_hp"] * 0.3)
             player["hp"] = min(player["max_hp"], player["hp"] + heal)
-            log += f"💚 {heal} HP\n"
+            log += f"\n\n💚 {format_num(heal)} HP"
+            log += f"\n{hp_bar(player['hp'], player['max_hp'])}"
         elif ab_type == "freeze":
             if target:
                 target["frozen"] = 1
-                log += f"❄️ {disp(target)} فریز!\n"
+                log += f"\n\n❄️ {disp(target)} فریز!"
         elif ab_type == "buff":
             player["atk_boost"] = 50
-            log += "⚔️ ATK +۵۰٪\n"
+            log += "\n\n⚔️ ATK +۵۰٪"
+
         battle[used_key] = 1
         next_turn(battle)
         update_multi_battle(session_id, battle)
         return "active", log
 
+    # ========== Buff ==========
     elif action == "buff" and extra:
         buff_name = extra
         if buff_name not in BUFFS:
@@ -425,32 +530,37 @@ def player_action(session_id, uid, action, extra=None):
         if battle.get(used_key, 0) == 1:
             return None, f"❌ {buff_name} قبلاً استفاده شده!"
         eff = BUFFS[buff_name]["effect"]
-        log = f"🔥 {buff_name}!\n"
+
+        log = box_simple(f"🔥 {buff_name}!")
+
         if "Max HP" in eff:
             player["max_hp"] += 500
             player["hp"] += 500
-            log += "❤️ Max HP +۵۰۰\n"
+            log += "\n\n❤️ Max HP +۵۰۰"
         elif "ATK" in eff and "150" in eff:
             player["atk"] += 150
-            log += "⚔️ ATK +۱۵۰\n"
+            log += "\n\n⚔️ ATK +۱۵۰"
         elif "DEF" in eff:
             player["def"] += 80
-            log += "🛡️ DEF +۸۰\n"
+            log += "\n\n🛡️ DEF +۸۰"
         elif "DODGE" in eff:
             player["dodge"] += 10
-            log += "💨 دوج +۱۰٪\n"
+            log += "\n\n💨 دوج +۱۰٪"
         elif "all +20" in eff:
             player["max_hp"] += 200
             player["hp"] += 200
             player["atk"] += 50
             player["def"] += 30
-            log += "🔥 همه +۲۰٪\n"
+            log += "\n\n🔥 همه +۲۰٪"
         elif "all +50" in eff:
             player["max_hp"] += 500
             player["hp"] += 500
             player["atk"] += 150
             player["def"] += 80
-            log += "🔥 همه +۵۰٪\n"
+            log += "\n\n🔥 همه +۵۰٪"
+
+        log += f"\n\n{hp_bar(player['hp'], player['max_hp'])}"
+
         battle[used_key] = 1
         next_turn(battle)
         update_multi_battle(session_id, battle)
@@ -459,6 +569,7 @@ def player_action(session_id, uid, action, extra=None):
     else:
         return None, "❌ اکشن نامعتبر."
 
+    # ========== چک پایان ==========
     team1_alive = [p for p in battle["team1"] if p["hp"] > 0]
     team2_alive = [p for p in battle["team2"] if p["hp"] > 0]
 
@@ -488,11 +599,11 @@ def player_action(session_id, uid, action, extra=None):
                     p["bankai_bleed_current"] = min(mx, cur + p["bleed_per_round"])
                 bleed = int(battle["boss_max_hp"] * p["bankai_bleed_current"] / 100)
                 battle["boss_hp"] = max(0, battle["boss_hp"] - bleed)
-                log += f"\n🩸 {disp(p)} بانکای: باس {bleed} HP"
+                log += f"\n\n🩸 {disp(p)} بانکای: باس {format_num(bleed)} HP"
             if p["hp"] > 0 and p.get("heal_per_round"):
                 heal = int(p["max_hp"] * p["heal_per_round"] / 100)
                 p["hp"] = min(p["max_hp"], p["hp"] + heal)
-                log += f"\n💚 {disp(p)} بانکای: {heal} HP"
+                log += f"\n💚 {disp(p)} بانکای: {format_num(heal)} HP"
 
         if battle["boss_hp"] <= 0:
             battle["status"] = "won"
