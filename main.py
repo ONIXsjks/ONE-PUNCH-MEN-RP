@@ -1388,7 +1388,8 @@ async def resetuser_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     if not ctx.args:
         await update.message.reply_text("Usage: /resetuser <user_id>")
-        return    try:
+        return 
+      try:
         target_id = int(ctx.args[0])
     except ValueError:
         await update.message.reply_text("❌ آیدی معتبر بده.")
