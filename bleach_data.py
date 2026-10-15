@@ -1,154 +1,229 @@
-# ============================================================
-# BLEACH DATA
-# ============================================================
+import os
+from dotenv import load_dotenv
 
-CHARACTERS_BLEACH = {
-    "S": {
-        "Ichigo Kurosaki": "Substitute Soul Reaper",
-        "Sosuke Aizen": "Former Captain",
-        "Yhwach": "Quincy King",
-        "Genryusai Yamamoto": "Captain Commander",
-        "Kenpachi Zaraki": "11th Division Captain",
-        "Byakuya Kuchiki": "6th Division Captain",
-        "Toshiro Hitsugaya": "10th Division Captain",
-        "Shunsui Kyoraku": "8th Division Captain",
-        "Kisuke Urahara": "Former Captain",
-        "Ichibe Hyosube": "Royal Guard",
-        "White Zangetsu": "Ichigo's Hollow",
-        "Ulquiorra Cifer": "Arrancar",
+load_dotenv()
+
+from jjk_data import (
+    CHARACTERS_JJK, CHAR_PRICES_JJK, ABILITIES_JJK,
+    DOMAINS_JJK, BOSSES_JJK, FODDER_JJK, COOLDOWNS_JJK
+)
+
+from bleach_data import (
+    CHARACTERS_BLEACH, CHAR_PRICES_BLEACH, BLEACH_ABILITIES_SHOP,
+    BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
+)
+
+from opm_data import (
+    CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM
+)
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+DB_NAME = "/data/game.db"
+
+START_COINS = 0
+DAILY_REWARD = 100
+PERFECT_DODGE = 20
+COMBO_BONUS = 50
+COOP_WIN = 200
+GROUP_BOSS_WIN = 400
+
+RANK_STATS = {
+    "S": {"hp": 1500, "atk": 300, "def": 100, "dodge": 25, "slots": 8},
+    "A": {"hp": 1000, "atk": 200, "def": 70,  "dodge": 20, "slots": 7},
+    "B": {"hp": 700,  "atk": 120, "def": 40,  "dodge": 15, "slots": 6},
+    "C": {"hp": 400,  "atk": 60,  "def": 20,  "dodge": 10, "slots": 5},
+}
+
+FREE_SLOTS = 3
+
+# ============ LEVEL COST (پله‌ای، هر ۱۰ لول دو برابر) ============
+LEVEL_COST = [
+    (1, 10, 2000),
+    (10, 20, 5000),
+    (20, 30, 12000),
+    (30, 40, 25000),
+    (40, 50, 50000),
+    (50, 60, 100000),
+    (60, 70, 200000),
+    (70, 80, 400000),
+    (80, 90, 800000),
+    (90, 100, 1500000),
+    (100, 120, 3000000),
+    (120, 150, 6000000),
+    (150, 200, 12000000),
+    (200, 300, 30000000),
+    (300, 400, 70000000),
+    (400, 500, 150000000),
+]
+
+SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
+
+ABILITIES = {
+    "Iron Skin":       {"effect": "DEF +50",           "effect_fa": "دفاع +۵۰",              "price": 5000},
+    "Shadow Step":     {"effect": "DODGE +15%",          "effect_fa": "جاخالی +۱۵٪",            "price": 6000},
+    "Counter Attack":  {"effect": "2x after dodge",      "effect_fa": "بعد جاخالی ۲x",          "price": 10000},
+    "Heal Pulse":      {"effect": "HP +200 every 3",     "effect_fa": "هر ۳ راند HP +۲۰۰",      "price": 9000},
+    "Critical Eye":    {"effect": "20% chance 3x",       "effect_fa": "۲۰٪ شانس ۳x",            "price": 12000},
+    "Time Slow":       {"effect": "enemy dodge -20%",    "effect_fa": "جاخالی حریف -۲۰٪",       "price": 15000},
+    "Berserker":       {"effect": "ATK +100 (HP<30%)",   "effect_fa": "حمله +۱۰۰ وقتی HP<۳۰٪", "price": 18000},
+    "One Punch Dodge": {"effect": "90% dodge Saitama",   "effect_fa": "۹۰٪ جاخالی از سایتاما",  "price": 50000},
+    "Mana Shield":     {"effect": "absorb 30%",          "effect_fa": "جذب ۳۰٪ آسیب",           "price": 11000},
+    "Speed Boost":     {"effect": "attack first",        "effect_fa": "اول حمله",              "price": 7500},
+    "Vampire":         {"effect": "20% dmg = HP",        "effect_fa": "۲۰٪ آسیب = HP",         "price": 14000},
+    "Double Strike":   {"effect": "2 hits in 1 turn",    "effect_fa": "۲ ضربه در ۱ نوبت",       "price": 20000},
+    "Phoenix Reborn":  {"effect": "revive 50% HP",       "effect_fa": "بازگشت با ۵۰٪ HP",      "price": 30000},
+    "Dragon Fist":     {"effect": "ATK +250 (3 turns)",  "effect_fa": "حمله +۲۵۰ (۳ راند)",     "price": 22000},
+}
+
+ITEMS = {
+    "Health Potion":  {"effect": "HP +500",           "effect_fa": "HP +۵۰۰",           "price": 1500},
+    "Mega Potion":    {"effect": "HP +1500",          "effect_fa": "HP +۱۵۰۰",          "price": 3500},
+    "Revive Stone":   {"effect": "revive",            "effect_fa": "بازگشت بعد مرگ",     "price": 8000},
+    "Damage Boost":   {"effect": "ATK x2 (1 turn)",   "effect_fa": "حمله x۲ (۱ راند)",  "price": 4000},
+    "Shield Scroll":  {"effect": "DEF x3 (2 turns)",  "effect_fa": "دفاع x۳ (۲ راند)",  "price": 5000},
+    "Lucky Charm":    {"effect": "DODGE +30%",        "effect_fa": "جاخالی +۳۰٪",        "price": 6000},
+    "Energy Drink":   {"effect": "extra turn",        "effect_fa": "نوبت اضافه",         "price": 4500},
+    "Bomb":           {"effect": "500 damage",        "effect_fa": "۵۰۰ آسیب",           "price": 5500},
+    "Smoke Bomb":     {"effect": "DODGE +50%",        "effect_fa": "جاخالی +۵۰٪",        "price": 7000},
+}
+
+BUFFS = {
+    "HP Buff":        {"effect": "Max HP +500",     "effect_fa": "Max HP +۵۰۰",      "price": 8000},
+    "Power Buff":     {"effect": "ATK +150",        "effect_fa": "حمله +۱۵۰",        "price": 9000},
+    "Defense Buff":   {"effect": "DEF +80",         "effect_fa": "دفاع +۸۰",         "price": 7000},
+    "Speed Buff":     {"effect": "DODGE +10%",      "effect_fa": "جاخالی +۱۰٪",      "price": 8000},
+    "Critical Buff":  {"effect": "Crit +15%",       "effect_fa": "شانس کریتیکال +۱۵٪", "price": 10000},
+    "Lifesteal Buff": {"effect": "10% dmg = HP",    "effect_fa": "۱۰٪ آسیب = HP",    "price": 11000},
+    "Mega Buff":      {"effect": "all +20%",        "effect_fa": "همه +۲۰٪",         "price": 20000},
+    "God Buff":       {"effect": "all +50% (1h)",   "effect_fa": "همه +۵۰٪ (۱ ساعت)", "price": 60000},
+}
+
+ABILITY_FA = {
+    "Iron Skin": "پوست آهنین",
+    "Shadow Step": "قدم سایه",
+    "Counter Attack": "ضربه متقابل",
+    "Heal Pulse": "پالس درمان",
+    "Critical Eye": "چشم کریتیکال",
+    "Time Slow": "کندی زمان",
+    "Berserker": "برزرکر",
+    "One Punch Dodge": "جاخالی یک‌ضربه‌ای",
+    "Mana Shield": "سپر مانا",
+    "Speed Boost": "افزایش سرعت",
+    "Vampire": "خون‌آشام",
+    "Double Strike": "ضربه دوگانه",
+    "Phoenix Reborn": "تولد دوباره ققنوس",
+    "Dragon Fist": "مشت اژدها",
+}
+
+ITEM_FA = {
+    "Health Potion": "معجون کوچک",
+    "Mega Potion": "معجون بزرگ",
+    "Revive Stone": "سنگ احیا",
+    "Damage Boost": "افزایش آسیب",
+    "Shield Scroll": "اسکرول سپر",
+    "Lucky Charm": "طلسم شانس",
+    "Energy Drink": "نوشیدنی انرژی",
+    "Bomb": "بمب",
+    "Smoke Bomb": "بمب دود",
+}
+
+BUFF_FA = {
+    "HP Buff": "باف HP",
+    "Power Buff": "باف قدرت",
+    "Defense Buff": "باف دفاع",
+    "Speed Buff": "باف سرعت",
+    "Critical Buff": "باف کریتیکال",
+    "Lifesteal Buff": "باف خون‌آشام",
+    "Mega Buff": "باف مگا",
+    "God Buff": "باف خدا",
+}
+
+# ============ MERGE CHARACTERS (ادغام Rank ها) ============
+CHARACTERS = {}
+
+for rank, chars in CHARACTERS_JJK.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_BLEACH.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_OPM.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+# ============ MERGE CHAR PRICES ============
+CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
+CHAR_PRICES.update(CHAR_PRICES_JJK)
+CHAR_PRICES.update(CHAR_PRICES_BLEACH)
+
+# ============ BOSSES - One-Punch Man (مرتب‌شده بر اساس قدرت) ============
+BOSSES = {
+    # 🟢 ضعیف (HP < 5k، ATK < 300) — جایزه: 50,000
+    "Wolf Monster": {
+        "display_name": "گرگ هیولا",
+        "hp": 500, "atk": 40, "entry": 0, "reward": 50000,
     },
-    "A": {
-        "Renji Abarai": "6th Division Lieutenant",
-        "Rukia Kuchiki": "13th Division",
-        "Ikkaku Madarame": "11th Division",
-        "Yumichika Ayasegawa": "11th Division",
-        "Shuhei Hisagi": "9th Division Lieutenant",
-        "Kensei Muguruma": "9th Division Captain",
-        "Rojuro Otoribashi": "3rd Division Captain",
-        "Love Aikawa": "Former Captain",
-        "Grimmjow Jaegerjaquez": "Arrancar",
-        "Nelliel Tu": "Former Espada",
+    "Tiger Beast": {
+        "display_name": "ببر وحشی",
+        "hp": 1200, "atk": 80, "entry": 0, "reward": 50000,
     },
-    "B": {
-        "Yasutora Sado": "Ichigo's Friend",
-        "Orihime Inoue": "Ichigo's Friend",
-        "Uryu Ishida": "Quincy",
-        "Tier Harribel": "Espada",
-        "Coyote Starrk": "Primera Espada",
-        "Baraggan Louisenbairn": "Segunda Espada",
-        "Soi Fon": "2nd Division Captain",
-        "Yoruichi Shihoin": "Former Captain",
-        "Retsu Unohana": "4th Division Captain",
-        "Marechiyo Omaeda": "2nd Division Lieutenant",
+    "Mosquito Girl": {
+        "display_name": "پشه‌دختر",
+        "hp": 2000, "atk": 150, "entry": 200, "reward": 50000,
+    },
+    "Demon Fish": {
+        "display_name": "ماهی شیطانی",
+        "hp": 2500, "atk": 150, "entry": 500, "reward": 50000,
+    },
+
+    # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000
+    "Sky King": {
+        "display_name": "پادشاه آسمان",
+        "hp": 4000, "atk": 250, "entry": 1000, "reward": 100000,
+    },
+    "Deep Sea King": {
+        "display_name": "پادشاه اعماق دریا",
+        "hp": 6000, "atk": 350, "entry": 1500, "reward": 100000,
+    },
+    "Carnage Kabuto": {
+        "display_name": "کارنیج کابوتو",
+        "hp": 8000, "atk": 600, "entry": 2000, "reward": 100000,
+    },
+    "Elder Centipede": {
+        "display_name": "هزارپای بزرگ",
+        "hp": 9000, "atk": 500, "entry": 2500, "reward": 100000,
+    },
+    "Beefcake": {
+        "display_name": "کیک‌گوشتی",
+        "hp": 12000, "atk": 700, "entry": 3000, "reward": 100000,
+    },
+
+    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
+    "Monster Garou": {
+        "display_name": "گارو هیولا",
+        "hp": 80000, "atk": 2500, "entry": 4000, "reward": 500000,
+    },
+    "Saitama Phase 1": {
+        "display_name": "سایتاما (فاز ۱)",
+        "hp": 90000, "atk": 3000, "entry": 5000, "reward": 500000,
     },
 }
 
-CHAR_PRICES_BLEACH = {"S": 2000000, "A": 500000, "B": 150000}
+# ============ MERGE BOSSES (JJK + Bleach + OPM) ============
+BOSSES.update(BOSSES_JJK)
+BOSSES.update(BLEACH_BOSSES)
+BOSSES.update(BOSSES_OPM)
 
-BLEACH_ABILITIES_SHOP = {
-    "Getsuga Tensho": {"effect": "ATK x4", "effect_fa": "ضربه ماه‌شکن ۴x", "price": 25000},
-    "Cero": {"effect": "ATK x5 + no dodge", "effect_fa": "سرخ ۵x + جاخالی ممنوع", "price": 35000},
-    "Bankai Boost": {"effect": "ATK +50% for 2 turns", "effect_fa": "باف بانکای +۵۰٪", "price": 30000},
-    "Shunpo": {"effect": "DODGE +40% (2 turns)", "effect_fa": "قدم سریع جاخالی +۴۰٪", "price": 22000},
-    "Kido Blast": {"effect": "ATK x3 + enemy -20% DEF", "effect_fa": "جادو ضربه ۳x", "price": 20000},
-    "Hollow Mask": {"effect": "ATK +30% + DODGE +20%", "effect_fa": "ماسک هالو", "price": 28000},
-    "Quincy Arrow": {"effect": "ATK x3.5", "effect_fa": "تیر کوئینسی ۳.۵x", "price": 18000},
-    "Flash Step": {"effect": "Extra turn", "effect_fa": "نوبت اضافه", "price": 32000},
-    "Reiatsu Wave": {"effect": "ATK x2.5 + enemy ATK -25%", "effect_fa": "موج روحی", "price": 24000},
-    "Final Getsuga": {"effect": "ATK x6 + self 20% HP", "effect_fa": "گتسوگا نهایی", "price": 50000},
-}
+# ============ MERGE ABILITIES ============
+ABILITIES.update(BLEACH_ABILITIES_SHOP)
+ABILITIES.update(ABILITIES_OPM)
 
-BLEACH_BANKAI = {
-    "Ichigo Kurosaki": {"name": "Tensa Zangetsu", "atk_per_round": 10, "dodge_per_round": 6, "max_atk": 50, "max_dodge": 30},
-    "Sosuke Aizen": {"name": "Kyoka Suigetsu", "atk_per_round": 9, "dodge_per_round": 6, "max_atk": 45, "max_dodge": 30},
-    "Yhwach": {"name": "The Almighty", "atk_per_round": 10, "dodge_per_round": 5, "max_atk": 50, "max_dodge": 25},
-    "Genryusai Yamamoto": {"name": "Zanka no Tachi", "atk_per_round": 9, "bleed_per_round": 2, "max_atk": 45, "max_bleed": 8},
-    "Kenpachi Zaraki": {"name": "Nozarashi", "atk_per_round": 10, "self_dmg_per_round": 2, "max_atk": 50, "max_self_dmg": 8},
-    "Byakuya Kuchiki": {"name": "Senbonzakura Kageyoshi", "atk_per_round": 8, "extra_hit_chance": 20, "max_atk": 40},
-    "Toshiro Hitsugaya": {"name": "Daiguren Hyorinmaru", "atk_per_round": 8, "freeze_chance": 15, "max_atk": 40},
-    "Shunsui Kyoraku": {"name": "Katen Kyokotsu", "atk_per_round": 9, "crit_chance": 20, "max_atk": 45},
-    "Kisuke Urahara": {"name": "Benihime Aratame", "atk_per_round": 8, "heal_per_round": 5, "max_atk": 40, "max_heal": 20},
-    "Ichibe Hyosube": {"name": "Shirafude Ichimonji", "atk_per_round": 9, "enemy_atk_debuff": 4, "max_atk": 45, "max_enemy_debuff": 20},
-    "White Zangetsu": {"name": "Vasto Lorde Form", "atk_per_round": 10, "heal_per_round": 4, "max_atk": 50, "max_heal": 15},
-    "Ulquiorra Cifer": {"name": "Resurrección: Segunda Etapa", "atk_per_round": 10, "crit_chance": 25, "max_atk": 50},
-    "Renji Abarai": {"name": "So'o Zabimaru", "atk_per_round": 7, "extra_hit_chance": 20, "max_atk": 35},
-    "Rukia Kuchiki": {"name": "Hakka no Togame", "atk_per_round": 6, "freeze_chance": 15, "max_atk": 30},
-    "Ikkaku Madarame": {"name": "Ryumon Hozukimaru", "atk_per_round": 8, "dodge_debuff": 5, "max_atk": 40},
-    "Yumichika Ayasegawa": {"name": "Ruri'iro Kujaku", "atk_per_round": 6, "heal_per_round": 4, "max_atk": 30, "max_heal": 15},
-    "Shuhei Hisagi": {"name": "Kazeshini", "atk_per_round": 6, "bleed_per_round": 2, "max_atk": 30, "max_bleed": 8},
-    "Kensei Muguruma": {"name": "Tekken Tachikaze", "atk_per_round": 7, "crit_chance": 15, "max_atk": 35},
-    "Rojuro Otoribashi": {"name": "Kinshara Butodan", "atk_per_round": 7, "bleed_per_round": 2, "max_atk": 35, "max_bleed": 8},
-    "Love Aikawa": {"name": "Tengumaru", "atk_per_round": 7, "extra_hit_chance": 20, "max_atk": 35},
-    "Grimmjow Jaegerjaquez": {"name": "Pantera", "atk_per_round": 8, "dodge_per_round": 4, "max_atk": 40, "max_dodge": 20},
-    "Nelliel Tu": {"name": "Gamuza", "atk_per_round": 7, "heal_per_round": 4, "max_atk": 35, "max_heal": 15},
-    "Yasutora Sado": {"name": "Brazo Izquierda del Diablo", "atk_per_round": 5, "dodge_debuff": 3, "max_atk": 25},
-    "Orihime Inoue": {"name": "Koten Zanshun", "atk_per_round": 3, "heal_per_round": 6, "dodge_per_round": 4, "max_atk": 15, "max_heal": 25, "max_dodge": 20},
-    "Uryu Ishida": {"name": "Vollständig: Antithesis", "atk_per_round": 5, "extra_hit_chance": 20, "max_atk": 25},
-    "Tier Harribel": {"name": "Tiburon", "atk_per_round": 5, "freeze_chance": 15, "max_atk": 25},
-    "Coyote Starrk": {"name": "Los Lobos", "atk_per_round": 5, "extra_hit_chance": 15, "max_atk": 25},
-    "Baraggan Louisenbairn": {"name": "Arrogante", "atk_per_round": 5, "bleed_per_round": 2, "max_atk": 25, "max_bleed": 8},
-    "Soi Fon": {"name": "Jakuhō Raikōben", "atk_per_round": 7, "crit_chance": 20, "max_atk": 35},
-    "Yoruichi Shihoin": {"name": "Shunkō: Raijin Senkei", "atk_per_round": 5, "dodge_per_round": 5, "max_atk": 25, "max_dodge": 25},
-    "Retsu Unohana": {"name": "Minazuki", "atk_per_round": 6, "heal_per_round": 5, "max_atk": 30, "max_heal": 20},
-    "Marechiyo Omaeda": {"name": "Jizō Engaku", "atk_per_round": 4, "dodge_per_round": 3, "max_atk": 20, "max_dodge": 15},
-}
-
-# ============================================================
-# BOSSES (مرتب‌شده بر اساس قدرت)
-# ============================================================
-BLEACH_BOSSES = {
-    # 🟢 ضعیف (HP < 5k، ATK < 300)
-    "Hollow": {
-        "display_name": "هالو",
-        "hp": 500, "atk": 40, "reward": 50000,
-    },
-    "Menos Grande": {
-        "display_name": "منوس گرانده",
-        "hp": 800, "atk": 60, "reward": 50000,
-    },
-    "Adjuchas": {
-        "display_name": "آدجوچاس",
-        "hp": 1200, "atk": 90, "reward": 50000,
-    },
-
-    # 🟡 متوسط (HP 5k-20k، ATK 300-800)
-    "Weak Vasto Lorde": {
-        "display_name": "واستو لرد ضعیف",
-        "hp": 2000, "atk": 150, "reward": 100000,
-    },
-
-    # 🟠 قوی (HP 20k-50k، ATK 800-2k)
-    "Ulquiorra (Segunda Etapa)": {
-        "display_name": "اولکویورا (مرحله دوم)",
-        "hp": 40000, "atk": 2000, "reward": 200000,
-    },
-    "Ichigo (Vasto Lorde)": {
-        "display_name": "ایچیگو (واستو لرد)",
-        "hp": 45000, "atk": 2200, "reward": 200000,
-    },
-    "Yamamoto (Bankai)": {
-        "display_name": "یاماموتو (بانکای)",
-        "hp": 50000, "atk": 2400, "reward": 200000,
-    },
-    "Aizen (Final Form)": {
-        "display_name": "آیزن (فرم نهایی)",
-        "hp": 60000, "atk": 2500, "reward": 200000,
-    },
-
-    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+)
-    "Gerard Valkyrie": {
-        "display_name": "جرارد (معجزه)",
-        "hp": 85000, "atk": 2300, "reward": 500000,
-    },
-    "Yhwach (Soul King)": {
-        "display_name": "یواچ (پادشاه روح)",
-        "hp": 100000, "atk": 2800, "reward": 500000,
-    },
-}
-
-BLEACH_FODDER = {
-    "Hollow": {"display_name": "هالو", "hp": 500, "atk": 40, "reward": 5000},
-    "Menos Grande": {"display_name": "منوس گرانده", "hp": 800, "atk": 60, "reward": 5000},
-    "Adjuchas": {"display_name": "آدجوچاس", "hp": 1200, "atk": 90, "reward": 5000},
-    "Weak Vasto Lorde": {"display_name": "واستو لرد ضعیف", "hp": 2000, "atk": 150, "reward": 5000},
-}
+# ============ ADMIN ============
+ADMIN_IDS = [
+    7023690411,
+]
