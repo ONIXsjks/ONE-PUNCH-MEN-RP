@@ -102,21 +102,18 @@ def init_db():
         added_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ HELP CONTENT ============
     c.execute("""CREATE TABLE IF NOT EXISTS help_content (
         key TEXT PRIMARY KEY,
         text TEXT,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ CHAR IMAGES ============
     c.execute("""CREATE TABLE IF NOT EXISTS char_images (
         char_name TEXT PRIMARY KEY,
         image_url TEXT,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ FORCE CHANNELS ============
     c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         channel_id TEXT UNIQUE,
@@ -124,13 +121,31 @@ def init_db():
         added_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ CUSTOM QUESTS ============
     c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
         key TEXT PRIMARY KEY,
         desc_text TEXT,
         target INTEGER,
         reward INTEGER,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    # ============ WORLD PROGRESS ============
+    c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
+        user_id INTEGER PRIMARY KEY,
+        unlocked_regions TEXT DEFAULT 'forest',
+        current_region TEXT DEFAULT 'forest',
+        total_explores INTEGER DEFAULT 0,
+        treasures_found INTEGER DEFAULT 0,
+        bosses_killed INTEGER DEFAULT 0,
+        best_region TEXT DEFAULT 'forest',
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    c.execute("""CREATE TABLE IF NOT EXISTS world_treasures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        treasure_name TEXT,
+        found_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
     conn.commit()
@@ -166,7 +181,6 @@ def get_username(user_id):
     c.execute("SELECT username FROM users WHERE user_id=?", (user_id,))
     row = c.fetchone()
     conn.close()
-
     if row and row[0] and row[0] != "Player":
         return f"@{row[0]}"
     return "ناشناس"
@@ -228,22 +242,11 @@ def get_battle(user_id):
     if not row:
         return None
     return {
-        "id": row[0],
-        "uid": row[1],
-        "boss_name": row[2],
-        "php": row[3],
-        "pmax": row[4],
-        "bhp": row[5],
-        "bmax": row[6],
-        "defending": row[7],
-        "turn": row[8],
-        "status": row[9],
-        "domain_used": row[10],
-        "boss_frozen": row[11],
-        "domain_active": row[12],
-        "domain_turns": row[13],
-        "domain_name": row[14],
-        "domain_atk_boost": row[15],
+        "id": row[0], "uid": row[1], "boss_name": row[2],
+        "php": row[3], "pmax": row[4], "bhp": row[5], "bmax": row[6],
+        "defending": row[7], "turn": row[8], "status": row[9],
+        "domain_used": row[10], "boss_frozen": row[11], "domain_active": row[12],
+        "domain_turns": row[13], "domain_name": row[14], "domain_atk_boost": row[15],
     }
 
 
@@ -253,8 +256,7 @@ def update_battle(battle, status='active'):
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
-        domain_name=?, domain_atk_boost=?
-        WHERE id=?""",
+        domain_name=?, domain_atk_boost=? WHERE id=?""",
         (battle["php"], battle["bhp"], battle["turn"],
          battle["defending"], status,
          battle["domain_used"], battle["boss_frozen"],
@@ -334,8 +336,7 @@ def get_user_guild(user_id):
     c = conn.cursor()
     c.execute("""SELECT g.id, g.name, g.leader_id, g.level, g.xp,
                         g.treasury, g.members_count
-                 FROM guilds g
-                 JOIN guild_members gm ON g.id = gm.guild_id
+                 FROM guilds g JOIN guild_members gm ON g.id = gm.guild_id
                  WHERE gm.user_id=?""", (user_id,))
     row = c.fetchone()
     conn.close()
@@ -358,10 +359,8 @@ def create_guild(name, leader_id):
 def join_guild(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO guild_members (guild_id, user_id) VALUES (?,?)",
-              (guild_id, user_id))
-    c.execute("UPDATE guilds SET members_count = members_count + 1 WHERE id=?",
-              (guild_id,))
+    c.execute("INSERT INTO guild_members (guild_id, user_id) VALUES (?,?)", (guild_id, user_id))
+    c.execute("UPDATE guilds SET members_count = members_count + 1 WHERE id=?", (guild_id,))
     conn.commit()
     conn.close()
 
@@ -376,8 +375,7 @@ def leave_guild(user_id):
         return False
     gid, role = row[0], row[1]
     c.execute("DELETE FROM guild_members WHERE user_id=?", (user_id,))
-    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?",
-              (gid,))
+    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?", (gid,))
     if role == "leader":
         c.execute("DELETE FROM guild_members WHERE guild_id=?", (gid,))
         c.execute("DELETE FROM guilds WHERE id=?", (gid,))
@@ -389,8 +387,7 @@ def leave_guild(user_id):
 def get_guild_members(guild_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT user_id, role FROM guild_members WHERE guild_id=?",
-              (guild_id,))
+    c.execute("SELECT user_id, role FROM guild_members WHERE guild_id=?", (guild_id,))
     rows = c.fetchall()
     conn.close()
     return rows
@@ -399,8 +396,7 @@ def get_guild_members(guild_id):
 def donate_to_guild(guild_id, amount):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("UPDATE guilds SET treasury = treasury + ? WHERE id=?",
-              (amount, guild_id))
+    c.execute("UPDATE guilds SET treasury = treasury + ? WHERE id=?", (amount, guild_id))
     conn.commit()
     conn.close()
 
@@ -423,19 +419,11 @@ def upgrade_guild(guild_id, new_level, xp_cost, coin_cost):
     conn.close()
 
 
-def spend_guild_treasury(guild_id, amount):
+def get_top_guilds(limit=10):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("UPDATE guilds SET treasury = treasury - ? WHERE id=?",
-              (amount, guild_id))
-    conn.commit()
-    conn.close()
-
-
-def get_all_guilds():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, name, leader_id, level, xp, treasury, members_count FROM guilds ORDER BY treasury DESC LIMIT 20")
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""", (limit,))
     rows = c.fetchall()
     conn.close()
     return rows
@@ -444,10 +432,8 @@ def get_all_guilds():
 def kick_guild_member(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=?",
-              (guild_id, user_id))
-    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?",
-              (guild_id,))
+    c.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=?", (guild_id, user_id))
+    c.execute("UPDATE guilds SET members_count = members_count - 1 WHERE id=?", (guild_id,))
     conn.commit()
     conn.close()
 
@@ -461,35 +447,13 @@ def is_guild_leader(guild_id, user_id):
     return row and row[0] == user_id
 
 
-def search_guilds(query):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, name, level, members_count FROM guilds WHERE name LIKE ? LIMIT 10",
-              (f"%{query}%",))
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-
-def get_top_guilds(limit=10):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""",
-              (limit,))
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-
 # ============ ADMIN ============
 
 def add_admin_db(user_id, role="admin", permissions="", added_by=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""INSERT OR REPLACE INTO admins (user_id, role, permissions, added_by)
-                 VALUES (?,?,?,?)""",
-              (user_id, role, permissions, added_by))
+                 VALUES (?,?,?,?)""", (user_id, role, permissions, added_by))
     conn.commit()
     conn.close()
 
@@ -505,8 +469,7 @@ def remove_admin_db(user_id):
 def get_admin_db(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT user_id, role, permissions FROM admins WHERE user_id=?",
-              (user_id,))
+    c.execute("SELECT user_id, role, permissions FROM admins WHERE user_id=?", (user_id,))
     row = c.fetchone()
     conn.close()
     return row
@@ -524,20 +487,18 @@ def get_all_admins_db():
 def set_admin_perms_db(user_id, permissions):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("UPDATE admins SET permissions=? WHERE user_id=?",
-              (permissions, user_id))
+    c.execute("UPDATE admins SET permissions=? WHERE user_id=?", (permissions, user_id))
     conn.commit()
     conn.close()
 
 
-# ============ HELP CONTENT ============
+# ============ HELP ============
 
 def set_help_db(key, text):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""INSERT OR REPLACE INTO help_content (key, text, updated_at)
-                 VALUES (?,?,CURRENT_TIMESTAMP)""",
-              (key, text))
+                 VALUES (?,?,CURRENT_TIMESTAMP)""", (key, text))
     conn.commit()
     conn.close()
 
@@ -566,8 +527,7 @@ def set_char_image_db(char_name, image_url):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""INSERT OR REPLACE INTO char_images (char_name, image_url, updated_at)
-                 VALUES (?,?,CURRENT_TIMESTAMP)""",
-              (char_name, image_url))
+                 VALUES (?,?,CURRENT_TIMESTAMP)""", (char_name, image_url))
     conn.commit()
     conn.close()
 
@@ -587,8 +547,7 @@ def add_force_channel_db(channel_id, channel_name=""):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""INSERT OR REPLACE INTO force_channels (channel_id, channel_name)
-                 VALUES (?,?)""",
-              (channel_id, channel_name))
+                 VALUES (?,?)""", (channel_id, channel_name))
     conn.commit()
     conn.close()
 
@@ -617,8 +576,7 @@ def set_custom_quest_db(key, desc_text, target, reward):
     c = conn.cursor()
     c.execute("""INSERT OR REPLACE INTO custom_quests
                  (key, desc_text, target, reward, updated_at)
-                 VALUES (?,?,?,?,CURRENT_TIMESTAMP)""",
-              (key, desc_text, target, reward))
+                 VALUES (?,?,?,?,CURRENT_TIMESTAMP)""", (key, desc_text, target, reward))
     conn.commit()
     conn.close()
 
@@ -635,11 +593,103 @@ def get_custom_quests_db():
 def get_custom_quest_db(key):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?",
-              (key,))
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
     row = c.fetchone()
     conn.close()
     return row
+# ============ WORLD ============
+
+def get_world_progress(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM world_progress WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    if not row:
+        c.execute("INSERT INTO world_progress (user_id) VALUES (?)", (user_id,))
+        conn.commit()
+        c.execute("SELECT * FROM world_progress WHERE user_id=?", (user_id,))
+        row = c.fetchone()
+    conn.close()
+    return row
+
+
+def update_world_region(user_id, region):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE world_progress SET current_region=? WHERE user_id=?", (region, user_id))
+    conn.commit()
+    conn.close()
+
+
+def unlock_world_region(user_id, region):
+    progress = get_world_progress(user_id)
+    unlocked = progress[1] or "forest"
+    regions = unlocked.split(",")
+    if region not in regions:
+        regions.append(region)
+        new_unlocked = ",".join(regions)
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE world_progress SET unlocked_regions=? WHERE user_id=?",
+                  (new_unlocked, user_id))
+        conn.commit()
+        conn.close()
+        return True
+    return False
+
+
+def increment_world_stat(user_id, stat):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    if stat == "explores":
+        c.execute("UPDATE world_progress SET total_explores = total_explores + 1 WHERE user_id=?", (user_id,))
+    elif stat == "treasures":
+        c.execute("UPDATE world_progress SET treasures_found = treasures_found + 1 WHERE user_id=?", (user_id,))
+    elif stat == "bosses":
+        c.execute("UPDATE world_progress SET bosses_killed = bosses_killed + 1 WHERE user_id=?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def add_world_treasure(user_id, treasure_name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("INSERT INTO world_treasures (user_id, treasure_name) VALUES (?,?)",
+              (user_id, treasure_name))
+    conn.commit()
+    conn.close()
+
+
+def get_world_treasures(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT treasure_name, found_at FROM world_treasures WHERE user_id=?", (user_id,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_world_leaderboard(limit=10):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT user_id, total_explores, treasures_found, bosses_killed
+                 FROM world_progress ORDER BY total_explores DESC LIMIT ?""", (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_unlocked_regions(user_id):
+    progress = get_world_progress(user_id)
+    unlocked = progress[1] or "forest"
+    return unlocked.split(",")
+
+
+def get_current_region(user_id):
+    progress = get_world_progress(user_id)
+    return progress[2] or "forest"
+
+
 # ============ GUILD HELPERS ============
 
 GUILD_MAX_MEMBERS = {
@@ -671,7 +721,6 @@ def get_guild_max_members(level):
 
 
 def get_guild_upgrade_req(level):
-    """(xp_needed, coin_cost)"""
     return GUILD_UPGRADE_COST.get(level, None)
 
 
@@ -699,8 +748,6 @@ def can_upgrade_guild(guild_id):
     return True, ""
 
 
-# ============ ADMIN HELPERS ============
-
 PERMISSIONS_LIST = [
     "manage_admins",
     "manage_coins",
@@ -714,7 +761,6 @@ PERMISSIONS_LIST = [
 
 
 def has_permission_db(user_id, permission):
-    """چک کن کاربر دسترسی داره یا نه (ادمین‌ها)"""
     admin = get_admin_db(user_id)
     if not admin:
         return False
@@ -732,8 +778,6 @@ def get_admin_perms_list(user_id):
     if "all" in perms:
         return PERMISSIONS_LIST
     return [p for p in perms.split(",") if p]
-
-
 # ============ HELP KEYS ============
 
 HELP_KEYS = [
@@ -745,6 +789,7 @@ HELP_KEYS = [
     "quest_help",
     "jjk_help",
     "opm_help",
+    "world_help",
     "general",
 ]
 
@@ -759,6 +804,7 @@ def get_default_help(key):
         "quest_help": "📜 برای کوئست: /quests بزن",
         "jjk_help": "🌀 برای جوجوتسو: /jjk بزن",
         "opm_help": "💪 برای One-Punch: /opm بزن",
+        "world_help": "🗺️ برای دنیای آزاد: /world بزن",
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
