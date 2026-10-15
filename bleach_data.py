@@ -44,9 +44,9 @@ CHARACTERS_BLEACH = {
 }
 
 CHAR_PRICES_BLEACH = {
-    "S": 250000,
-    "A": 180000,
-    "B": 100000,
+    "S": 2000000,
+    "A": 500000,
+    "B": 150000,
 }
 
 BLEACH_ABILITIES_SHOP = {
@@ -96,6 +96,9 @@ BLEACH_BANKAI = {
     "Retsu Unohana": {"name": "Minazuki", "atk_per_round": 6, "heal_per_round": 5, "max_atk": 30, "max_heal": 20},
     "Marechiyo Omaeda": {"name": "Jizō Engaku", "atk_per_round": 4, "dodge_per_round": 3, "max_atk": 20, "max_dodge": 15},
 }
+# ============================================================
+# BOSSES
+# ============================================================
 BLEACH_BOSSES = {
     "Aizen (Final Form)": {"display_name": "Sosuke Aizen (Final)", "hp": 60000, "atk": 2500, "reward": 150000},
     "Yhwach (Soul King)": {"display_name": "Yhwach (Soul King)", "hp": 70000, "atk": 2800, "reward": 150000},
@@ -105,6 +108,9 @@ BLEACH_BOSSES = {
     "Gerard Valkyrie": {"display_name": "Gerard (Miracle)", "hp": 55000, "atk": 2300, "reward": 150000},
 }
 
+# ============================================================
+# FODDER
+# ============================================================
 BLEACH_FODDER = {
     "Hollow": {"display_name": "هالو", "hp": 500, "atk": 40, "reward": 5000},
     "Menos Grande": {"display_name": "منوس گرانده", "hp": 800, "atk": 60, "reward": 5000},
