@@ -207,6 +207,8 @@ def spend_coins(user_id, amount):
         return False
     add_coins(user_id, -amount)
     return True
+
+
 # ============ ACTIVE BATTLES ============
 
 def create_battle(user_id, boss_name, player_hp, boss_hp):
@@ -271,8 +273,6 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
-
-
 # ============ ABILITIES & ITEMS ============
 
 def get_abilities(user_id, char_name):
@@ -309,6 +309,8 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
+
+
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -342,11 +344,21 @@ def get_user_guild(user_id):
 
 
 def get_all_guilds():
-    """گرفتن همه کلن‌ها (جدید - برای ادمین)"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
                  FROM guilds ORDER BY level DESC, treasury DESC""")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def search_guilds(query):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
+              (f"%{query}%",))
     rows = c.fetchall()
     conn.close()
     return rows
@@ -548,6 +560,11 @@ def get_char_image_db(char_name):
     return row[0] if row else None
 
 
+def get_char_image(char_name):
+    """Alias"""
+    return get_char_image_db(char_name)
+
+
 # ============ FORCE CHANNELS ============
 
 def add_force_channel_db(channel_id, channel_name=""):
@@ -597,13 +614,6 @@ def get_custom_quests_db():
     return rows
 
 
-def get_custom_quest_db(key):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
-    row = c.fetchone()
-    conn.close()
-    return row
 # ============ WORLD ============
 
 def get_world_progress(user_id):
@@ -797,261 +807,3 @@ def get_default_help(key):
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
-
-
-# ============ OWNER RESET FUNCTIONS ============
-
-def reset_player_coins_and_chars(user_id):
-    """ریست کوین و کاراکترهای یه پلیر"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    try:
-        c.execute("UPDATE users SET coins = 0 WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM characters WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM abilities_owned WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM buffs WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM active_battles WHERE user_id = ?", (user_id,))
-        conn.commit()
-        return True
-    except Exception as e:
-        conn.rollback()
-        print(f"Reset Error: {e}")
-        return False
-    finally:
-        conn.close()
-
-
-def reset_all_players_coins_and_chars():
-    """ریست کوین و کاراکترهای همه پلیرها"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    try:
-        c.execute("SELECT COUNT(*) FROM users")
-        total_users = c.fetchone()[0]
-        c.execute("UPDATE users SET coins = 0")
-        c.execute("DELETE FROM characters")
-        c.execute("DELETE FROM abilities_owned")
-        c.execute("DELETE FROM buffs")
-        c.execute("DELETE FROM active_battles")
-        conn.commit()
-        return total_users
-    except Exception as e:
-        conn.rollback()
-        print(f"Reset All Error: {e}")
-        return 0
-    finally:
-        conn.close()
-
-
-def get_total_users_count():
-    """تعداد کل پلیرها"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM users")
-    count = c.fetchone()[0]
-    conn.close()
-    return count
-
-
-def get_player_info_by_username(username):
-    """پیدا کردن پلیر با یوزرنیم → (id, username, coins, char_count)"""
-    username = username.replace("@", "").strip()
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT user_id, username, coins FROM users WHERE username=?", (username,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return None
-    c.execute("SELECT COUNT(*) FROM characters WHERE user_id=?", (row[0],))
-    char_count = c.fetchone()[0]
-    conn.close()
-    return (row[0], row[1], row[2], char_count)
-def get_all_guilds():
-    """گرفتن همه کلن‌ها"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC""")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-
-def search_guilds(query):
-    """جستجوی کلن با اسم"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
-              (f"%{query}%",))
-    rows = c.fetchall()
-    conn.close()
-    return rows
-# ============================================
-# ALIASES - برای سازگاری با فایل‌های دیگه
-# ============================================
-
-def get_char_image(char_name):
-    """Alias برای get_char_image_db"""
-    return get_char_image_db(char_name)
-
-
-def set_char_image(char_name, image_url):
-    """Alias برای set_char_image_db"""
-    return set_char_image_db(char_name, image_url)
-
-
-def get_all_guilds():
-    """گرفتن همه کلن‌ها"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC""")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-
-def search_guilds(query):
-    """جستجوی کلن"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
-              (f"%{query}%",))
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-
-def get_guild_by_name(name):
-    """Alias موجوده - دوباره چک"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT * FROM guilds WHERE name=?", (name,))
-    row = c.fetchone()
-    conn.close()
-    return row
-
-
-def get_guild_by_id(guild_id):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT * FROM guilds WHERE id=?", (guild_id,))
-    row = c.fetchone()
-    conn.close()
-    return row
-
-
-def get_user_guild(user_id):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT g.id, g.name, g.leader_id, g.level, g.xp,
-                        g.treasury, g.members_count
-                 FROM guilds g JOIN guild_members gm ON g.id = gm.guild_id
-                 WHERE gm.user_id=?""", (user_id,))
-    row = c.fetchone()
-    conn.close()
-    return row
-
-
-def get_help(key):
-    """Alias برای get_help_db"""
-    return get_help_db(key)
-
-
-def set_help(key, text):
-    """Alias برای set_help_db"""
-    return set_help_db(key, text)
-
-
-def get_all_help():
-    """Alias برای get_all_help_db"""
-    return get_all_help_db()
-
-
-def get_admin(user_id):
-    """Alias برای get_admin_db"""
-    return get_admin_db(user_id)
-
-
-def get_all_admins():
-    """Alias برای get_all_admins_db"""
-    return get_all_admins_db()
-
-
-def add_admin(user_id, role="admin", permissions="", added_by=None):
-    """Alias برای add_admin_db"""
-    return add_admin_db(user_id, role, permissions, added_by)
-
-
-def remove_admin(user_id):
-    """Alias برای remove_admin_db"""
-    return remove_admin_db(user_id)
-
-
-def set_admin_perms(user_id, permissions):
-    """Alias برای set_admin_perms_db"""
-    return set_admin_perms_db(user_id, permissions)
-
-
-def has_permission(user_id, permission):
-    """Alias برای has_permission_db"""
-    return has_permission_db(user_id, permission)
-
-
-def get_admin_perms(user_id):
-    """Alias برای get_admin_perms_list"""
-    return get_admin_perms_list(user_id)
-
-
-def get_force_channels():
-    """Alias برای get_force_channels_db"""
-    return get_force_channels_db()
-
-
-def add_force_channel(channel_id, channel_name=""):
-    """Alias برای add_force_channel_db"""
-    return add_force_channel_db(channel_id, channel_name)
-
-
-def remove_force_channel(channel_id):
-    """Alias برای remove_force_channel_db"""
-    return remove_force_channel_db(channel_id)
-
-
-def get_custom_quest(key):
-    """Alias برای get_custom_quest_db"""
-    return get_custom_quest_db(key)
-
-
-def get_all_custom_quests():
-    """Alias برای get_custom_quests_db"""
-    return get_custom_quests_db()
-
-
-def set_custom_quest(key, desc_text, target, reward):
-    """Alias برای set_custom_quest_db"""
-    return set_custom_quest_db(key, desc_text, target, reward)
-def get_char_image(char_name):
-    return get_char_image_db(char_name)
-
-def get_all_guilds():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC""")
-    rows = c.fetchall()
-    conn.close()
-    return rows
-
-def search_guilds(query):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
-              (f"%{query}%",))
-    rows = c.fetchall()
-    conn.close()
-    return rows
