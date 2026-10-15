@@ -67,7 +67,10 @@ def buy_slot(user_id, char_id, slot_num):
     return f"Slot {slot_num} unlocked!"
 
 
+# ============ UPGRADE ============
+
 def get_upgrade_cost(current_level, target_level):
+    """محاسبه هزینه کل برای رسیدن از current_level به target_level"""
     total = 0
     for lvl in range(current_level, target_level):
         cost_per_level = 0
@@ -77,6 +80,16 @@ def get_upgrade_cost(current_level, target_level):
                 break
         total += cost_per_level
     return total
+
+
+def get_growth_rates(base_hp, base_atk, base_def, base_dodge):
+    """ضریب رشد بر اساس آمار اولیه"""
+    return {
+        "hp": max(1, base_hp // 25),
+        "atk": max(1, base_atk // 25),
+        "def": max(1, base_def // 25),
+        "dodge": base_dodge / 1000,
+    }
 
 
 def upgrade_character(user_id, char_id, target_level=None):
@@ -90,6 +103,23 @@ def upgrade_character(user_id, char_id, target_level=None):
         return "Character not found."
 
     level, hp, atk, dfn, dodge = row
+
+    # آمار پایه رو از stats بگیر
+    c.execute("SELECT char_name, rank FROM characters WHERE id=?", (char_id,))
+    char_row = c.fetchone()
+    char_name = char_row[0]
+    rank = char_row[1]
+
+    # آمار اولیه
+    from characters import get_char_stats
+    base_stats = get_char_stats(char_name, rank)
+    base_hp = base_stats.get("hp", 400)
+    base_atk = base_stats.get("atk", 60)
+    base_def = base_stats.get("def", 20)
+    base_dodge = base_stats.get("dodge", 10)
+
+    # ضریب رشد
+    growth = get_growth_rates(base_hp, base_atk, base_def, base_dodge)
 
     if target_level is None:
         target_level = level + 1
@@ -107,19 +137,19 @@ def upgrade_character(user_id, char_id, target_level=None):
     coins = get_coins(user_id)
     if coins < total_cost:
         conn.close()
-        return f"❌ پول کافی نداری!\n💰 لازم: {total_cost}\n💵 داری: {coins}"
+        return f"❌ پول کافی نداری!\n💰 لازم: {total_cost:,}\n💵 داری: {coins:,}"
 
     spend_coins(user_id, total_cost)
 
     levels_gained = target_level - level
-    new_hp = hp + (50 * levels_gained)
-    new_atk = atk + (10 * levels_gained)
-    new_def = dfn + (5 * levels_gained)
-    new_dodge = dodge + (0.5 * levels_gained)
+    new_hp = hp + (growth["hp"] * levels_gained)
+    new_atk = atk + (growth["atk"] * levels_gained)
+    new_def = dfn + (growth["def"] * levels_gained)
+    new_dodge = min(50, dodge + (growth["dodge"] * levels_gained))
 
     c.execute("""UPDATE characters SET level=?, hp=?, atk=?, def=?, dodge=?
                  WHERE id=?""",
-              (target_level, new_hp, new_atk, new_def, new_dodge, char_id))
+              (target_level, int(new_hp), int(new_atk), int(new_def), round(new_dodge, 1), char_id))
     conn.commit()
     conn.close()
-    return f"✅ لول {target_level} شدی!\n💰 هزینه: {total_cost} سکه"
+    return f"✅ لول {target_level} شدی!\n💰 هزینه: {total_cost:,} سکه"
