@@ -4,6 +4,7 @@ import sqlite3
 from config import (BOSSES, ABILITIES, BUFFS, ITEMS,
                     ABILITY_FA, BUFF_FA, ITEM_FA)
 from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK, ABILITIES_JJK
+from opm_data import BOSSES_OPM
 from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
 from database import DB_NAME, add_coins, get_abilities
 from quests import update_quest_progress
