@@ -5,6 +5,7 @@ from images import IMAGES
 from quests import update_quest_progress
 from jjk_data import (ABILITIES_JJK, DOMAINS_JJK, BOSSES_JJK, FODDER_JJK)
 from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
+from opm_data import BOSSES_OPM
 
 
 def get_boss_data(boss_name):
@@ -22,6 +23,10 @@ def get_boss_data(boss_name):
                 "display_name": data.get("display_name", boss_name)}
     if boss_name in FODDER_JJK:
         data = FODDER_JJK[boss_name]
+        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
+                "display_name": data.get("display_name", boss_name)}
+    if boss_name in BOSSES_OPM:
+        data = BOSSES_OPM[boss_name]
         return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
                 "display_name": data.get("display_name", boss_name)}
     if boss_name in BOSSES:
@@ -53,10 +58,6 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
         return "special"
     return "defend"
 
-
-# ============================================================
-# 🎨 توابع کمکی نمایش
-# ============================================================
 
 def hp_bar(current, maximum, length=10):
     if maximum <= 0:
@@ -96,12 +97,6 @@ def box_simple(text, width=24):
     if len(text) > width - 2:
         text = text[:width - 2]
     return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
-
-
-# ============================================================
-# 🎯 تابع دفاع/جاخالی
-# ============================================================
-
 def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
     roll = random.randint(1, 100)
 
@@ -117,6 +112,8 @@ def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
         php = max(0, php - base_dmg)
         log = f"❌ {defense_type} ناموفق! {format_num(base_dmg)} آسیب کامل"
         return php, log
+
+
 def boss_attack_player(boss, php, pmax, battle, defense_flag=None, char_dodge=0):
     base_dmg, crit = roll_damage(boss["atk"], 0, 0)
 
