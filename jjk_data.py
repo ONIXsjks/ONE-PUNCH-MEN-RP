@@ -2,9 +2,6 @@
 # JJK DATA - Jujutsu Kaisen Characters, Abilities, Domains
 # ============================================================
 
-# ============================================================
-# CHARACTERS
-# ============================================================
 CHARACTERS_JJK = {
     "S": {
         "Gojo Satoru": "The Strongest",
@@ -45,11 +42,7 @@ CHAR_PRICES_JJK = {
     "C": 50000,
 }
 
-# ============================================================
-# ABILITIES (2 per character)
-# ============================================================
 ABILITIES_JJK = {
-    # ============ S RANK ============
     "Gojo Satoru": {
         "ability_1": {"name": "Limitless", "effect": "DODGE 90% (1 turn)", "type": "dodge"},
         "ability_2": {"name": "Hollow Purple", "effect": "ATK x5", "type": "damage"},
@@ -98,8 +91,6 @@ ABILITIES_JJK = {
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
     },
-
-    # ============ A RANK ============
     "Yuji Itadori": {
         "ability_1": {"name": "Divergent Fist", "effect": "2 hits in 1 turn", "type": "multi"},
         "ability_2": {"name": "Black Flash", "effect": "25% chance 4x ATK", "type": "gamble"},
@@ -132,8 +123,6 @@ ABILITIES_JJK = {
         "ability_1": {"name": "Projection Sorcery", "effect": "24 frames (2 hits)", "type": "multi"},
         "ability_2": {"name": "Speed Strike", "effect": "ATK x3", "type": "damage"},
     },
-
-    # ============ B RANK ============
     "Nobara Kugisaki": {
         "ability_1": {"name": "Straw Doll Technique", "effect": "ATK x2", "type": "damage"},
         "ability_2": {"name": "Resonance", "effect": "20% direct HP damage", "type": "damage"},
@@ -152,187 +141,116 @@ ABILITIES_JJK = {
     },
 }
 
-# ============================================================
-# DOMAINS
-# ============================================================
 DOMAINS_JJK = {
-    "Gojo Satoru": {
-        "name": "Unlimited Void",
-        "type": "single",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"freeze": 1, "hp_drain": 10, "atk_boost": 15, "heal": 20},
-    },
-    "Yuta Okkotsu": {
-        "name": "Authentic Mutual Love",
-        "type": "single",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"atk_boost": 20, "dodge_boost": 15, "hp_drain": 5, "heal_per_turn": 5},
-    },
-    "Kenjaku": {
-        "name": "Womb Profusion",
-        "type": "multi",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"spirits": 2, "dodge_debuff": 15, "hp_drain": 3},
-    },
-    "Kinji Hakari": {
-        "name": "Idle Death Gamble",
-        "type": "multi",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"gamble": 50, "atk_boost": 15, "heal_per_turn": 8},
-    },
-    "Hiromi Higuruma": {
-        "name": "Deadly Sentencing",
-        "type": "multi",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"no_defense": True, "disable_ability": 1, "atk_boost": 15},
-    },
-    "Yuji Modulo": {
-        "name": "Unnamed Domain",
-        "type": "multi",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"atk_boost": 20, "freeze": 1, "dodge_debuff": 15},
-    },
-    "SUKUNA ITADORI BODY": {
-        "name": "Malevolent Shrine",
-        "type": "all",
-        "duration": 2,
-        "cooldown": 2,
-        "effects": {"atk_boost": 20, "hp_drain": 8, "dodge_debuff": 15},
-    },
-    "Yuji Itadori": {
-        "name": "Unnamed Domain",
-        "type": "single",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"atk_boost": 15, "heal": 20, "hp_drain": 3},
-    },
-    "Megumi Fushiguro": {
-        "name": "Chimera Shadow Garden",
-        "type": "single",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"shadows": 2, "dodge_debuff": 15, "hp_drain": 5, "heal_per_turn": 5},
-    },
-    "Naoya Zenin": {
-        "name": "Time Cell Moon Palace",
-        "type": "single",
-        "duration": 2,
-        "cooldown": 3,
-        "effects": {"freeze": 1, "frames": 2, "dodge_boost": 15},
-    },
-    "Sukuna Heian": {
-        "name": "Malevolent Shrine",
-        "type": "all",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"atk_boost": 30, "hp_drain": 8, "dodge_debuff": 25, "no_defense": True},
-    },
-    "Sukuna Megumi": {
-        "name": "Malevolent Shrine",
-        "type": "all",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"atk_boost": 25, "freeze": 1, "hp_drain": 5},
-    },
-    "Mahoraga": {
-        "name": "Divine Judgment",
-        "type": "single",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"hp_drain": 25, "atk_boost": 20},
-    },
-    "Mahito": {
-        "name": "Self-Embodiment of Perfection",
-        "type": "single",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"dodge_debuff": 50, "atk_boost": 25, "hp_drain": 10},
-    },
-    "Uraume": {
-        "name": "Absolute Zero",
-        "type": "single",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"freeze": 1, "atk_boost": 20, "hp_drain": 8, "no_defense": True},
-    },
-    "Dabura": {
-        "name": "Void Shrine",
-        "type": "all",
-        "duration": 3,
-        "cooldown": 3,
-        "effects": {"atk_boost": 25, "dodge_debuff": 20, "hp_drain": 5},
-    },
+    "Gojo Satoru": {"name": "Unlimited Void", "type": "single", "duration": 2, "cooldown": 3,
+        "effects": {"freeze": 1, "hp_drain": 10, "atk_boost": 15, "heal": 20}},
+    "Yuta Okkotsu": {"name": "Authentic Mutual Love", "type": "single", "duration": 2, "cooldown": 3,
+        "effects": {"atk_boost": 20, "dodge_boost": 15, "hp_drain": 5, "heal_per_turn": 5}},
+    "Kenjaku": {"name": "Womb Profusion", "type": "multi", "duration": 2, "cooldown": 3,
+        "effects": {"spirits": 2, "dodge_debuff": 15, "hp_drain": 3}},
+    "Kinji Hakari": {"name": "Idle Death Gamble", "type": "multi", "duration": 2, "cooldown": 3,
+        "effects": {"gamble": 50, "atk_boost": 15, "heal_per_turn": 8}},
+    "Hiromi Higuruma": {"name": "Deadly Sentencing", "type": "multi", "duration": 2, "cooldown": 3,
+        "effects": {"no_defense": True, "disable_ability": 1, "atk_boost": 15}},
+    "Yuji Modulo": {"name": "Unnamed Domain", "type": "multi", "duration": 2, "cooldown": 3,
+        "effects": {"atk_boost": 20, "freeze": 1, "dodge_debuff": 15}},
+    "SUKUNA ITADORI BODY": {"name": "Malevolent Shrine", "type": "all", "duration": 2, "cooldown": 2,
+        "effects": {"atk_boost": 20, "hp_drain": 8, "dodge_debuff": 15}},
+    "Yuji Itadori": {"name": "Unnamed Domain", "type": "single", "duration": 2, "cooldown": 3,
+        "effects": {"atk_boost": 15, "heal": 20, "hp_drain": 3}},
+    "Megumi Fushiguro": {"name": "Chimera Shadow Garden", "type": "single", "duration": 2, "cooldown": 3,
+        "effects": {"shadows": 2, "dodge_debuff": 15, "hp_drain": 5, "heal_per_turn": 5}},
+    "Naoya Zenin": {"name": "Time Cell Moon Palace", "type": "single", "duration": 2, "cooldown": 3,
+        "effects": {"freeze": 1, "frames": 2, "dodge_boost": 15}},
+    "Sukuna Heian": {"name": "Malevolent Shrine", "type": "all", "duration": 3, "cooldown": 3,
+        "effects": {"atk_boost": 30, "hp_drain": 8, "dodge_debuff": 25, "no_defense": True}},
+    "Sukuna Megumi": {"name": "Malevolent Shrine", "type": "all", "duration": 3, "cooldown": 3,
+        "effects": {"atk_boost": 25, "freeze": 1, "hp_drain": 5}},
+    "Mahoraga": {"name": "Divine Judgment", "type": "single", "duration": 3, "cooldown": 3,
+        "effects": {"hp_drain": 25, "atk_boost": 20}},
+    "Mahito": {"name": "Self-Embodiment of Perfection", "type": "single", "duration": 3, "cooldown": 3,
+        "effects": {"dodge_debuff": 50, "atk_boost": 25, "hp_drain": 10}},
+    "Uraume": {"name": "Absolute Zero", "type": "single", "duration": 3, "cooldown": 3,
+        "effects": {"freeze": 1, "atk_boost": 20, "hp_drain": 8, "no_defense": True}},
+    "Dabura": {"name": "Void Shrine", "type": "all", "duration": 3, "cooldown": 3,
+        "effects": {"atk_boost": 25, "dodge_debuff": 20, "hp_drain": 5}},
 }
 
 # ============================================================
-# BOSSES
+# BOSSES (مرتب‌شده بر اساس قدرت)
 # ============================================================
 BOSSES_JJK = {
-    "Sukuna Heian": {
-        "display_name": "Sukuna (Heian Form)",
-        "hp": 50000,
-        "atk": 2000,
-        "reward": 150000,
-        "fodder": ["Small Shadow", "Cursed Spirit", "Cursed Spirit"],
-        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
-        "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
+    # 🟢 ضعیف (HP < 5k، ATK < 300)
+    "Small Shadow": {
+        "display_name": "سایه کوچک",
+        "hp": 500, "atk": 40, "reward": 50000,
     },
-    "Sukuna Megumi": {
-        "display_name": "Sukuna (Megumi's Body)",
-        "hp": 45000,
-        "atk": 1800,
-        "reward": 150000,
-        "fodder": ["Small Shadow", "Shadow Wolf", "Cursed Spirit"],
-        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
-        "ability_2": {"name": "Ten Shadows", "effect": "2 shadows x2 ATK", "type": "multi"},
+    "Cursed Spirit": {
+        "display_name": "روح سرگردان",
+        "hp": 800, "atk": 60, "reward": 50000,
     },
-    "Mahoraga": {
-        "display_name": "Divine General Mahoraga",
-        "hp": 40000,
-        "atk": 2500,
-        "reward": 130000,
-        "fodder": ["Shadow Wolf", "Shadow Wolf"],
-        "ability_1": {"name": "Adaptation Wheel", "effect": "ATK +100 per turn", "type": "buff"},
-        "ability_2": {"name": "Sword of Extermination", "effect": "ATK x5 (ignore DEF)", "type": "damage"},
+    "Shadow Wolf": {
+        "display_name": "گرگ سایه",
+        "hp": 1200, "atk": 90, "reward": 50000,
     },
-    "Mahito": {
-        "display_name": "Mahito",
-        "hp": 35000,
-        "atk": 1500,
-        "reward": 130000,
-        "fodder": ["Cursed Spirit", "Cursed Spirit", "Small Shadow", "Small Shadow"],
-        "ability_1": {"name": "Idle Transfiguration", "effect": "ATK x3", "type": "damage"},
-        "ability_2": {"name": "Soul Manipulation", "effect": "20% HP damage", "type": "damage"},
+
+    # 🟡 متوسط (HP 5k-20k، ATK 300-800)
+    "Cursed Worm": {
+        "display_name": "کرم نفرین‌شده",
+        "hp": 3000, "atk": 200, "reward": 100000,
     },
+    "Hell Spider": {
+        "display_name": "عنکبوت جهنمی",
+        "hp": 4000, "atk": 250, "reward": 100000,
+    },
+
+    # 🟠 قوی (HP 20k-50k، ATK 800-2k)
     "Uraume": {
-        "display_name": "Uraume",
-        "hp": 30000,
-        "atk": 1300,
-        "reward": 100000,
+        "display_name": "اوراومه",
+        "hp": 30000, "atk": 1300, "reward": 200000,
         "fodder": ["Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Frozen Domain", "effect": "Freeze enemy (1 turn)", "type": "freeze"},
         "ability_2": {"name": "Ice Tomb", "effect": "ATK x4", "type": "damage"},
     },
+    "Mahito": {
+        "display_name": "ماهیتو",
+        "hp": 35000, "atk": 1500, "reward": 200000,
+        "fodder": ["Cursed Spirit", "Cursed Spirit", "Small Shadow", "Small Shadow"],
+        "ability_1": {"name": "Idle Transfiguration", "effect": "ATK x3", "type": "damage"},
+        "ability_2": {"name": "Soul Manipulation", "effect": "20% HP damage", "type": "damage"},
+    },
+    "Mahoraga": {
+        "display_name": "ماهوراگا",
+        "hp": 40000, "atk": 2500, "reward": 200000,
+        "fodder": ["Shadow Wolf", "Shadow Wolf"],
+        "ability_1": {"name": "Adaptation Wheel", "effect": "ATK +100 per turn", "type": "buff"},
+        "ability_2": {"name": "Sword of Extermination", "effect": "ATK x5 (ignore DEF)", "type": "damage"},
+    },
+    "Sukuna Megumi": {
+        "display_name": "سوکونا (بدن مگومی)",
+        "hp": 45000, "atk": 1800, "reward": 200000,
+        "fodder": ["Small Shadow", "Shadow Wolf", "Cursed Spirit"],
+        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
+        "ability_2": {"name": "Ten Shadows", "effect": "2 shadows x2 ATK", "type": "multi"},
+    },
+
+    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+)
     "Dabura": {
-        "display_name": "Dabura",
-        "hp": 28000,
-        "atk": 1200,
-        "reward": 100000,
+        "display_name": "دابورا",
+        "hp": 95000, "atk": 2500, "reward": 500000,
         "fodder": ["Small Shadow", "Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Cursed Energy Blast", "effect": "ATK x4", "type": "damage"},
         "ability_2": {"name": "Dark Rift", "effect": "25% HP damage", "type": "damage"},
     },
+    "Sukuna Heian": {
+        "display_name": "سوکونا (فرم هیان)",
+        "hp": 100000, "atk": 3000, "reward": 500000,
+        "fodder": ["Small Shadow", "Cursed Spirit", "Cursed Spirit"],
+        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
+        "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
+    },
 }
 
-# ============================================================
-# FODDER
-# ============================================================
 FODDER_JJK = {
     "Small Shadow": {"display_name": "سایه کوچک", "hp": 500, "atk": 40, "reward": 5000},
     "Cursed Spirit": {"display_name": "روح سرگردان", "hp": 800, "atk": 60, "reward": 5000},
@@ -342,34 +260,19 @@ FODDER_JJK = {
     "Hell Spider": {"display_name": "عنکبوت جهنمی", "hp": 4000, "atk": 250, "reward": 5000},
 }
 
-# ============================================================
-# COOLDOWNS
-# ============================================================
-COOLDOWNS_JJK = {
-    "ability_1": 1,
-    "ability_2": 2,
-    "domain": 3,
-}
-
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
+COOLDOWNS_JJK = {"ability_1": 1, "ability_2": 2, "domain": 3}
 
 def get_char_abilities(char_name):
     return ABILITIES_JJK.get(char_name, {})
 
-
 def get_char_domain(char_name):
     return DOMAINS_JJK.get(char_name, None)
-
 
 def get_boss_data(boss_name):
     return BOSSES_JJK.get(boss_name, None)
 
-
 def get_fodder_data(fodder_name):
     return FODDER_JJK.get(fodder_name, None)
-
 
 def is_jjk_character(char_name):
     for rank in CHARACTERS_JJK:
@@ -377,14 +280,11 @@ def is_jjk_character(char_name):
             return True
     return False
 
-
 def is_jjk_boss(boss_name):
     return boss_name in BOSSES_JJK
 
-
 def has_domain(char_name):
     return char_name in DOMAINS_JJK
-
 
 def get_character_rank(char_name):
     for rank in CHARACTERS_JJK:
