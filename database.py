@@ -2,8 +2,6 @@ import sqlite3
 from config import DB_NAME
 
 
-# ============ INIT ============
-
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -146,6 +144,13 @@ def init_db():
         found_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
+    # اضافه کردن ستون spam_state به جدول قدیمی (اگه نبود)
+    try:
+        c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+        print("✅ Column spam_state added")
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
 
@@ -273,6 +278,8 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
+
+
 # ============ ABILITIES & ITEMS ============
 
 def get_abilities(user_id, char_name):
@@ -309,8 +316,6 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
-
-
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -466,6 +471,8 @@ def is_guild_leader(guild_id, user_id):
     row = c.fetchone()
     conn.close()
     return row and row[0] == user_id
+
+
 # ============ ADMIN ============
 
 def add_admin_db(user_id, role="admin", permissions="", added_by=None):
@@ -561,7 +568,6 @@ def get_char_image_db(char_name):
 
 
 def get_char_image(char_name):
-    """Alias"""
     return get_char_image_db(char_name)
 
 
@@ -612,6 +618,15 @@ def get_custom_quests_db():
     rows = c.fetchall()
     conn.close()
     return rows
+
+
+def get_custom_quest_db(key):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
+    row = c.fetchone()
+    conn.close()
+    return row
 
 
 # ============ WORLD ============
@@ -807,11 +822,3 @@ def get_default_help(key):
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
-def get_custom_quest_db(key):
-    """گرفتن یه کوئست سفارشی با کلید (مفرد)"""
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
-    row = c.fetchone()
-    conn.close()
-    return row
