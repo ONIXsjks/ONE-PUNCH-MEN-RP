@@ -27,7 +27,6 @@ COMBO_BONUS = 50
 COOP_WIN = 200
 GROUP_BOSS_WIN = 400
 
-# ============ RANK STATS (پیش‌فرض - اگه کاراکتری توی stats نبود) ============
 RANK_STATS = {
     "S": {"hp": 1500, "atk": 300, "def": 100, "dodge": 25, "slots": 8},
     "A": {"hp": 1000, "atk": 200, "def": 70,  "dodge": 20, "slots": 7},
@@ -37,7 +36,6 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
-# ============ LEVEL COST (پله‌ای تا ۵۰۰) ============
 LEVEL_COST = [
     (1, 10, 5000),
     (10, 20, 15000),
@@ -55,7 +53,6 @@ LEVEL_COST = [
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
-# ============ ABILITIES ============
 ABILITIES = {
     "Iron Skin":       {"effect": "DEF +50",           "effect_fa": "دفاع +۵۰",              "price": 5000},
     "Shadow Step":     {"effect": "DODGE +15%",          "effect_fa": "جاخالی +۱۵٪",            "price": 6000},
@@ -73,7 +70,6 @@ ABILITIES = {
     "Dragon Fist":     {"effect": "ATK +250 (3 turns)",  "effect_fa": "حمله +۲۵۰ (۳ راند)",     "price": 22000},
 }
 
-# ============ ITEMS ============
 ITEMS = {
     "Health Potion":  {"effect": "HP +500",           "effect_fa": "HP +۵۰۰",           "price": 1500},
     "Mega Potion":    {"effect": "HP +1500",          "effect_fa": "HP +۱۵۰۰",          "price": 3500},
@@ -86,7 +82,6 @@ ITEMS = {
     "Smoke Bomb":     {"effect": "DODGE +50%",        "effect_fa": "جاخالی +۵۰٪",        "price": 7000},
 }
 
-# ============ BUFFS ============
 BUFFS = {
     "HP Buff":        {"effect": "Max HP +500",     "effect_fa": "Max HP +۵۰۰",      "price": 8000},
     "Power Buff":     {"effect": "ATK +150",        "effect_fa": "حمله +۱۵۰",        "price": 9000},
@@ -98,7 +93,6 @@ BUFFS = {
     "God Buff":       {"effect": "all +50% (1h)",   "effect_fa": "همه +۵۰٪ (۱ ساعت)", "price": 60000},
 }
 
-# ============ TRANSLATIONS ============
 ABILITY_FA = {
     "Iron Skin": "پوست آهنین",
     "Shadow Step": "قدم سایه",
@@ -139,31 +133,29 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
-# ============ CHARACTERS (خالی، همه از فایل‌ها میان) ============
+# ============ MERGE CHARACTERS ============
 CHARACTERS = {}
 
-CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
+CHARACTERS.update(CHARACTERS_JJK)
+CHARACTERS.update(CHARACTERS_BLEACH)
+CHARACTERS.update(CHARACTERS_OPM)
 
-# ============ BOSSES (خالی، همه از فایل‌ها میان) ============
+CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
+CHAR_PRICES.update(CHAR_PRICES_JJK)
+CHAR_PRICES.update(CHAR_PRICES_BLEACH)
+
+# ============ MERGE BOSSES ============
 BOSSES = {}
+
+BOSSES.update(BOSSES_JJK)
+BOSSES.update(BLEACH_BOSSES)
+BOSSES.update(BOSSES_OPM)
+
+# ============ MERGE ABILITIES ============
+ABILITIES.update(BLEACH_ABILITIES_SHOP)
+ABILITIES.update(ABILITIES_OPM)
 
 # ============ ADMIN ============
 ADMIN_IDS = [
     7023690411,
 ]
-
-# ============ MERGE JJK ============
-CHARACTERS.update(CHARACTERS_JJK)
-CHAR_PRICES.update(CHAR_PRICES_JJK)
-BOSSES.update(BOSSES_JJK)
-
-# ============ MERGE BLEACH ============
-CHARACTERS.update(CHARACTERS_BLEACH)
-CHAR_PRICES.update(CHAR_PRICES_BLEACH)
-BOSSES.update(BLEACH_BOSSES)
-ABILITIES.update(BLEACH_ABILITIES_SHOP)
-
-# ============ MERGE OPM ============
-CHARACTERS.update(CHARACTERS_OPM)
-BOSSES.update(BOSSES_OPM)
-ABILITIES.update(ABILITIES_OPM)
