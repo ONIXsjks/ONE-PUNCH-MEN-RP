@@ -36,7 +36,6 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
-# ============ LEVEL COST (پله‌ای) ============
 LEVEL_COST = [
     (1, 10, 2000),
     (10, 20, 5000),
@@ -58,7 +57,6 @@ LEVEL_COST = [
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
-# ============ ABILITIES (Shop) ============
 ABILITIES = {
     "Iron Skin":       {"effect": "DEF +50",           "effect_fa": "دفاع +۵۰",              "price": 5000},
     "Shadow Step":     {"effect": "DODGE +15%",          "effect_fa": "جاخالی +۱۵٪",            "price": 6000},
@@ -139,7 +137,6 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
-# ============ MERGE CHARACTERS ============
 CHARACTERS = {}
 
 for rank, chars in CHARACTERS_JJK.items():
@@ -157,44 +154,43 @@ for rank, chars in CHARACTERS_OPM.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# ============ MERGE CHAR PRICES ============
 CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
 CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
-# ============ MERGE BOSSES (OPM + JJK + Bleach) ============
 BOSSES = {}
 
-# OPM Bosses
 for key, val in BOSSES_OPM.items():
     BOSSES[key] = val
 
-# JJK Bosses
 for key, val in BOSSES_JJK.items():
     BOSSES[key] = val
 
-# Bleach Bosses
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
-# ============ MERGE ALL ABILITIES (Shop + Bleach + OPM) ============
 ABILITIES.update(BLEACH_ABILITIES_SHOP)
 
-# ============ MERGE 3-ABILITY (JJK + Bleach + OPM) ============
 ABILITIES_3 = {}
 ABILITIES_3.update(ABILITIES_JJK)
 ABILITIES_3.update(ABILITIES_BLEACH)
 ABILITIES_3.update(ABILITIES_OPM)
 
-# ============ MERGE DOMAINS ============
 DOMAINS = {}
 DOMAINS.update(DOMAINS_JJK)
 
-# ============ MERGE BANKAI ============
 BANKAI = {}
 BANKAI.update(BLEACH_BANKAI)
 
-# ============ ADMIN ============
+ABILITY_MULTIPLIERS = {
+    "ability_1": 3,
+    "ability_2": 5,
+    "ability_3": 10,
+    "domain": 8,
+    "bankai": 6,
+    "simple": 1,
+}
+
 ADMIN_IDS = [
     7023690411,
 ]
