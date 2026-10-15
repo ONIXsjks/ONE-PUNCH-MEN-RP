@@ -36,19 +36,24 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
+# ============ LEVEL COST (پله‌ای، هر ۱۰ لول دو برابر) ============
 LEVEL_COST = [
-    (1, 10, 5000),
-    (10, 20, 15000),
-    (20, 30, 40000),
-    (30, 40, 80000),
-    (40, 50, 150000),
-    (50, 70, 300000),
-    (70, 100, 600000),
-    (100, 150, 1500000),
-    (150, 200, 3000000),
-    (200, 300, 8000000),
-    (300, 400, 20000000),
-    (400, 500, 50000000),
+    (1, 10, 2000),
+    (10, 20, 5000),
+    (20, 30, 12000),
+    (30, 40, 25000),
+    (40, 50, 50000),
+    (50, 60, 100000),
+    (60, 70, 200000),
+    (70, 80, 400000),
+    (80, 90, 800000),
+    (90, 100, 1500000),
+    (100, 120, 3000000),
+    (120, 150, 6000000),
+    (150, 200, 12000000),
+    (200, 300, 30000000),
+    (300, 400, 70000000),
+    (400, 500, 150000000),
 ]
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
@@ -136,19 +141,16 @@ BUFF_FA = {
 # ============ MERGE CHARACTERS (ادغام Rank ها) ============
 CHARACTERS = {}
 
-# ادغام JJK
 for rank, chars in CHARACTERS_JJK.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# ادغام BLEACH
 for rank, chars in CHARACTERS_BLEACH.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# ادغام OPM
 for rank, chars in CHARACTERS_OPM.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
