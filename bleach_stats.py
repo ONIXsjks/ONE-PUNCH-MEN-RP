@@ -101,3 +101,39 @@ BLEACH_STATS = {
         "price": 150000,
     },
     "Orihime Inoue": {
+        "hp": 650, "atk": 110, "def": 38, "dodge": 16,
+        "price": 130000,
+    },
+    "Uryu Ishida": {
+        "hp": 720, "atk": 125, "def": 42, "dodge": 17,
+        "price": 160000,
+    },
+    "Tier Harribel": {
+        "hp": 750, "atk": 130, "def": 45, "dodge": 15,
+        "price": 170000,
+    },
+    "Coyote Starrk": {
+        "hp": 740, "atk": 128, "def": 43, "dodge": 16,
+        "price": 165000,
+    },
+    "Baraggan Louisenbairn": {
+        "hp": 760, "atk": 135, "def": 46, "dodge": 14,
+        "price": 175000,
+    },
+    "Soi Fon": {
+        "hp": 700, "atk": 125, "def": 40, "dodge": 20,
+        "price": 155000,
+    },
+    "Yoruichi Shihoin": {
+        "hp": 730, "atk": 130, "def": 42, "dodge": 22,
+        "price": 165000,
+    },
+    "Retsu Unohana": {
+        "hp": 780, "atk": 140, "def": 48, "dodge": 15,
+        "price": 185000,
+    },
+    "Marechiyo Omaeda": {
+        "hp": 650, "atk": 110, "def": 38, "dodge": 14,
+        "price": 130000,
+    },
+}
