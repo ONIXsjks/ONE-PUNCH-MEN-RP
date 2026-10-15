@@ -70,10 +70,10 @@ def init_db():
         domain_turns INTEGER DEFAULT 0,
         domain_name TEXT DEFAULT '',
         domain_atk_boost INTEGER DEFAULT 0,
+        spam_state TEXT DEFAULT 'ability_1',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ GUILD TABLES ============
     c.execute("""CREATE TABLE IF NOT EXISTS guilds (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT UNIQUE,
@@ -93,7 +93,6 @@ def init_db():
         joined_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ ADMIN TABLES ============
     c.execute("""CREATE TABLE IF NOT EXISTS admins (
         user_id INTEGER PRIMARY KEY,
         role TEXT DEFAULT 'admin',
@@ -129,7 +128,6 @@ def init_db():
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # ============ WORLD PROGRESS ============
     c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
         user_id INTEGER PRIMARY KEY,
         unlocked_regions TEXT DEFAULT 'forest',
@@ -157,7 +155,6 @@ def get_user(user_id, username=None):
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
     u = c.fetchone()
-
     if not u:
         c.execute("INSERT INTO users (user_id, username, coins) VALUES (?,?,0)",
                   (user_id, username or "Player"))
@@ -170,7 +167,6 @@ def get_user(user_id, username=None):
             conn.commit()
             c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
             u = c.fetchone()
-
     conn.close()
     return u
 
@@ -220,8 +216,8 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     c.execute("""INSERT INTO active_battles
         (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp,
          turn, status, domain_used, boss_frozen, domain_active, domain_turns,
-         domain_name, domain_atk_boost)
-        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0)""",
+         domain_name, domain_atk_boost, spam_state)
+        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1')""",
         (user_id, boss_name, player_hp, player_hp, boss_hp, boss_hp))
     bid = c.lastrowid
     conn.commit()
@@ -235,7 +231,7 @@ def get_battle(user_id):
     c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
                         boss_hp, boss_max_hp, player_defending, turn, status,
                         domain_used, boss_frozen, domain_active, domain_turns,
-                        domain_name, domain_atk_boost
+                        domain_name, domain_atk_boost, spam_state
                  FROM active_battles WHERE user_id=? AND status='active'""", (user_id,))
     row = c.fetchone()
     conn.close()
@@ -247,6 +243,7 @@ def get_battle(user_id):
         "defending": row[7], "turn": row[8], "status": row[9],
         "domain_used": row[10], "boss_frozen": row[11], "domain_active": row[12],
         "domain_turns": row[13], "domain_name": row[14], "domain_atk_boost": row[15],
+        "spam_state": row[16] if len(row) > 16 and row[16] else "ability_1",
     }
 
 
@@ -256,12 +253,13 @@ def update_battle(battle, status='active'):
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
-        domain_name=?, domain_atk_boost=? WHERE id=?""",
+        domain_name=?, domain_atk_boost=?, spam_state=? WHERE id=?""",
         (battle["php"], battle["bhp"], battle["turn"],
          battle["defending"], status,
          battle["domain_used"], battle["boss_frozen"],
          battle["domain_active"], battle["domain_turns"],
          battle["domain_name"], battle["domain_atk_boost"],
+         battle.get("spam_state", "ability_1"),
          battle["id"]))
     conn.commit()
     conn.close()
@@ -311,6 +309,8 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
+
+
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -445,8 +445,6 @@ def is_guild_leader(guild_id, user_id):
     row = c.fetchone()
     conn.close()
     return row and row[0] == user_id
-
-
 # ============ ADMIN ============
 
 def add_admin_db(user_id, role="admin", permissions="", added_by=None):
@@ -590,13 +588,6 @@ def get_custom_quests_db():
     return rows
 
 
-def get_custom_quest_db(key):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
-    row = c.fetchone()
-    conn.close()
-    return row
 # ============ WORLD ============
 
 def get_world_progress(user_id):
@@ -698,15 +689,9 @@ GUILD_MAX_MEMBERS = {
 }
 
 GUILD_UPGRADE_COST = {
-    1: (5000, 1000000),
-    2: (10000, 2500000),
-    3: (20000, 5000000),
-    4: (40000, 10000000),
-    5: (80000, 20000000),
-    6: (150000, 50000000),
-    7: (300000, 100000000),
-    8: (500000, 250000000),
-    9: (1000000, 500000000),
+    1: (5000, 1000000), 2: (10000, 2500000), 3: (20000, 5000000),
+    4: (40000, 10000000), 5: (80000, 20000000), 6: (150000, 50000000),
+    7: (300000, 100000000), 8: (500000, 250000000), 9: (1000000, 500000000),
 }
 
 GUILD_MAX_TREASURY = {
@@ -749,14 +734,8 @@ def can_upgrade_guild(guild_id):
 
 
 PERMISSIONS_LIST = [
-    "manage_admins",
-    "manage_coins",
-    "manage_chars",
-    "manage_quests",
-    "manage_channels",
-    "manage_help",
-    "manage_images",
-    "ban_users",
+    "manage_admins", "manage_coins", "manage_chars", "manage_quests",
+    "manage_channels", "manage_help", "manage_images", "ban_users",
 ]
 
 
@@ -778,19 +757,13 @@ def get_admin_perms_list(user_id):
     if "all" in perms:
         return PERMISSIONS_LIST
     return [p for p in perms.split(",") if p]
+
+
 # ============ HELP KEYS ============
 
 HELP_KEYS = [
-    "welcome",
-    "main_menu",
-    "battle_help",
-    "shop_help",
-    "guild_help",
-    "quest_help",
-    "jjk_help",
-    "opm_help",
-    "world_help",
-    "general",
+    "welcome", "main_menu", "battle_help", "shop_help", "guild_help",
+    "quest_help", "jjk_help", "opm_help", "world_help", "general",
 ]
 
 
