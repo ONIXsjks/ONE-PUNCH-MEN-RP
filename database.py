@@ -1034,3 +1034,24 @@ def get_all_custom_quests():
 def set_custom_quest(key, desc_text, target, reward):
     """Alias برای set_custom_quest_db"""
     return set_custom_quest_db(key, desc_text, target, reward)
+def get_char_image(char_name):
+    return get_char_image_db(char_name)
+
+def get_all_guilds():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC""")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+def search_guilds(query):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
+              (f"%{query}%",))
+    rows = c.fetchall()
+    conn.close()
+    return rows
