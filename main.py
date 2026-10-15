@@ -5,7 +5,10 @@ from config import *
 from database import (init_db, get_user, add_coins, get_coins,
                       create_battle, get_battle, update_battle, end_battle,
                       get_abilities, get_items, use_item, get_username,
-                      get_user_guild, get_top_guilds)
+                      get_user_guild, get_top_guilds,
+                      get_world_progress, update_world_region, unlock_world_region,
+                      increment_world_stat, add_world_treasure, get_world_treasures,
+                      get_unlocked_regions, get_current_region)
 from characters import (create_character, get_user_characters,
                         get_active_character, set_active, buy_character)
 from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
@@ -42,6 +45,10 @@ from opm_data import (CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM)
 from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
 from opm_stats import OPM_STATS
+from world import (REGIONS, TREASURES, get_region, get_region_name,
+                   random_explore_event, random_treasure, random_reward,
+                   can_unlock_region, get_player_region_view, get_region_view,
+                   format_treasure, format_world_progress, format_treasures_list)
 
 
 PVP_SESSIONS = {}
@@ -92,7 +99,8 @@ COMMAND_DESCRIPTIONS = {
     "shop": "شاپ", "upgrade": "ارتقای لول", "battle": "باس‌فایت تکی",
     "pvp": "نبرد 1v1", "team": "نبرد تیمی", "coop": "نبرد گروهی",
     "quests": "کوئست روزانه", "leaderboard": "لیدربورد", "guild": "کلن",
-    "gift": "هدیه دادن", "jjk": "جوجوتسو", "opm": "One-Punch Man", "help": "راهنما",
+    "gift": "هدیه دادن", "jjk": "جوجوتسو", "opm": "One-Punch Man",
+    "world": "دنیای آزاد", "help": "راهنما",
 }
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -197,6 +205,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🎁 هدیه", callback_data="prof_gift")],
         [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"),
          InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
+        [InlineKeyboardButton("🗺️ دنیای آزاد", callback_data="prof_world")],
     ]
 
     img = get_char_image(char_name)
@@ -260,6 +269,20 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"),
              InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")],
             [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")],
+        ]
+        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+    elif data == "prof_world":
+        user_id = q.from_user.id
+        text = get_player_region_view(user_id)
+        kb = [
+            [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
+            [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
+            [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
+            [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
+            [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
+            [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
+             InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
         ]
         await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
 
@@ -1235,6 +1258,194 @@ async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id)))
     except Exception:
         await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id)))
+# ============ WORLD ============
+
+async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
+        return
+    text = get_player_region_view(user_id)
+    kb = [
+        [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
+        [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
+        [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
+        [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
+        [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
+        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
+         InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
+    ]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    region_key = q.data.replace("world_", "")
+    user_id = q.from_user.id
+    unlocked = get_unlocked_regions(user_id)
+    if region_key not in unlocked:
+        can, msg = can_unlock_region(user_id, region_key)
+        if not can:
+            await q.answer(msg, show_alert=True)
+            return
+    update_world_region(user_id, region_key)
+    text = get_region_view(user_id, region_key)
+    kb = [
+        [InlineKeyboardButton("🚶 گشتن", callback_data=f"explore_{region_key}")],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+    ]
+    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    region_key = q.data.replace("explore_", "")
+    user_id = q.from_user.id
+    region = get_region(region_key)
+    if not region:
+        await q.answer("❌ منطقه پیدا نشد.", show_alert=True)
+        return
+    event = random_explore_event()
+    increment_world_stat(user_id, "explores")
+
+    if event == "enemy":
+        enemy_name = random.choice(region["enemies"])
+        char = get_active_character(user_id)
+        existing = get_battle(user_id)
+        if existing:
+            end_battle(existing["id"])
+        create_battle(user_id, enemy_name, char[5], 5000)
+        battle_data = get_battle(user_id)
+        text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+    elif event == "treasure":
+        t_key, t_data = random_treasure()
+        if t_data:
+            if t_data["type"] == "coins":
+                add_coins(user_id, t_data["value"])
+                reward_text = f"💰 +{t_data['value']:,} سکه"
+            elif t_data["type"] == "item":
+                reward_text = "🎁 یه آیتم تصادفی (به زودی)"
+            else:
+                reward_text = f"✨ {t_data['effect']}"
+            add_world_treasure(user_id, t_data["name"])
+            increment_world_stat(user_id, "treasures")
+            text = f"🎁 یه صندوق پیدا کردی!\n\n{format_treasure(t_key, t_data)}\n\n🎉 جایزه: {reward_text}"
+        else:
+            text = "🎁 صندوق خالی بود..."
+        kb = [
+            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+        ]
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+    elif event == "mine":
+        amount = random_reward(region_key) // 2
+        add_coins(user_id, amount)
+        text = f"💎 یه معدن پیدا کردی!\n\n💰 +{amount:,} سکه"
+        kb = [
+            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+        ]
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+    elif event == "gate":
+        all_regions = list(REGIONS.keys())
+        current_idx = all_regions.index(region_key) if region_key in all_regions else 0
+        if current_idx + 1 < len(all_regions):
+            next_region = all_regions[current_idx + 1]
+            unlocked_new = unlock_world_region(user_id, next_region)
+            if unlocked_new:
+                text = f"🚪 دروازه باز شد!\n\n🎉 منطقه جدید باز شد: {get_region_name(next_region)}"
+            else:
+                text = f"🚪 دروازه به {get_region_name(next_region)}"
+        else:
+            text = "🚪 دروازه به جایی نمی‌ره..."
+        kb = [
+            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+        ]
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+    elif event == "riddle":
+        riddle_rewards = [1000, 5000, 10000, 20000, 50000]
+        reward = random.choice(riddle_rewards)
+        add_coins(user_id, reward)
+        text = f"❓ یه معما حل کردی!\n\n💰 +{reward:,} سکه"
+        kb = [
+            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+        ]
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+    elif event == "rare_boss":
+        boss_name = region["boss"]
+        char = get_active_character(user_id)
+        existing = get_battle(user_id)
+        if existing:
+            end_battle(existing["id"])
+        create_battle(user_id, boss_name, char[5], 10000)
+        battle_data = get_battle(user_id)
+        text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+
+    elif event == "trap":
+        loss = random_reward(region_key) // 4
+        coins = get_coins(user_id)
+        if coins >= loss:
+            add_coins(user_id, -loss)
+            text = f"💀 توی تله افتادی!\n\n💸 -{loss:,} سکه"
+        else:
+            text = "💀 توی تله افتادی! ولی پولی نداشتی..."
+        kb = [
+            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+        ]
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def world_progress_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    text = format_world_progress(q.from_user.id)
+    kb = [
+        [InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+    ]
+    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def world_treasures_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    text = format_treasures_list(q.from_user.id)
+    kb = [
+        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress")],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
+    ]
+    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    text = get_player_region_view(q.from_user.id)
+    kb = [
+        [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
+        [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
+        [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
+        [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
+        [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
+        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
+         InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
+    ]
+    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 # ============ QUESTS ============
 
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1284,7 +1495,7 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         rows = get_top_by_coins(10)
         text = "Top 10 by Coins:\n\n"
         for i, (name, coins) in enumerate(rows, 1):
-            text += f"{i}. {name or 'Unknown'} - {coins:,} coins\n"
+            text += f"{i}. {name or 'Unknown'} - {coins:,}\n"
         await q.message.reply_text(text)
     elif data == "lb_level":
         rows = get_top_by_level(10)
@@ -1310,35 +1521,14 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = "👑 پنل ادمین\n━━━━━━━━━━━━━━━━━━━\n\n"
     if is_owner(user_id):
         text += "🔑 مالک اصلی\n\n"
-    text += "💰 سکه:\n"
-    text += "  /give <user_id> <amount>\n"
-    text += "  /take <user_id> <amount>\n\n"
-    text += "👤 کاربران:\n"
-    text += "  /userinfo <user_id>\n"
-    text += "  /allusers\n"
-    text += "  /resetuser <user_id>\n"
-    text += "  /ban <user_id>\n"
-    text += "  /unban <user_id>\n\n"
-    text += "🎭 کاراکتر:\n"
-    text += "  /givechar <user_id> <name> <rank>\n"
-    text += "  /resetchar <user_id>\n\n"
+    text += "💰 /give /take\n👤 /userinfo /allusers /resetuser /ban /unban\n"
+    text += "🎭 /givechar /resetchar\n"
     if is_owner(user_id):
-        text += "👑 ادمین‌ها:\n"
-        text += "  /addadmin <user_id>\n"
-        text += "  /removeadmin <user_id>\n"
-        text += "  /listadmins\n\n"
-        text += "📜 Help:\n"
-        text += "  /sethelp <key> <text>\n"
-        text += "  /viewhelp\n\n"
-        text += "🖼️ عکس:\n"
-        text += "  عکس + کپشن /setcharimage <name>\n\n"
-        text += "📢 کانال:\n"
-        text += "  /addchannel <channel_id>\n"
-        text += "  /removechannel <channel_id>\n"
-        text += "  /listchannels\n\n"
-        text += "🎯 کوئست:\n"
-        text += "  /setquest <key> <target> <reward>\n"
-        text += "  /viewquests\n"
+        text += "\n👑 /addadmin /removeadmin /listadmins\n"
+        text += "📜 /sethelp /viewhelp\n"
+        text += "🖼️ عکس + کپشن /setcharimage <name>\n"
+        text += "📢 /addchannel /removechannel /listchannels\n"
+        text += "🎯 /setquest /viewquests\n"
     await update.message.reply_text(text)
 
 
@@ -1391,10 +1581,7 @@ async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not user:
         await update.message.reply_text("❌ کاربر پیدا نشد.")
         return
-    text = f"👤 کاربر: {user[0] or 'Unknown'}\n"
-    text += f"🆔 ID: {target_id}\n"
-    text += f"💰 Coins: {user[1]:,}\n\n"
-    text += "🦸 کاراکترها:\n"
+    text = f"👤 کاربر: {user[0] or 'Unknown'}\n🆔 ID: {target_id}\n💰 Coins: {user[1]:,}\n\n🦸 کاراکترها:\n"
     if not chars:
         text += "  ❌ هیچ کاراکتری نداره\n"
     else:
@@ -1409,7 +1596,7 @@ async def allusers_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     rows = get_all_users()
     text = f"📋 کل کاربران: {len(rows)}\n\n"
     for i, (uid, name, coins) in enumerate(rows[:30], 1):
-        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins:,} 💰\n"
+        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins:,}\n"
     if len(rows) > 30:
         text += f"\n... و {len(rows) - 30} نفر دیگه"
     await update.message.reply_text(text)
@@ -1639,26 +1826,13 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_name = text_part
     file_id = update.message.photo[-1].file_id
-
-    debug_info = f"🔍 اسم: {char_name}\n\n"
-    debug_info += f"📋 JJK: {len(CHARACTERS_JJK)}\n"
-    debug_info += f"📋 BLEACH: {len(CHARACTERS_BLEACH)}\n"
-    debug_info += f"📋 OPM: {len(CHARACTERS_OPM)}\n"
-    debug_info += f"📋 کل CHARACTERS: {len(CHARACTERS)}\n\n"
-    debug_info += f"🔑 کلیدها: {list(CHARACTERS.keys())}\n\n"
-    sample_list = []
-    for r in CHARACTERS:
-        for cn in list(CHARACTERS[r].keys())[:3]:
-            sample_list.append(f"• {cn} ({r})")
-    debug_info += "📋 نمونه:\n" + "\n".join(sample_list[:12])
-
     found = False
     for rank in CHARACTERS:
         if char_name in CHARACTERS[rank]:
             found = True
             break
     if not found:
-        await update.message.reply_text(f"❌ پیدا نشد!\n\n{debug_info}")
+        await update.message.reply_text(f"❌ کاراکتر «{char_name}» پیدا نشد!")
         return
     ok, msg = set_char_image(char_name, file_id)
     await update.message.reply_text(msg)
@@ -1725,6 +1899,8 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key, desc, target, reward in quests:
         text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
+
+
 # ============ JJK MENU ============
 
 async def jjk_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1888,7 +2064,7 @@ async def opm_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if "Not enough" in str(result) or "کافی" in str(result):
         await q.message.reply_text(f"❌ {parts[0]}\n💰 پولت کمه!")
     else:
-        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خریدی!")
+        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خرید!")
 
 
 async def opm_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1926,8 +2102,11 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "🎁 /gift\n"
     text += "🌀 /jjk\n"
     text += "💪 /opm\n"
+    text += "🗺️ /world\n"
     text += "❓ /help\n"
     await update.message.reply_text(text)
+
+
 # ============ MAIN ============
 
 async def post_init(app):
@@ -1941,6 +2120,7 @@ async def post_init(app):
         BotCommand("pvp", "نبرد 1v1"),
         BotCommand("team", "نبرد تیمی"),
         BotCommand("coop", "نبرد گروهی"),
+        BotCommand("world", "دنیای آزاد"),
         BotCommand("quests", "کوئست روزانه"),
         BotCommand("leaderboard", "لیدربورد"),
         BotCommand("guild", "کلن"),
@@ -1959,62 +2139,30 @@ def main():
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     handlers = [
-        ("start", start),
-        ("profile", profile),
-        ("shop", shop),
-        ("buy", buy),
-        ("buychar", buychar),
-        ("select", select),
-        ("upgrade", upgrade),
-        ("battle", battle),
-        ("coop", coop),
-        ("join", join_coop),
-        ("startcoop", start_coop),
-        ("pvp", pvp),
-        ("joinpvp", join_pvp),
-        ("team", team),
-        ("jointeam", join_team),
-        ("startteam", start_team),
-        ("quests", quests_cmd),
-        ("claim", claim),
-        ("leaderboard", leaderboard),
-        ("coins", coins),
-        ("help", help_cmd),
-        ("gift", gift),
-        ("gifthistory", gift_history),
-        ("topgivers", top_givers),
-        ("admin", admin),
-        ("give", give_cmd),
-        ("take", take_cmd),
-        ("userinfo", userinfo_cmd),
-        ("allusers", allusers_cmd),
-        ("resetuser", resetuser_cmd),
-        ("ban", ban_cmd),
-        ("unban", unban_cmd),
-        ("jjk", jjk_menu),
-        ("opm", opm_menu),
-        ("guild", guild_cmd),
-        ("guild_create", guild_create),
-        ("guild_join", guild_join),
-        ("guild_leave", guild_leave),
-        ("guild_donate", guild_donate),
-        ("guild_upgrade", guild_upgrade),
-        ("guild_members", guild_members_cmd),
-        ("guild_kick", guild_kick),
-        ("guild_list", guild_list),
-        ("guild_leaderboard", guild_leaderboard),
-        ("addadmin", addadmin_cmd),
-        ("removeadmin", removeadmin_cmd),
-        ("listadmins", listadmins_cmd),
-        ("givechar", givechar_cmd),
-        ("resetchar", resetchar_cmd),
-        ("sethelp", sethelp_cmd),
-        ("viewhelp", viewhelp_cmd),
-        ("setcharimage", setcharimage_cmd),
-        ("addchannel", addchannel_cmd),
-        ("removechannel", removechannel_cmd),
-        ("listchannels", listchannels_cmd),
-        ("setquest", setquest_cmd),
+        ("start", start), ("profile", profile), ("shop", shop), ("buy", buy),
+        ("buychar", buychar), ("select", select), ("upgrade", upgrade),
+        ("battle", battle), ("coop", coop), ("join", join_coop),
+        ("startcoop", start_coop), ("pvp", pvp), ("joinpvp", join_pvp),
+        ("team", team), ("jointeam", join_team), ("startteam", start_team),
+        ("world", world_cmd),
+        ("quests", quests_cmd), ("claim", claim), ("leaderboard", leaderboard),
+        ("coins", coins), ("help", help_cmd), ("gift", gift),
+        ("gifthistory", gift_history), ("topgivers", top_givers),
+        ("admin", admin), ("give", give_cmd), ("take", take_cmd),
+        ("userinfo", userinfo_cmd), ("allusers", allusers_cmd),
+        ("resetuser", resetuser_cmd), ("ban", ban_cmd), ("unban", unban_cmd),
+        ("jjk", jjk_menu), ("opm", opm_menu),
+        ("guild", guild_cmd), ("guild_create", guild_create),
+        ("guild_join", guild_join), ("guild_leave", guild_leave),
+        ("guild_donate", guild_donate), ("guild_upgrade", guild_upgrade),
+        ("guild_members", guild_members_cmd), ("guild_kick", guild_kick),
+        ("guild_list", guild_list), ("guild_leaderboard", guild_leaderboard),
+        ("addadmin", addadmin_cmd), ("removeadmin", removeadmin_cmd),
+        ("listadmins", listadmins_cmd), ("givechar", givechar_cmd),
+        ("resetchar", resetchar_cmd), ("sethelp", sethelp_cmd),
+        ("viewhelp", viewhelp_cmd), ("setcharimage", setcharimage_cmd),
+        ("addchannel", addchannel_cmd), ("removechannel", removechannel_cmd),
+        ("listchannels", listchannels_cmd), ("setquest", setquest_cmd),
         ("viewquests", viewquests_cmd),
     ]
     for cmd, fn in handlers:
@@ -2030,6 +2178,8 @@ def main():
         ("^first_", first_char_callback),
         ("^prof_", profile_callback),
         ("^guild_", guild_callback),
+        ("^world_", world_region_callback),
+        ("^explore_", world_explore_callback),
         ("^mb_domain_", multi_domain_callback),
         ("^mb_bankai_", multi_bankai_callback),
         ("^mb_ability_", multi_ability_menu_callback),
@@ -2058,7 +2208,7 @@ def main():
         ("^jjk_", jjk_callback),
         ("^opmrank_", opm_rank_callback),
         ("^opmbuy_", opm_buy_callback),
-        ("^opmboss_", opm_boss_callback),
+        ("^opmboss_", opm_boss_callback)
         ("^opm_", opm_callback),
     ]
     for pattern, fn in callbacks:
