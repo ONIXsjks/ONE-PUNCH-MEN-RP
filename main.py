@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, BotCommand
 from telegram.ext import (Application, CommandHandler, ContextTypes,
                           CallbackQueryHandler, MessageHandler, filters)
+import sqlite3
 from config import *
 from database import (init_db, get_user, add_coins, get_coins,
                       create_battle, get_battle, update_battle, end_battle,
