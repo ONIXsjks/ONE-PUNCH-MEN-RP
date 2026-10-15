@@ -195,7 +195,6 @@ def apply_bankai_effects(battle, php, pmax, bhp, bmax):
 
 
 def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
-    """نوبت باس"""
     if battle.get("boss_frozen", 0) > 0:
         battle["boss_frozen"] -= 1
         text += "\n\n❄️ باس فریزه! (نوبت از دست داد)"
@@ -348,7 +347,6 @@ def player_ability(battle, char, ability_name):
         text = box_title(f"🌀 {domain['name'][:20]}", 26)
         text += f"\n\n💥 {format_num(dmg)} آسیب (×۸)"
 
-        # فریز اگه Domain این افکت رو داشته باشه
         if "freeze" in effects:
             battle["boss_frozen"] = effects["freeze"]
             text += f"\n❄️ باس فریز شد! ({effects['freeze']} نوبت)"
@@ -421,7 +419,7 @@ def player_ability(battle, char, ability_name):
             return "lost", text, battle
         return "active", text, battle
 
-    # ========== ABILITY های ۳گانه (بدون Spam Prevention) ==========
+    # ========== ABILITY های ۳گانه ==========
     abilities = ABILITIES_3.get(char_name, {})
     if not abilities:
         return "active", "❌ Ability پیدا نشد.", battle
@@ -437,10 +435,9 @@ def player_ability(battle, char, ability_name):
     if not found_ab:
         return "active", "❌ Ability پیدا نشد.", battle
 
-    # فقط Ultimate (ability_3) محدودیت ۱ بار داره
-    used_key = f"used_{ability_name}"
+    # 🟣 Ultimate فقط ۱ بار (از spam_state که توی DB ذخیره میشه)
     if found_key == "ability_3":
-        if battle.get(used_key, 0) == 1:
+        if battle.get("spam_state") == "purple_used":
             return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
 
     mult = found_ab.get("mult", 3)
@@ -449,6 +446,7 @@ def player_ability(battle, char, ability_name):
 
     if found_key == "ability_3":
         text = box_title(f"🟣 {ability_name[:20]}!", 26)
+        battle["spam_state"] = "purple_used"
     elif found_key == "ability_1":
         text = box_simple(f"🔵 {ability_name[:18]}!")
     else:
@@ -457,9 +455,6 @@ def player_ability(battle, char, ability_name):
     text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"
     text += f"\n\n👹 {boss['display_name']}"
     text += f"\n{hp_bar(bhp, bmax)}"
-
-    if found_key == "ability_3":
-        battle[used_key] = 1
 
     if bhp <= 0:
         battle["php"] = php; battle["bhp"] = bhp
