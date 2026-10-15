@@ -4,8 +4,8 @@ import sqlite3
 from config import (BOSSES, ABILITIES, BUFFS, ITEMS,
                     ABILITY_FA, BUFF_FA, ITEM_FA)
 from jjk_data import DOMAINS_JJK, FODDER_JJK, BOSSES_JJK, ABILITIES_JJK
-from opm_data import BOSSES_OPM
 from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
+from opm_data import BOSSES_OPM
 from database import DB_NAME, add_coins, get_abilities
 from quests import update_quest_progress
 
@@ -155,6 +155,22 @@ def apply_defense_check(base_dmg, hp, defense_type):
     else:
         hp = max(0, hp - base_dmg)
         return hp, f"❌ {defense_type} ناموفق! {format_num(base_dmg)} آسیب کامل"
+
+
+def get_boss_atk(boss_name):
+    if boss_name in BLEACH_BOSSES:
+        return BLEACH_BOSSES[boss_name]["atk"]
+    if boss_name in BLEACH_FODDER:
+        return BLEACH_FODDER[boss_name]["atk"]
+    if boss_name in BOSSES_JJK:
+        return BOSSES_JJK[boss_name]["atk"]
+    if boss_name in FODDER_JJK:
+        return FODDER_JJK[boss_name]["atk"]
+    if boss_name in BOSSES_OPM:
+        return BOSSES_OPM[boss_name]["atk"]
+    if boss_name in BOSSES:
+        return BOSSES[boss_name]["atk"]
+    return 100
 def next_turn(battle):
     for key in list(battle.keys()):
         if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
@@ -193,22 +209,6 @@ def get_enemies(battle, team):
     if team == "team1":
         return [p for p in battle["team2"] if p["hp"] > 0]
     return [p for p in battle["team1"] if p["hp"] > 0]
-
-
-def get_boss_atk(boss_name):
-    if boss_name in BLEACH_BOSSES:
-        return BLEACH_BOSSES[boss_name]["atk"]
-    if boss_name in BLEACH_FODDER:
-        return BLEACH_FODDER[boss_name]["atk"]
-    if boss_name in BOSSES_JJK:
-        return BOSSES_JJK[boss_name]["atk"]
-    if boss_name in FODDER_JJK:
-        return FODDER_JJK[boss_name]["atk"]
-    if boss_name in BOSSES_OPM:
-        return BOSSES_OPM[boss_name]["atk"]
-    if boss_name in BOSSES:
-        return BOSSES[boss_name]["atk"]
-    return 100
 
 
 def build_battle_view(battle):
@@ -632,6 +632,8 @@ def finish_multi_battle(session_id):
             reward = BOSSES_JJK[boss_name]["reward"]
         elif boss_name in FODDER_JJK:
             reward = FODDER_JJK[boss_name]["reward"]
+        elif boss_name in BOSSES_OPM:
+            reward = BOSSES_OPM[boss_name]["reward"]
         else:
             reward = BOSSES.get(boss_name, {}).get("reward", 5000)
         for p in battle["team1"] + battle["team2"]:
