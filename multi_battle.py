@@ -157,20 +157,6 @@ def apply_defense_check(base_dmg, hp, defense_type):
         return hp, f"❌ {defense_type} ناموفق! {format_num(base_dmg)} آسیب کامل"
 
 
-def get_boss_atk(boss_name):
-    if boss_name in BLEACH_BOSSES:
-        return BLEACH_BOSSES[boss_name]["atk"]
-    if boss_name in BLEACH_FODDER:
-        return BLEACH_FODDER[boss_name]["atk"]
-    if boss_name in BOSSES_JJK:
-        return BOSSES_JJK[boss_name]["atk"]
-    if boss_name in FODDER_JJK:
-        return FODDER_JJK[boss_name]["atk"]
-    if boss_name in BOSSES_OPM:
-        return BOSSES_OPM[boss_name]["atk"]
-    if boss_name in BOSSES:
-        return BOSSES[boss_name]["atk"]
-    return 100
 def next_turn(battle):
     for key in list(battle.keys()):
         if key.startswith("domain_cd_") or key.startswith("bankai_cd_"):
@@ -211,6 +197,22 @@ def get_enemies(battle, team):
     return [p for p in battle["team1"] if p["hp"] > 0]
 
 
+def get_boss_atk(boss_name):
+    if boss_name in BLEACH_BOSSES:
+        return BLEACH_BOSSES[boss_name]["atk"]
+    if boss_name in BLEACH_FODDER:
+        return BLEACH_FODDER[boss_name]["atk"]
+    if boss_name in BOSSES_JJK:
+        return BOSSES_JJK[boss_name]["atk"]
+    if boss_name in FODDER_JJK:
+        return FODDER_JJK[boss_name]["atk"]
+    if boss_name in BOSSES_OPM:
+        return BOSSES_OPM[boss_name]["atk"]
+    if boss_name in BOSSES:
+        return BOSSES[boss_name]["atk"]
+    return 100
+
+
 def build_battle_view(battle):
     btype = battle.get("type", "").upper()
     type_icons = {"PVP": "⚔️ PVP BATTLE", "COOP": "👥 CO-OP BATTLE", "TEAM": "⚔️ TEAM BATTLE"}
@@ -228,7 +230,8 @@ def build_battle_view(battle):
     for p in battle["team1"]:
         if p["hp"] > 0:
             status = "🎯 نوبت" if str(p["uid"]) == str(battle["current_turn"]) else "⏳"
-            text += f"├ 👤 {disp(p)}\n"
+            frozen = "❄️" if p.get("frozen", 0) > 0 else ""
+            text += f"├ 👤 {disp(p)} {frozen}\n"
             text += f"│ {hp_bar(p['hp'], p['max_hp'])}\n"
             text += f"└ {status}\n"
         else:
@@ -239,7 +242,8 @@ def build_battle_view(battle):
         for p in battle["team2"]:
             if p["hp"] > 0:
                 status = "🎯 نوبت" if str(p["uid"]) == str(battle["current_turn"]) else "⏳"
-                text += f"├ 👤 {disp(p)}\n"
+                frozen = "❄️" if p.get("frozen", 0) > 0 else ""
+                text += f"├ 👤 {disp(p)} {frozen}\n"
                 text += f"│ {hp_bar(p['hp'], p['max_hp'])}\n"
                 text += f"└ {status}\n"
             else:
@@ -395,6 +399,14 @@ def player_action(session_id, uid, action, extra=None):
         battle[f"domain_used_{uid}"] = 1
         battle[cd_key] = 2
         next_turn(battle)
+
+        # فریز خودکار
+        next_player, _ = get_player(battle, battle["current_turn"])
+        if next_player and next_player.get("frozen", 0) > 0:
+            next_player["frozen"] -= 1
+            log += f"\n\n❄️ {disp(next_player)} فریزه! نوبتش رد شد."
+            next_turn(battle)
+
         update_multi_battle(session_id, battle)
         return "active", log
 
@@ -444,6 +456,14 @@ def player_action(session_id, uid, action, extra=None):
         log += "\n\n⏳ تا پایان نبرد"
 
         next_turn(battle)
+
+        # فریز خودکار
+        next_player, _ = get_player(battle, battle["current_turn"])
+        if next_player and next_player.get("frozen", 0) > 0:
+            next_player["frozen"] -= 1
+            log += f"\n\n❄️ {disp(next_player)} فریزه! نوبتش رد شد."
+            next_turn(battle)
+
         update_multi_battle(session_id, battle)
         return "active", log
 
@@ -508,6 +528,14 @@ def player_action(session_id, uid, action, extra=None):
 
         battle[used_key] = 1
         next_turn(battle)
+
+        # فریز خودکار
+        next_player, _ = get_player(battle, battle["current_turn"])
+        if next_player and next_player.get("frozen", 0) > 0:
+            next_player["frozen"] -= 1
+            log += f"\n\n❄️ {disp(next_player)} فریزه! نوبتش رد شد."
+            next_turn(battle)
+
         update_multi_battle(session_id, battle)
         return "active", log
 
@@ -553,6 +581,14 @@ def player_action(session_id, uid, action, extra=None):
 
         battle[used_key] = 1
         next_turn(battle)
+
+        # فریز خودکار
+        next_player, _ = get_player(battle, battle["current_turn"])
+        if next_player and next_player.get("frozen", 0) > 0:
+            next_player["frozen"] -= 1
+            log += f"\n\n❄️ {disp(next_player)} فریزه! نوبتش رد شد."
+            next_turn(battle)
+
         update_multi_battle(session_id, battle)
         return "active", log
 
@@ -611,6 +647,14 @@ def player_action(session_id, uid, action, extra=None):
             return battle["status"], log
 
     next_turn(battle)
+
+    # فریز خودکار
+    next_player, _ = get_player(battle, battle["current_turn"])
+    if next_player and next_player.get("frozen", 0) > 0:
+        next_player["frozen"] -= 1
+        log += f"\n\n❄️ {disp(next_player)} فریزه! نوبتش رد شد."
+        next_turn(battle)
+
     update_multi_battle(session_id, battle)
     return "active", log
 
