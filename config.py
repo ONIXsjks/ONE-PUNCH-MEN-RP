@@ -13,6 +13,10 @@ from bleach_data import (
     BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
 )
 
+from opm_data import (
+    CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM
+)
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "/data/game.db"
 
@@ -23,6 +27,7 @@ COMBO_BONUS = 50
 COOP_WIN = 200
 GROUP_BOSS_WIN = 400
 
+# ============ RANK STATS (پیش‌فرض - اگه کاراکتری توی stats نبود) ============
 RANK_STATS = {
     "S": {"hp": 1500, "atk": 300, "def": 100, "dodge": 25, "slots": 8},
     "A": {"hp": 1000, "atk": 200, "def": 70,  "dodge": 20, "slots": 7},
@@ -134,67 +139,31 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
-# ============ CHARACTERS ============
-CHARACTERS = {
-    "S": {
-        "Blast": "Legendary Hero",
-        "Boros": "Space Destroyer",
-        "Psykos": "Heavenly General",
-        "Orochi": "Monster King",
-        "Zomnking": "Brutal",
-        "Garou": "Monster Hunter",
-        "Metal Bat": "CQC",
-        "Tatsumaki": "Terror Sister",
-    },
-    "A": {
-        "Suiryu": "Masked",
-        "Bang": "Explosive Engine",
-        "Gouketsu": "Former Champion",
-        "Amai Mask": "Silver Mask",
-        "Genos": "Vengeful Cyborg",
-    },
-    "B": {
-        "Wacsmann": "Tatsumaki's Disciple",
-        "Sonic": "Speed Ninja",
-        "Mumen Rider": "Justice",
-    },
-    "C": {
-        "Fubuki": "Sweet Talker",
-        "King": "Coward Hero",
-        "Pri-Pri Prisoner": "Prisoner",
-    },
-}
+# ============ CHARACTERS (خالی، همه از فایل‌ها میان) ============
+CHARACTERS = {}
 
-CHAR_PRICES = {"C": 8000, "B": 20000, "A": 50000, "S": 120000}
+CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
 
-# ============ BOSSES (جایزه جدید) ============
-BOSSES = {
-    "Wolf Monster":     {"hp": 500,  "atk": 40,  "entry": 0,    "reward": 100000},
-    "Tiger Beast":      {"hp": 1200, "atk": 80,  "entry": 0,    "reward": 100000},
-    "Demon Fish":       {"hp": 2500, "atk": 150, "entry": 500,  "reward": 100000},
-    "Sky King":         {"hp": 4000, "atk": 250, "entry": 1000, "reward": 100000},
-    "Deep Sea King":    {"hp": 6000, "atk": 350, "entry": 1500, "reward": 100000},
-    "Elder Centipede":  {"hp": 9000, "atk": 500, "entry": 2500, "reward": 130000},
-    "Monster Garou":    {"hp": 12000,"atk": 700, "entry": 4000, "reward": 130000},
-    "Saitama Phase 1":  {"hp": 5000, "atk": 9999,"entry": 5000, "reward": 150000},
-    "Goku Lv1":         {"hp": 1500, "atk": 150, "entry": 2500, "reward": 100000},
-    "Goku Lv2":         {"hp": 3000, "atk": 300, "entry": 4000, "reward": 130000},
-    "Goku Lv3":         {"hp": 5000, "atk": 500, "entry": 6000, "reward": 130000},
-    "Saitama + Goku":   {"hp": 7000, "atk": 9999,"entry": 10000,"reward": 150000},
-}
+# ============ BOSSES (خالی، همه از فایل‌ها میان) ============
+BOSSES = {}
 
 # ============ ADMIN ============
 ADMIN_IDS = [
     7023690411,
 ]
 
-# ============ JJK MERGE ============
+# ============ MERGE JJK ============
 CHARACTERS.update(CHARACTERS_JJK)
 CHAR_PRICES.update(CHAR_PRICES_JJK)
 BOSSES.update(BOSSES_JJK)
 
-# ============ BLEACH MERGE ============
+# ============ MERGE BLEACH ============
 CHARACTERS.update(CHARACTERS_BLEACH)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 BOSSES.update(BLEACH_BOSSES)
 ABILITIES.update(BLEACH_ABILITIES_SHOP)
+
+# ============ MERGE OPM ============
+CHARACTERS.update(CHARACTERS_OPM)
+BOSSES.update(BOSSES_OPM)
+ABILITIES.update(ABILITIES_OPM)
