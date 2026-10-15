@@ -807,3 +807,11 @@ def get_default_help(key):
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
+def get_custom_quest_db(key):
+    """گرفتن یه کوئست سفارشی با کلید (مفرد)"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
+    row = c.fetchone()
+    conn.close()
+    return row
