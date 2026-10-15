@@ -1521,7 +1521,8 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = "👑 پنل ادمین\n━━━━━━━━━━━━━━━━━━━\n\n"
     if is_owner(user_id):
         text += "🔑 مالک اصلی\n\n"
-    text += "💰 /give /take\n👤 /userinfo /allusers /resetuser /ban /unban\n"
+    text += "💰 /give /take\n"
+    text += "👤 /userinfo /allusers /resetuser /ban /unban\n"
     text += "🎭 /givechar /resetchar\n"
     if is_owner(user_id):
         text += "\n👑 /addadmin /removeadmin /listadmins\n"
@@ -1843,8 +1844,6 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key, desc, target, reward in quests:
         text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
-
-
 async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if update.message.reply_to_message:
@@ -2021,7 +2020,7 @@ def main():
     app.add_handler(CommandHandler("userinfo", userinfo_cmd))
     app.add_handler(CommandHandler("allusers", allusers_cmd))
     app.add_handler(CommandHandler("resetuser", resetuser_cmd))
-        app.add_handler(CommandHandler("ban", ban_cmd))
+    app.add_handler(CommandHandler("ban", ban_cmd))
     app.add_handler(CommandHandler("unban", unban_cmd))
     app.add_handler(CommandHandler("addadmin", addadmin_cmd))
     app.add_handler(CommandHandler("removeadmin", removeadmin_cmd))
@@ -2038,7 +2037,7 @@ def main():
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
 
-    # Message Handler for setcharimage (عکس + کپشن)
+    # Message Handler for setcharimage
     app.add_handler(MessageHandler(
         filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
         setcharimage_cmd
