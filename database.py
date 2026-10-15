@@ -867,3 +867,24 @@ def get_player_info_by_username(username):
     char_count = c.fetchone()[0]
     conn.close()
     return (row[0], row[1], row[2], char_count)
+def get_all_guilds():
+    """گرفتن همه کلن‌ها"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC""")
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def search_guilds(query):
+    """جستجوی کلن با اسم"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
+              (f"%{query}%",))
+    rows = c.fetchall()
+    conn.close()
+    return rows
