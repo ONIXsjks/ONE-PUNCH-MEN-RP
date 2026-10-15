@@ -42,105 +42,139 @@ CHAR_PRICES_JJK = {
     "C": 50000,
 }
 
+# ============================================================
+# ABILITIES - هر کاراکتر ۳ Ability (ability_1: ×3، ability_2: ×5، ability_3: ×10 یک بار)
+# ============================================================
 ABILITIES_JJK = {
+    # ============ S RANK ============
     "Gojo Satoru": {
-        "ability_1": {"name": "Limitless", "effect": "DODGE 90% (1 turn)", "type": "dodge"},
-        "ability_2": {"name": "Hollow Purple", "effect": "ATK x5", "type": "damage"},
+        "ability_1": {"name": "Blue", "mult": 3},
+        "ability_2": {"name": "Red", "mult": 5},
+        "ability_3": {"name": "Hollow Purple", "mult": 10, "once": True},
     },
     "Yuta Okkotsu": {
-        "ability_1": {"name": "Copy Technique", "effect": "Copy enemy attack", "type": "copy"},
-        "ability_2": {"name": "Cursed Energy Blast", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Cursed Energy Blast", "mult": 3},
+        "ability_2": {"name": "Rika's Wrath", "mult": 5},
+        "ability_3": {"name": "Copy: Ultimate", "mult": 10, "once": True},
     },
     "Kenjaku": {
-        "ability_1": {"name": "Brain Transplant", "effect": "Enemy -25% ATK (1 turn)", "type": "debuff"},
-        "ability_2": {"name": "Cursed Spirit Army", "effect": "2 spirits x2 ATK", "type": "multi"},
+        "ability_1": {"name": "Cursed Spirit Army", "mult": 3},
+        "ability_2": {"name": "Uzumaki", "mult": 5},
+        "ability_3": {"name": "Brain Transplant", "mult": 10, "once": True},
     },
     "Yuki Tsukumo": {
-        "ability_1": {"name": "Star Rage", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Mass Punch", "effect": "ATK x4", "type": "damage"},
+        "ability_1": {"name": "Star Rage", "mult": 3},
+        "ability_2": {"name": "Mass Punch", "mult": 5},
+        "ability_3": {"name": "Black Hole", "mult": 10, "once": True},
     },
     "Suguru Geto": {
-        "ability_1": {"name": "Cursed Spirit Army", "effect": "3 hits x1 ATK", "type": "multi"},
-        "ability_2": {"name": "Uzumaki", "effect": "ATK x4", "type": "damage"},
+        "ability_1": {"name": "Cursed Spirit Army", "mult": 3},
+        "ability_2": {"name": "Uzumaki", "mult": 5},
+        "ability_3": {"name": "Maximum Uzumaki", "mult": 10, "once": True},
     },
     "Toji Fushiguro": {
-        "ability_1": {"name": "Inverted Spear", "effect": "Ignore DEF", "type": "damage"},
-        "ability_2": {"name": "Heavenly Restriction", "effect": "DODGE +25% (permanent)", "type": "buff"},
+        "ability_1": {"name": "Inverted Spear", "mult": 3},
+        "ability_2": {"name": "Heavenly Restriction", "mult": 5},
+        "ability_3": {"name": "Split Soul Katana", "mult": 10, "once": True},
     },
     "Kinji Hakari": {
-        "ability_1": {"name": "Jackpot", "effect": "50% chance 4x ATK", "type": "gamble"},
-        "ability_2": {"name": "Pure Love Train", "effect": "ATK x3 + DODGE +20%", "type": "damage"},
+        "ability_1": {"name": "Jackpot", "mult": 3},
+        "ability_2": {"name": "Pure Love Train", "mult": 5},
+        "ability_3": {"name": "Idle Death Gamble", "mult": 10, "once": True},
     },
     "Hiromi Higuruma": {
-        "ability_1": {"name": "Judgeman", "effect": "Enemy -30% ATK (1 turn)", "type": "debuff"},
-        "ability_2": {"name": "Confiscation", "effect": "Disable 1 enemy ability", "type": "disable"},
+        "ability_1": {"name": "Judgeman", "mult": 3},
+        "ability_2": {"name": "Confiscation", "mult": 5},
+        "ability_3": {"name": "Deadly Sentencing", "mult": 10, "once": True},
     },
     "Hajime Kashimo": {
-        "ability_1": {"name": "Mythical Beast Amber", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Lightning Discharge", "effect": "50% chance 5x ATK", "type": "gamble"},
+        "ability_1": {"name": "Lightning Discharge", "mult": 3},
+        "ability_2": {"name": "Mythical Beast Amber", "mult": 5},
+        "ability_3": {"name": "Thunder God", "mult": 10, "once": True},
     },
     "Yuji Modulo": {
-        "ability_1": {"name": "Divergent Fist", "effect": "2 hits in 1 turn", "type": "multi"},
-        "ability_2": {"name": "Shrine", "effect": "ATK x4", "type": "damage"},
+        "ability_1": {"name": "Divergent Fist", "mult": 3},
+        "ability_2": {"name": "Shrine", "mult": 5},
+        "ability_3": {"name": "Modulo Form", "mult": 10, "once": True},
     },
     "Uraume": {
-        "ability_1": {"name": "Ice Formation", "effect": "Enemy -25% ATK", "type": "debuff"},
-        "ability_2": {"name": "Frost Strike", "effect": "ATK x3 + no dodge", "type": "damage"},
+        "ability_1": {"name": "Frost Strike", "mult": 3},
+        "ability_2": {"name": "Ice Formation", "mult": 5},
+        "ability_3": {"name": "Absolute Zero", "mult": 10, "once": True},
     },
     "SUKUNA ITADORI BODY": {
-        "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
-        "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
+        "ability_1": {"name": "Dismantle", "mult": 3},
+        "ability_2": {"name": "Cleave", "mult": 5},
+        "ability_3": {"name": "Malevolent Shrine", "mult": 10, "once": True},
     },
+    # ============ A RANK ============
     "Yuji Itadori": {
-        "ability_1": {"name": "Divergent Fist", "effect": "2 hits in 1 turn", "type": "multi"},
-        "ability_2": {"name": "Black Flash", "effect": "25% chance 4x ATK", "type": "gamble"},
+        "ability_1": {"name": "Divergent Fist", "mult": 3},
+        "ability_2": {"name": "Black Flash", "mult": 5},
+        "ability_3": {"name": "Sukuna's Awakening", "mult": 10, "once": True},
     },
     "Megumi Fushiguro": {
-        "ability_1": {"name": "Divine Dogs", "effect": "2 dogs x1.5 ATK", "type": "multi"},
-        "ability_2": {"name": "Max Elephant", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Divine Dogs", "mult": 3},
+        "ability_2": {"name": "Max Elephant", "mult": 5},
+        "ability_3": {"name": "Chimera Shadow Garden", "mult": 10, "once": True},
     },
     "Maki Zenin": {
-        "ability_1": {"name": "Cursed Tool Mastery", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Heavenly Restriction", "effect": "DODGE +25% (permanent)", "type": "buff"},
+        "ability_1": {"name": "Cursed Tool Mastery", "mult": 3},
+        "ability_2": {"name": "Heavenly Restriction", "mult": 5},
+        "ability_3": {"name": "Split Soul Katana", "mult": 10, "once": True},
     },
     "Kento Nanami": {
-        "ability_1": {"name": "Ratio Technique 7:3", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Overtime", "effect": "ATK +100 (2 turns)", "type": "buff"},
+        "ability_1": {"name": "Ratio Technique 7:3", "mult": 3},
+        "ability_2": {"name": "Overtime", "mult": 5},
+        "ability_3": {"name": "Ratio: Critical", "mult": 10, "once": True},
     },
     "Mei Mei": {
-        "ability_1": {"name": "Black Bird Manipulation", "effect": "2 birds x1 ATK", "type": "multi"},
-        "ability_2": {"name": "Bird Attack", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Black Bird Manipulation", "mult": 3},
+        "ability_2": {"name": "Bird Attack", "mult": 5},
+        "ability_3": {"name": "Crow Strike", "mult": 10, "once": True},
     },
     "Aoi Todo": {
-        "ability_1": {"name": "Boogie Woogie", "effect": "DODGE 100% (1 turn)", "type": "dodge"},
-        "ability_2": {"name": "Divergent Fist", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Boogie Woogie", "mult": 3},
+        "ability_2": {"name": "Divergent Fist", "mult": 5},
+        "ability_3": {"name": "Todo's Gambit", "mult": 10, "once": True},
     },
     "Choso": {
-        "ability_1": {"name": "Blood Manipulation", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Piercing Blood", "effect": "ATK x4 + 10% HP", "type": "damage"},
+        "ability_1": {"name": "Blood Manipulation", "mult": 3},
+        "ability_2": {"name": "Piercing Blood", "mult": 5},
+        "ability_3": {"name": "Supernova", "mult": 10, "once": True},
     },
     "Naoya Zenin": {
-        "ability_1": {"name": "Projection Sorcery", "effect": "24 frames (2 hits)", "type": "multi"},
-        "ability_2": {"name": "Speed Strike", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Projection Sorcery", "mult": 3},
+        "ability_2": {"name": "Speed Strike", "mult": 5},
+        "ability_3": {"name": "Time Cell Moon Palace", "mult": 10, "once": True},
     },
+
+    # ============ B RANK ============
     "Nobara Kugisaki": {
-        "ability_1": {"name": "Straw Doll Technique", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Resonance", "effect": "20% direct HP damage", "type": "damage"},
+        "ability_1": {"name": "Straw Doll Technique", "mult": 3},
+        "ability_2": {"name": "Resonance", "mult": 5},
+        "ability_3": {"name": "Black Flash", "mult": 10, "once": True},
     },
     "Toge Inumaki": {
-        "ability_1": {"name": "Cursed Speech", "effect": "Enemy frozen (1 turn)", "type": "freeze"},
-        "ability_2": {"name": "Don't Move", "effect": "Enemy dodge 0 (1 turn)", "type": "debuff"},
+        "ability_1": {"name": "Cursed Speech", "mult": 3},
+        "ability_2": {"name": "Don't Move", "mult": 5},
+        "ability_3": {"name": "Explode", "mult": 10, "once": True},
     },
     "Kirara Hoshi": {
-        "ability_1": {"name": "Love Rendezvous", "effect": "DODGE +20% (permanent)", "type": "buff"},
-        "ability_2": {"name": "Star Shot", "effect": "ATK x3", "type": "damage"},
+        "ability_1": {"name": "Love Rendezvous", "mult": 3},
+        "ability_2": {"name": "Star Shot", "mult": 5},
+        "ability_3": {"name": "Star Fall", "mult": 10, "once": True},
     },
     "Hana Kurusu": {
-        "ability_1": {"name": "Jacob's Ladder", "effect": "ATK x2", "type": "damage"},
-        "ability_2": {"name": "Divine Flame", "effect": "ATK x4", "type": "damage"},
+        "ability_1": {"name": "Jacob's Ladder", "mult": 3},
+        "ability_2": {"name": "Divine Flame", "mult": 5},
+        "ability_3": {"name": "Angel's Wrath", "mult": 10, "once": True},
     },
 }
 
+# ============================================================
+# DOMAINS
+# ============================================================
 DOMAINS_JJK = {
     "Gojo Satoru": {"name": "Unlimited Void", "type": "single", "duration": 2, "cooldown": 3,
         "effects": {"freeze": 1, "hp_drain": 10, "atk_boost": 15, "heal": 20}},
@@ -180,77 +214,59 @@ DOMAINS_JJK = {
 # BOSSES (مرتب‌شده بر اساس قدرت)
 # ============================================================
 BOSSES_JJK = {
-    # 🟢 ضعیف (HP < 5k، ATK < 300)
-    "Small Shadow": {
-        "display_name": "سایه کوچک",
-        "hp": 500, "atk": 40, "reward": 50000,
-    },
-    "Cursed Spirit": {
-        "display_name": "روح سرگردان",
-        "hp": 800, "atk": 60, "reward": 50000,
-    },
-    "Shadow Wolf": {
-        "display_name": "گرگ سایه",
-        "hp": 1200, "atk": 90, "reward": 50000,
-    },
+    # 🟢 ضعیف (HP < 5k، ATK < 300) — جایزه: 50,000
+    "Small Shadow": {"display_name": "سایه کوچک", "hp": 500, "atk": 40, "reward": 50000},
+    "Cursed Spirit": {"display_name": "روح سرگردان", "hp": 800, "atk": 60, "reward": 50000},
+    "Shadow Wolf": {"display_name": "گرگ سایه", "hp": 1200, "atk": 90, "reward": 50000},
 
-    # 🟡 متوسط (HP 5k-20k، ATK 300-800)
-    "Cursed Worm": {
-        "display_name": "کرم نفرین‌شده",
-        "hp": 3000, "atk": 200, "reward": 100000,
-    },
-    "Hell Spider": {
-        "display_name": "عنکبوت جهنمی",
-        "hp": 4000, "atk": 250, "reward": 100000,
-    },
+    # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000
+    "Cursed Worm": {"display_name": "کرم نفرین‌شده", "hp": 3000, "atk": 200, "reward": 100000},
+    "Hell Spider": {"display_name": "عنکبوت جهنمی", "hp": 4000, "atk": 250, "reward": 100000},
 
-    # 🟠 قوی (HP 20k-50k، ATK 800-2k)
+    # 🟠 قوی (HP 20k-50k، ATK 800-2k) — جایزه: 200,000
     "Uraume": {
-        "display_name": "اوراومه",
-        "hp": 30000, "atk": 1300, "reward": 200000,
+        "display_name": "اوراومه", "hp": 30000, "atk": 1300, "reward": 200000,
         "fodder": ["Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Frozen Domain", "effect": "Freeze enemy (1 turn)", "type": "freeze"},
         "ability_2": {"name": "Ice Tomb", "effect": "ATK x4", "type": "damage"},
     },
     "Mahito": {
-        "display_name": "ماهیتو",
-        "hp": 35000, "atk": 1500, "reward": 200000,
+        "display_name": "ماهیتو", "hp": 35000, "atk": 1500, "reward": 200000,
         "fodder": ["Cursed Spirit", "Cursed Spirit", "Small Shadow", "Small Shadow"],
         "ability_1": {"name": "Idle Transfiguration", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Soul Manipulation", "effect": "20% HP damage", "type": "damage"},
     },
     "Mahoraga": {
-        "display_name": "ماهوراگا",
-        "hp": 40000, "atk": 2500, "reward": 200000,
+        "display_name": "ماهوراگا", "hp": 40000, "atk": 2500, "reward": 200000,
         "fodder": ["Shadow Wolf", "Shadow Wolf"],
         "ability_1": {"name": "Adaptation Wheel", "effect": "ATK +100 per turn", "type": "buff"},
         "ability_2": {"name": "Sword of Extermination", "effect": "ATK x5 (ignore DEF)", "type": "damage"},
     },
     "Sukuna Megumi": {
-        "display_name": "سوکونا (بدن مگومی)",
-        "hp": 45000, "atk": 1800, "reward": 200000,
+        "display_name": "سوکونا (بدن مگومی)", "hp": 45000, "atk": 1800, "reward": 200000,
         "fodder": ["Small Shadow", "Shadow Wolf", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Ten Shadows", "effect": "2 shadows x2 ATK", "type": "multi"},
     },
 
-    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+)
+    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
     "Dabura": {
-        "display_name": "دابورا",
-        "hp": 95000, "atk": 2500, "reward": 500000,
+        "display_name": "دابورا", "hp": 95000, "atk": 2500, "reward": 500000,
         "fodder": ["Small Shadow", "Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Cursed Energy Blast", "effect": "ATK x4", "type": "damage"},
         "ability_2": {"name": "Dark Rift", "effect": "25% HP damage", "type": "damage"},
     },
     "Sukuna Heian": {
-        "display_name": "سوکونا (فرم هیان)",
-        "hp": 100000, "atk": 3000, "reward": 500000,
+        "display_name": "سوکونا (فرم هیان)", "hp": 100000, "atk": 3000, "reward": 500000,
         "fodder": ["Small Shadow", "Cursed Spirit", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
     },
 }
 
+# ============================================================
+# FODDER
+# ============================================================
 FODDER_JJK = {
     "Small Shadow": {"display_name": "سایه کوچک", "hp": 500, "atk": 40, "reward": 5000},
     "Cursed Spirit": {"display_name": "روح سرگردان", "hp": 800, "atk": 60, "reward": 5000},
@@ -260,7 +276,14 @@ FODDER_JJK = {
     "Hell Spider": {"display_name": "عنکبوت جهنمی", "hp": 4000, "atk": 250, "reward": 5000},
 }
 
+# ============================================================
+# COOLDOWNS
+# ============================================================
 COOLDOWNS_JJK = {"ability_1": 1, "ability_2": 2, "domain": 3}
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
 
 def get_char_abilities(char_name):
     return ABILITIES_JJK.get(char_name, {})
