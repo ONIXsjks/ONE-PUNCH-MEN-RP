@@ -175,7 +175,6 @@ ABILITIES_BLEACH = {
         "ability_2": {"name": "Lanzador Verde", "mult": 5},
         "ability_3": {"name": "Gamuza", "mult": 10, "once": True},
     },
-}
 
     # ============ B RANK ============
     "Yasutora Sado": {
@@ -229,6 +228,7 @@ ABILITIES_BLEACH = {
         "ability_3": {"name": "Omaeda's Wrath", "mult": 10, "once": True},
     },
 }
+
 # ============================================================
 # BANKAI
 # ============================================================
@@ -287,7 +287,7 @@ BLEACH_BOSSES = {
 
     # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
     "Gerard Valkyrie": {"display_name": "جرارد (معجزه)", "hp": 85000, "atk": 2300, "reward": 500000},
-    "Yhwach (Soul King)": {"display_name": "یواچ (پادشاه روح)", "hp": 100000, "atk": 2800, "reward": 500000},
+    "Yhwach (Soul King)": {"display_name": "یاوخ (پادشاه روح)", "hp": 100000, "atk": 2800, "reward": 500000},
 }
 
 # ============================================================
