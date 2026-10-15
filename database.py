@@ -148,6 +148,8 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
 # ============ USERS ============
 
 def get_user(user_id, username=None):
@@ -205,8 +207,6 @@ def spend_coins(user_id, amount):
         return False
     add_coins(user_id, -amount)
     return True
-
-
 # ============ ACTIVE BATTLES ============
 
 def create_battle(user_id, boss_name, player_hp, boss_hp):
@@ -309,8 +309,6 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
-
-
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -341,6 +339,17 @@ def get_user_guild(user_id):
     row = c.fetchone()
     conn.close()
     return row
+
+
+def get_all_guilds():
+    """گرفتن همه کلن‌ها (جدید - برای ادمین)"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
+                 FROM guilds ORDER BY level DESC, treasury DESC""")
+    rows = c.fetchall()
+    conn.close()
+    return rows
 
 
 def create_guild(name, leader_id):
@@ -588,6 +597,13 @@ def get_custom_quests_db():
     return rows
 
 
+def get_custom_quest_db(key):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT key, desc_text, target, reward FROM custom_quests WHERE key=?", (key,))
+    row = c.fetchone()
+    conn.close()
+    return row
 # ============ WORLD ============
 
 def get_world_progress(user_id):
@@ -781,3 +797,73 @@ def get_default_help(key):
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
+
+
+# ============ OWNER RESET FUNCTIONS ============
+
+def reset_player_coins_and_chars(user_id):
+    """ریست کوین و کاراکترهای یه پلیر"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    try:
+        c.execute("UPDATE users SET coins = 0 WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM characters WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM abilities_owned WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM buffs WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM active_battles WHERE user_id = ?", (user_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        print(f"Reset Error: {e}")
+        return False
+    finally:
+        conn.close()
+
+
+def reset_all_players_coins_and_chars():
+    """ریست کوین و کاراکترهای همه پلیرها"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    try:
+        c.execute("SELECT COUNT(*) FROM users")
+        total_users = c.fetchone()[0]
+        c.execute("UPDATE users SET coins = 0")
+        c.execute("DELETE FROM characters")
+        c.execute("DELETE FROM abilities_owned")
+        c.execute("DELETE FROM buffs")
+        c.execute("DELETE FROM active_battles")
+        conn.commit()
+        return total_users
+    except Exception as e:
+        conn.rollback()
+        print(f"Reset All Error: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def get_total_users_count():
+    """تعداد کل پلیرها"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM users")
+    count = c.fetchone()[0]
+    conn.close()
+    return count
+
+
+def get_player_info_by_username(username):
+    """پیدا کردن پلیر با یوزرنیم → (id, username, coins, char_count)"""
+    username = username.replace("@", "").strip()
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT user_id, username, coins FROM users WHERE username=?", (username,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return None
+    c.execute("SELECT COUNT(*) FROM characters WHERE user_id=?", (row[0],))
+    char_count = c.fetchone()[0]
+    conn.close()
+    return (row[0], row[1], row[2], char_count)
