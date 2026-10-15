@@ -1,71 +1,24 @@
+# battle.py
+
 import random
-from config import (BOSSES, ABILITIES, ITEMS, ABILITY_FA, ITEM_FA)
-from database import add_coins, update_battle
-from images import IMAGES
-from quests import update_quest_progress
-from jjk_data import (ABILITIES_JJK, DOMAINS_JJK, BOSSES_JJK, FODDER_JJK)
-from bleach_data import (BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER,
-                          ABILITIES_BLEACH)
+from database import (get_battle, update_battle, end_battle,
+                      get_abilities, get_items, use_item, add_coins)
+from characters import get_active_character
+from config import (BOSSES, ABILITIES, BUFFS, ITEMS,
+                    ABILITY_FA, BUFF_FA, ITEM_FA)
+from jjk_data import DOMAINS_JJK, BOSSES_JJK, FODDER_JJK, ABILITIES_JJK
+from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER, ABILITIES_BLEACH
 from opm_data import BOSSES_OPM, ABILITIES_OPM
+from quests import update_quest_progress
 
 
-def get_boss_data(boss_name):
-    if boss_name in BLEACH_BOSSES:
-        data = BLEACH_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BLEACH_FODDER:
-        data = BLEACH_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES_JJK:
-        data = BOSSES_JJK[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in FODDER_JJK:
-        data = FODDER_JJK[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES_OPM:
-        data = BOSSES_OPM[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES:
-        data = BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data.get("reward", 5000),
-                "display_name": boss_name}
-    return None
+# ============ توابع کمکی ============
 
-
-def get_character_abilities(char_name):
-    """گرفتن ۳ Ability کاراکتر از هر ۳ انیمه"""
-    for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM]:
-        if char_name in data:
-            return data[char_name]
-    return None
-
-
-def roll_damage(atk, defender_def=0, defender_defending=0):
-    base = atk * random.uniform(0.85, 1.15)
-    crit = random.random() < 0.15
-    if crit:
-        base *= 2
-    if defender_defending:
-        base -= defender_def * 2
-    else:
-        base -= defender_def * 0.5
-    return max(1, int(base)), crit
-
-
-def boss_ai(boss_name, boss_hp, boss_max_hp):
-    r = random.random()
-    if boss_hp < boss_max_hp * 0.25 and r < 0.3:
-        return "heal"
-    if r < 0.4:
-        return "attack"
-    if r < 0.7:
-        return "special"
-    return "defend"
+def format_num(n):
+    try:
+        return f"{int(n):,}"
+    except Exception:
+        return str(n)
 
 
 def hp_bar(current, maximum, length=10):
@@ -82,14 +35,7 @@ def hp_bar(current, maximum, length=10):
         icon = "🧡"
     else:
         icon = "💔"
-    return f"{icon} [{bar}] {current:,}/{maximum:,}"
-
-
-def format_num(n):
-    try:
-        return f"{int(n):,}"
-    except Exception:
-        return str(n)
+    return f"{icon} [{bar}] {format_num(current)}/{format_num(maximum)}"
 
 
 def box_title(text, width=26):
@@ -108,506 +54,298 @@ def box_simple(text, width=24):
     return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
 
 
-def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
-    roll = random.randint(1, 100)
-    if roll <= 33:
-        return php, f"✅ {defense_type} کامل! ۰ آسیب"
-    elif roll <= 66:
-        partial = max(1, int(base_dmg * 0.5))
-        php = max(0, php - partial)
-        return php, f"⚠️ {defense_type} جزئی! {format_num(partial)} آسیب (۵۰٪)"
-    else:
-        php = max(0, php - base_dmg)
-        return php, f"❌ {defense_type} ناموفق! {format_num(base_dmg)} آسیب کامل"
-
-
-def boss_attack_player(boss, php, pmax, battle, defense_flag=None, char_dodge=0):
-    base_dmg, crit = roll_damage(boss["atk"], 0, 0)
-    text = box_simple("👹 باس حمله کرد!")
-    if crit and not defense_flag:
-        text += f"\n\n⚡ CRITICAL HIT! ⚡"
-    text += f"\n\n💢 آسیب پایه: {format_num(base_dmg)}"
-
-    if defense_flag == "defend":
-        php, def_log = apply_defense_check(base_dmg, php, "دفاع")
-        text += f"\n{def_log}"
-    elif defense_flag == "dodge":
-        php, def_log = apply_defense_check(base_dmg, php, "جاخالی")
-        text += f"\n{def_log}"
-    else:
-        php = max(0, php - base_dmg)
-
-    text += f"\n\n👤 {hp_bar(php, pmax)}"
-    return php, text, base_dmg
-
-
-def apply_bankai_round(battle):
-    if battle.get("bankai_used", 0) < 1:
-        return battle
-    bankai = battle.get("bankai_data", {})
-    if not bankai:
-        return battle
-    if "atk_per_round" in bankai:
-        cur = battle.get("bankai_atk_current", 0)
-        max_a = bankai.get("max_atk", 30)
-        if cur < max_a:
-            battle["bankai_atk_current"] = min(max_a, cur + bankai["atk_per_round"])
-    if "dodge_per_round" in bankai:
-        cur = battle.get("bankai_dodge_current", 0)
-        max_d = bankai.get("max_dodge", 15)
-        if cur < max_d:
-            battle["bankai_dodge_current"] = min(max_d, cur + bankai["dodge_per_round"])
-    if "heal_per_round" in bankai:
-        cur = battle.get("bankai_heal_current", 0)
-        max_h = bankai.get("max_heal", 15)
-        if cur < max_h:
-            battle["bankai_heal_current"] = min(max_h, cur + bankai["heal_per_round"])
-    if "bleed_per_round" in bankai:
-        cur = battle.get("bankai_bleed_current", 0)
-        max_b = bankai.get("max_bleed", 5)
-        if cur < max_b:
-            battle["bankai_bleed_current"] = min(max_b, cur + bankai["bleed_per_round"])
-    if "enemy_atk_debuff" in bankai:
-        cur = battle.get("bankai_enemy_debuff_current", 0)
-        max_e = bankai.get("max_enemy_debuff", 15)
-        if cur < max_e:
-            battle["bankai_enemy_debuff_current"] = min(max_e, cur + bankai["enemy_atk_debuff"])
-    if "self_dmg_per_round" in bankai:
-        cur = battle.get("bankai_self_dmg_current", 0)
-        max_s = bankai.get("max_self_dmg", 5)
-        if cur < max_s:
-            battle["bankai_self_dmg_current"] = min(max_s, cur + bankai["self_dmg_per_round"])
-    return battle
-
-
-def apply_bankai_effects(battle, php, pmax, bhp, bmax):
-    if battle.get("bankai_used", 0) < 1:
-        return php, bhp, ""
-    text = ""
-    heal_pct = battle.get("bankai_heal_current", 0)
-    if heal_pct > 0:
-        heal = int(pmax * heal_pct / 100)
-        php = min(pmax, php + heal)
-        text += f"\n💚 بانکای: +{format_num(heal)} HP"
-    bleed_pct = battle.get("bankai_bleed_current", 0)
-    if bleed_pct > 0:
-        bleed = int(bmax * bleed_pct / 100)
-        bhp = max(0, bhp - bleed)
-        text += f"\n🩸 بانکای: باس -{format_num(bleed)} HP"
-    self_pct = battle.get("bankai_self_dmg_current", 0)
-    if self_pct > 0:
-        dmg = int(pmax * self_pct / 100)
-        php = max(0, php - dmg)
-        text += f"\n🩸 بانکای: خودت -{format_num(dmg)} HP"
-    return php, bhp, text
-
-
-def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
-    """نوبت باس"""
-    if battle.get("boss_frozen", 0) > 0:
-        battle["boss_frozen"] -= 1
-        text += "\n\n❄️ باس فریزه! (نوبت از دست داد)"
-        return php, bhp, text
-
-    action = boss_ai(battle["boss_name"], bhp, bmax)
-    if action == "attack":
-        php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, defense_flag)
-        text += f"\n\n{boss_text}"
-    elif action == "special":
-        base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
-        if defense_flag:
-            php, def_log = apply_defense_check(base_dmg, php, defense_flag.capitalize())
-            text += f"\n\n{box_simple('💥 حمله ویژه باس!')}"
-            text += f"\n\n💢 آسیب پایه: {format_num(base_dmg)}"
-            text += f"\n{def_log}"
-            text += f"\n\n👤 {hp_bar(php, pmax)}"
-        else:
-            php = max(0, php - base_dmg)
-            text += f"\n\n{box_simple('💥 حمله ویژه باس!')}"
-            text += f"\n\n💢 {format_num(base_dmg)} آسیب!"
-            text += f"\n\n👤 {hp_bar(php, pmax)}"
-    elif action == "defend":
-        text += f"\n\n🛡️ باس دفاع گرفت."
-    elif action == "heal":
-        heal = int(bmax * 0.1)
-        bhp = min(bmax, bhp + heal)
-        text += f"\n\n💚 باس درمان: +{format_num(heal)}"
-        text += f"\n👹 {hp_bar(bhp, bmax)}"
-
-    return php, bhp, text
-
-
-def player_attack(battle, char):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss:
-        return "active", "❌ باس پیدا نشد.", battle
-    php = battle["php"]; bhp = battle["bhp"]
-    pmax = battle["pmax"]; bmax = battle["bmax"]
-
-    dmg, crit = roll_damage(char[6], 0, 0)
-    atk_boost = battle.get("domain_atk_boost", 0)
-    if atk_boost:
-        dmg = int(dmg * (1 + atk_boost / 100))
-    bankai_atk = battle.get("bankai_atk_current", 0)
-    if bankai_atk:
-        dmg = int(dmg * (1 + bankai_atk / 100))
-
-    bhp = max(0, bhp - dmg)
-    battle["spam_state"] = "ability_1"
-
-    if crit:
-        text = box_simple("⚡ CRITICAL HIT! ⚡")
-    else:
-        text = box_simple("⚔️ حمله!")
-    text += f"\n\n💥 {format_num(dmg)} آسیب 💥"
-    text += f"\n\n👹 {boss['display_name']}"
-    text += f"\n{hp_bar(bhp, bmax)}"
-
-    if bhp <= 0:
-        battle["php"] = php; battle["bhp"] = bhp
-        return "won", text, battle
-
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-
-    battle = apply_bankai_round(battle)
-    php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt:
-        text += f"\n{bt}"
-
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0:
-        return "won", text, battle
-    if php <= 0:
-        return "lost", text, battle
-    return "active", text, battle
-
-
-def player_defend(battle, char):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss:
-        return "active", "❌ باس پیدا نشد.", battle
-    php = battle["php"]; bhp = battle["bhp"]
-    pmax = battle["pmax"]; bmax = battle["bmax"]
-
-    text = box_simple("🛡️ دفاع گرفتی!")
-    text += "\n\n🎲 ۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق"
-
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text, "defend")
-
-    battle = apply_bankai_round(battle)
-    php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt:
-        text += f"\n{bt}"
-
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0:
-        return "won", text, battle
-    if php <= 0:
-        return "lost", text, battle
-    return "active", text, battle
-
-
-def player_dodge(battle, char):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss:
-        return "active", "❌ باس پیدا نشد.", battle
-    php = battle["php"]; bhp = battle["bhp"]
-    pmax = battle["pmax"]; bmax = battle["bmax"]
-
-    text = box_simple("💨 جاخالی می‌زنی!")
-    text += "\n\n🎲 ۳۳٪ کامل / ۳۳٪ جزئی / ۳۳٪ ناموفق"
-
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text, "dodge")
-
-    battle = apply_bankai_round(battle)
-    php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt:
-        text += f"\n{bt}"
-
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0:
-        return "won", text, battle
-    if php <= 0:
-        return "lost", text, battle
-    return "active", text, battle
-def player_ability_v2(battle, char, action):
-    """
-    action: ability_1 / ability_2 / ability_3 / domain / bankai
-    """
-    boss = get_boss_data(battle["boss_name"])
-    if not boss:
-        return "active", "❌ باس پیدا نشد.", battle
-
-    char_name = char[2]
-    php = battle["php"]; bhp = battle["bhp"]
-    pmax = battle["pmax"]; bmax = battle["bmax"]
-
-    # ========== DOMAIN (×8) ==========
-    if action == "domain":
-        if char_name not in DOMAINS_JJK:
-            return "active", "❌ این کاراکتر Domain نداره!", battle
-        if battle.get("domain_used", 0) == 1:
-            return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
-
-        domain = DOMAINS_JJK[char_name]
-        dmg = int(char[6] * 8)
-        atk_boost = battle.get("domain_atk_boost", 0)
-        if atk_boost:
-            dmg = int(dmg * (1 + atk_boost / 100))
-
-        bhp = max(0, bhp - dmg)
-        battle["domain_used"] = 1
-        battle["domain_active"] = 1
-        battle["domain_turns"] = 2
-        battle["domain_name"] = domain.get("name", "Domain")
-
-        text = box_title(f"🌀 {domain.get('name', 'Domain')[:20]}", 26)
-        text += f"\n\n💥 {format_num(dmg)} آسیب (Domain ×۸)"
-        text += f"\n\n👹 {boss['display_name']}"
-        text += f"\n{hp_bar(bhp, bmax)}"
-
-        if bhp <= 0:
-            battle["php"] = php; battle["bhp"] = bhp
-            return "won", text, battle
-
-        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-        battle = apply_bankai_round(battle)
-        php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-        if bt:
-            text += f"\n{bt}"
-
-        battle["php"] = php; battle["bhp"] = bhp
-        if bhp <= 0:
-            return "won", text, battle
-        if php <= 0:
-            return "lost", text, battle
-        return "active", text, battle
-
-    # ========== BANKAI (×6) ==========
-    if action == "bankai":
-        if char_name not in BLEACH_BANKAI:
-            return "active", "❌ این کاراکتر Bankai نداره!", battle
-        if battle.get("bankai_used", 0) >= 1:
-            return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle
-
-        bankai = BLEACH_BANKAI[char_name]
-        dmg = int(char[6] * 6)
-        atk_boost = battle.get("domain_atk_boost", 0)
-        if atk_boost:
-            dmg = int(dmg * (1 + atk_boost / 100))
-
-        bhp = max(0, bhp - dmg)
-        battle["bankai_used"] = 1
-        battle["bankai_data"] = bankai
-        battle["bankai_atk_current"] = 0
-        battle["bankai_dodge_current"] = 0
-        battle["bankai_heal_current"] = 0
-        battle["bankai_bleed_current"] = 0
-        battle["bankai_enemy_debuff_current"] = 0
-        battle["bankai_self_dmg_current"] = 0
-
-        text = box_title(f"⚔️ {bankai.get('name', 'Bankai')[:20]}", 26)
-        text += f"\n\n💥 {format_num(dmg)} آسیب (Bankai ×۶)"
-        text += f"\n\n👹 {boss['display_name']}"
-        text += f"\n{hp_bar(bhp, bmax)}"
-
-        if bhp <= 0:
-            battle["php"] = php; battle["bhp"] = bhp
-            return "won", text, battle
-
-        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-        battle = apply_bankai_round(battle)
-        php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-        if bt:
-            text += f"\n{bt}"
-
-        battle["php"] = php; battle["bhp"] = bhp
-        if bhp <= 0:
-            return "won", text, battle
-        if php <= 0:
-            return "lost", text, battle
-        return "active", text, battle
-
-    # ========== ۳ ABILITY ==========
-    abilities = get_character_abilities(char_name)
-    if not abilities:
-        return "active", "❌ این کاراکتر Ability نداره!", battle
-
-    ab = abilities.get(action)
-    if not ab:
-        return "active", f"❌ {action} تعریف نشده!", battle
-
-    mult = ab.get("mult", ab.get("multiplier", 3))
-    is_purple = (action == "ability_3") or ab.get("once", False)
-
-    # Spam Prevention
-    if not is_purple:
-        spam_state = battle.get("spam_state", "ability_1")
-        if action == "ability_1" and spam_state == "ability_1":
-            return "active", "🔒 برای استفاده دوباره آبی، اول قرمز بزن!", battle
-        if action == "ability_2" and spam_state == "ability_2":
-            return "active", "🔒 برای استفاده دوباره قرمز، اول آبی یا بنفش بزن!", battle
-
-    # Ultimate 1 بار
-    if is_purple:
-        if battle.get("purple_used", 0) == 1:
-            return "active", "🟣 Ultimate فقط ۱ بار در کل نبرد!", battle
-        battle["purple_used"] = 1
-
-    dmg = int(char[6] * mult)
-    atk_boost = battle.get("domain_atk_boost", 0)
-    if atk_boost:
-        dmg = int(dmg * (1 + atk_boost / 100))
-
-    bhp = max(0, bhp - dmg)
-
-    if is_purple:
-        text = box_title(f"🟣 {ab['name'][:20]}!", 26)
-    elif action == "ability_1":
-        text = box_simple(f"🔵 {ab['name'][:18]}!")
-    else:
-        text = box_simple(f"🔴 {ab['name'][:18]}!")
-
-    text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"
-    text += f"\n\n👹 {boss['display_name']}"
-    text += f"\n{hp_bar(bhp, bmax)}"
-
-    if not is_purple:
-        battle["spam_state"] = action
-
-    if bhp <= 0:
-        battle["php"] = php; battle["bhp"] = bhp
-        return "won", text, battle
-
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-    battle = apply_bankai_round(battle)
-    php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt:
-        text += f"\n{bt}"
-
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0:
-        return "won", text, battle
-    if php <= 0:
-        return "lost", text, battle
-    return "active", text, battle
-
-
-def player_ability(battle, char, ability_name):
-    """نسخه قدیمی - backward compatible"""
-    if ability_name in ("DOMAIN", "domain"):
-        return player_ability_v2(battle, char, "domain")
-    if ability_name in ("BANKAI", "bankai"):
-        return player_ability_v2(battle, char, "bankai")
-    if ability_name in ("ability_1", "ability_2", "ability_3"):
-        return player_ability_v2(battle, char, ability_name)
-    return "active", "❌ Ability نامعتبر.", battle
-
-
-def player_item(battle, char, item_name):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss:
-        return "active", "❌ باس پیدا نشد.", battle
-    info = ITEMS.get(item_name)
-    if not info:
-        return "active", "❌ آیتم نداری.", battle
-    php = battle["php"]; bhp = battle["bhp"]
-    pmax = battle["pmax"]; bmax = battle["bmax"]
-
-    text = box_simple(f"💊 {item_name}!")
-    new_php = php
-    new_bhp = bhp
-    if item_name == "Health Potion":
-        new_php = min(pmax, php + 500)
-        text += "\n\n💚 HP +۵۰۰"
-    elif item_name == "Mega Potion":
-        new_php = min(pmax, php + 1500)
-        text += "\n\n💚 HP +۱,۵۰۰"
-    elif item_name == "Damage Boost":
-        dmg, _ = roll_damage(char[6] * 2)
-        new_bhp = max(0, bhp - dmg)
-        text += f"\n\n💥 ATK x2 → {format_num(dmg)}"
-    elif item_name == "Bomb":
-        new_bhp = max(0, bhp - 500)
-        text += "\n\n💥 ۵۰۰ آسیب"
-    else:
-        text += f"\n\n{info.get('effect_fa', info.get('effect', ''))}"
-
-    if new_bhp <= 0:
-        battle["php"] = new_php; battle["bhp"] = new_bhp
-        return "won", text, battle
-
-    new_php, new_bhp, text = boss_turn(battle, boss, new_php, pmax, new_bhp, bmax, text)
-    battle = apply_bankai_round(battle)
-    new_php, new_bhp, bt = apply_bankai_effects(battle, new_php, pmax, new_bhp, bmax)
-    if bt:
-        text += f"\n{bt}"
-
-    battle["php"] = new_php; battle["bhp"] = new_bhp
-    if new_bhp <= 0:
-        return "won", text, battle
-    if new_php <= 0:
-        return "lost", text, battle
-    return "active", text, battle
-
-
-def build_battle_message(battle, char):
-    boss = get_boss_data(battle["boss_name"])
-    boss_atk = boss["atk"] if boss else 0
-    boss_display = boss["display_name"] if boss else battle["boss_name"]
-
-    text = f"╔══════════════════════════╗\n"
-    text += f"║  👹 {boss_display[:20].center(20)} ║\n"
-    text += f"╚══════════════════════════╝\n\n"
+def get_boss_stats(boss_name):
+    """آمار باس رو از هر سه دیتای موجود می‌خونه"""
+    if boss_name in BLEACH_BOSSES:
+        return BLEACH_BOSSES[boss_name]
+    if boss_name in BLEACH_FODDER:
+        return BLEACH_FODDER[boss_name]
+    if boss_name in BOSSES_JJK:
+        return BOSSES_JJK[boss_name]
+    if boss_name in FODDER_JJK:
+        return FODDER_JJK[boss_name]
+    if boss_name in BOSSES_OPM:
+        return BOSSES_OPM[boss_name]
+    if boss_name in BOSSES:
+        return BOSSES[boss_name]
+    return {"hp": 1000, "atk": 100, "reward": 1000}
+
+
+def build_battle_message(battle, extra_log=""):
+    """پیام نبرد رو می‌سازه"""
+    boss_name = battle["boss_name"]
+    boss_info = get_boss_stats(boss_name)
+    display_name = boss_info.get("display_name", boss_name)
+    
+    text = box_title("⚔️ BOSS BATTLE ⚔️", 26) + "\n\n"
+    text += f"👹 {display_name}\n"
     text += f"{hp_bar(battle['bhp'], battle['bmax'])}\n"
-    text += f"⚔️ ATK: {format_num(boss_atk)}\n"
-
-    text += f"\n╭───── 👤 {char[2][:16]} ─────╮\n"
-    text += f"│ ⭐ {char[3]} Rank{' ' * (14 - len(char[3]))}│\n"
-    text += f"│ {hp_bar(battle['php'], battle['pmax'])} │\n"
-    text += f"│ ⚔️ ATK: {format_num(char[6])}{' ' * (13 - len(format_num(char[6])))}│\n"
-    text += f"│ 🛡️ DEF: {format_num(char[7])}{' ' * (13 - len(format_num(char[7])))}│\n"
-    text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n"
-    text += f"╰{'─' * 25}╯"
-
-    if battle.get("domain_active", 0) == 1:
-        text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
-    if battle.get("bankai_used", 0) >= 1:
-        bankai = battle.get("bankai_data", {})
-        text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
-
-    text += f"\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 نوبت توئه!"
+    text += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+    
+    char = get_active_character(battle["uid"])
+    if char:
+        char_name = char[2]
+        text += f"👤 {char_name}\n"
+    else:
+        text += f"👤 Player\n"
+    
+    text += f"{hp_bar(battle['php'], battle['pmax'])}\n\n"
+    
+    if battle.get("domain_active"):
+        text += f"🌀 Domain فعال: {battle.get('domain_name', '')}\n"
+        text += f"⏳ {battle.get('domain_turns', 0)} راند مونده\n\n"
+    
+    if battle.get("bankai_used"):
+        text += f"⚔️ Bankai فعال\n\n"
+    
+    text += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    text += f"🎯 نوبت تو!  |  🌀 Round {battle.get('turn', 1)}\n"
+    
+    if extra_log:
+        text += "\n" + extra_log
+    
     return text
 
 
-def finish_battle(uid, boss_name, won):
-    if won:
-        boss = get_boss_data(boss_name)
-        reward = boss["reward"] if boss else 5000
-        add_coins(uid, reward)
-        update_quest_progress(uid, "win_3_bosses")
-        update_quest_progress(uid, "win_5_bosses")
-        if boss_name == "Saitama Phase 1":
-            update_quest_progress(uid, "kill_saitama")
-        if boss_name.startswith("Goku"):
-            update_quest_progress(uid, "kill_goku")
+# ============ حمله ساده ============
 
-        try:
-            from guild import give_guild_xp
-            xp_amount = 5
-            if boss:
-                boss_hp = boss.get("hp", 0)
-                if boss_hp >= 40000:
-                    xp_amount = 20
-                elif boss_hp >= 20000:
-                    xp_amount = 10
-                elif boss_hp >= 5000:
-                    xp_amount = 5
-                else:
-                    xp_amount = 2
-            give_guild_xp(uid, xp_amount)
-        except Exception:
-            pass
+def player_attack(user_id):
+    """حمله ساده"""
+    battle = get_battle(user_id)
+    if not battle:
+        return None, "نبرد فعالی وجود ندارد."
+    
+    char = get_active_character(user_id)
+    if not char:
+        return None, "کاراکتر فعالی نداری."
+    
+    atk = char[6]
+    
+    # اگه Domain فعاله، اتک کامل
+    if battle.get("domain_active"):
+        base_dmg = atk
+    else:
+        base_dmg = int(atk * 0.5)  # اتک ساده کمتر شد
+    
+    dmg = random.randint(int(base_dmg * 0.9), int(base_dmg * 1.1))
+    crit = random.random() < 0.15
+    if crit:
+        dmg = int(dmg * 1.5)
+    
+    battle["bhp"] = max(0, battle["bhp"] - dmg)
+    
+    log = "⚔️ حمله ساده!"
+    if crit:
+        log = "⚡ CRITICAL HIT! ⚡"
+    log += f"\n💥 {format_num(dmg)} آسیب"
+    
+    if battle["bhp"] > 0:
+        boss_info = get_boss_stats(battle["boss_name"])
+        boss_atk = boss_info.get("atk", 100)
+        boss_dmg = random.randint(int(boss_atk * 0.85), int(boss_atk * 1.15))
+        battle["php"] = max(0, battle["php"] - boss_dmg)
+        log += f"\n\n👹 باس حمله کرد: {format_num(boss_dmg)} آسیب"
+    
+    battle["turn"] = battle.get("turn", 0) + 1
+    update_battle(battle)
+    return battle, log
+# ============ ⭐ Ability جدید ============
 
-        return reward
-    return 0
+def player_ability(user_id, ability_slot=None):
+    """
+    استفاده از Ability
+    ability_slot: 1, 2, یا 3
+    """
+    battle = get_battle(user_id)
+    if not battle:
+        return None, "نبرد فعالی وجود ندارد."
+    
+    char = get_active_character(user_id)
+    if not char:
+        return None, "کاراکتر فعالی نداری."
+    
+    char_name = char[2]
+    atk = char[6]
+    
+    # === پیدا کردن Ability از دیتای کاراکتر ===
+    abilities = {}
+    
+    if char_name in ABILITIES_JJK:
+        abilities = ABILITIES_JJK[char_name]
+    elif char_name in ABILITIES_BLEACH:
+        abilities = ABILITIES_BLEACH[char_name]
+    elif char_name in ABILITIES_OPM:
+        abilities = ABILITIES_OPM[char_name]
+    else:
+        return None, "❌ این کاراکتر Ability نداره!"
+    
+    ability_key = f"ability_{ability_slot}"
+    if ability_key not in abilities:
+        return None, "❌ این Ability وجود ندارد."
+    
+    ability = abilities[ability_key]
+    ability_name = ability["name"]
+    mult = ability.get("mult", 1.0)
+    is_once = ability.get("once", False)
+    
+    # === چک اسپم ===
+    spam_state = battle.get("spam_state", "")
+    
+    if is_once:
+        if battle.get(f"used_once_{ability_name}", 0) == 1:
+            return None, f"❌ {ability_name} قبلاً استفاده شده!"
+    else:
+        if spam_state == ability_key:
+            return None, f"❌ برای استفاده مجدد از {ability_name}، اول یه Ability دیگه بزن!"
+    
+    # === محاسبه دمیج ===
+    if battle.get("domain_active"):
+        base_dmg = atk
+    else:
+        base_dmg = int(atk * mult)
+    
+    dmg = random.randint(int(base_dmg * 0.9), int(base_dmg * 1.1))
+    crit = random.random() < 0.15
+    if crit:
+        dmg = int(dmg * 1.5)
+    
+    battle["bhp"] = max(0, battle["bhp"] - dmg)
+    
+    # === لاگ ===
+    log = f"🔥 {ability_name}!"
+    if crit:
+        log = f"⚡ CRITICAL! ⚡\n🔥 {ability_name}!"
+    log += f"\n💥 {format_num(dmg)} آسیب"
+    
+    if is_once:
+        log += f"\n\n💜 (یک بار مصرف)"
+    
+    # === آپدیت اسپم ===
+    if is_once:
+        battle[f"used_once_{ability_name}"] = 1
+        battle["spam_state"] = ""
+    else:
+        battle["spam_state"] = ability_key
+    
+    # === حمله باس ===
+    if battle["bhp"] > 0:
+        boss_info = get_boss_stats(battle["boss_name"])
+        boss_atk = boss_info.get("atk", 100)
+        
+        if battle.get("boss_frozen", 0) > 0:
+            battle["boss_frozen"] -= 1
+            log += f"\n\n❄️ باس فریزه! نوبتش رو از دست داد."
+        else:
+            boss_dmg = random.randint(int(boss_atk * 0.85), int(boss_atk * 1.15))
+            battle["php"] = max(0, battle["php"] - boss_dmg)
+            log += f"\n\n👹 باس حمله کرد: {format_num(boss_dmg)} آسیب"
+    
+    battle["turn"] = battle.get("turn", 0) + 1
+    update_battle(battle)
+    return battle, log
+
+
+# ============ دفاع، جاخالی، آیتم ============
+
+def player_defend(user_id):
+    """دفاع"""
+    battle = get_battle(user_id)
+    if not battle:
+        return None, "نبرد فعالی وجود ندارد."
+    
+    log = "🛡️ دفاع گرفتی! آسیب بعدی ۵۰٪ کمتر"
+    
+    if battle["bhp"] > 0:
+        boss_info = get_boss_stats(battle["boss_name"])
+        boss_atk = boss_info.get("atk", 100)
+        boss_dmg = random.randint(int(boss_atk * 0.85), int(boss_atk * 1.15))
+        boss_dmg = int(boss_dmg * 0.5)
+        battle["php"] = max(0, battle["php"] - boss_dmg)
+        log += f"\n\n👹 باس حمله کرد: {format_num(boss_dmg)} آسیب (دفاع کردی)"
+    
+    battle["turn"] = battle.get("turn", 0) + 1
+    update_battle(battle)
+    return battle, log
+
+
+def player_dodge(user_id):
+    """جاخالی"""
+    battle = get_battle(user_id)
+    if not battle:
+        return None, "نبرد فعالی وجود ندارد."
+    
+    char = get_active_character(user_id)
+    dodge_chance = char[8] if char else 10
+    
+    if random.randint(1, 100) <= dodge_chance:
+        log = "💨 جاخالی موفق! آسیب صفر"
+    else:
+        boss_info = get_boss_stats(battle["boss_name"])
+        boss_atk = boss_info.get("atk", 100)
+        boss_dmg = random.randint(int(boss_atk * 0.85), int(boss_atk * 1.15))
+        battle["php"] = max(0, battle["php"] - boss_dmg)
+        log = f"❌ جاخالی ناموفق!\n👹 باس: {format_num(boss_dmg)} آسیب"
+    
+    battle["turn"] = battle.get("turn", 0) + 1
+    update_battle(battle)
+    return battle, log
+
+
+def player_item(user_id, item_name):
+    """استفاده از آیتم"""
+    battle = get_battle(user_id)
+    if not battle:
+        return None, "نبرد فعالی وجود ندارد."
+    
+    if not use_item(user_id, item_name):
+        return None, "❌ این آیتم رو نداری."
+    
+    log = f"💊 {item_name} استفاده شد!"
+    
+    if "Potion" in item_name:
+        heal = int(battle["pmax"] * 0.3)
+        battle["php"] = min(battle["pmax"], battle["php"] + heal)
+        log += f"\n💚 {format_num(heal)} HP درمان شد"
+    
+    if battle["bhp"] > 0:
+        boss_info = get_boss_stats(battle["boss_name"])
+        boss_atk = boss_info.get("atk", 100)
+        boss_dmg = random.randint(int(boss_atk * 0.85), int(boss_atk * 1.15))
+        battle["php"] = max(0, battle["php"] - boss_dmg)
+        log += f"\n\n👹 باس: {format_num(boss_dmg)} آسیب"
+    
+    battle["turn"] = battle.get("turn", 0) + 1
+    update_battle(battle)
+    return battle, log
+
+
+# ============ پایان نبرد ============
+
+def finish_battle(user_id):
+    """پایان نبرد - چک برد/باخت"""
+    battle = get_battle(user_id)
+    if not battle:
+        return None
+    
+    if battle["bhp"] <= 0:
+        boss_info = get_boss_stats(battle["boss_name"])
+        reward = boss_info.get("reward", 1000)
+        add_coins(user_id, reward)
+        
+        log = box_title("🏆 VICTORY! 🏆", 26)
+        log += f"\n\n💰 جایزه: {format_num(reward)} سکه"
+        log += f"\n🎯 تعداد راند: {battle.get('turn', 0)}"
+        
+        update_quest_progress(user_id, "kill_1_boss")
+        end_battle(battle["id"])
+        return log
+    
+    elif battle["php"] <= 0:
+        log = box_title("💀 DEFEAT 💀", 26)
+        log += f"\n\n😢 شکست خوردی!"
+        log += f"\n🎯 تعداد راند: {battle.get('turn', 0)}"
+        
+        end_battle(battle["id"])
+        return log
+    
+    return None
