@@ -204,6 +204,8 @@ def get_boss_atk(boss_name):
         return BOSSES_JJK[boss_name]["atk"]
     if boss_name in FODDER_JJK:
         return FODDER_JJK[boss_name]["atk"]
+    if boss_name in BOSSES_OPM:
+        return BOSSES_OPM[boss_name]["atk"]
     if boss_name in BOSSES:
         return BOSSES[boss_name]["atk"]
     return 100
