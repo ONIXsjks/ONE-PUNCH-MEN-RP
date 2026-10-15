@@ -43,11 +43,7 @@ CHARACTERS_BLEACH = {
     },
 }
 
-CHAR_PRICES_BLEACH = {
-    "S": 2000000,
-    "A": 500000,
-    "B": 150000,
-}
+CHAR_PRICES_BLEACH = {"S": 2000000, "A": 500000, "B": 150000}
 
 BLEACH_ABILITIES_SHOP = {
     "Getsuga Tensho": {"effect": "ATK x4", "effect_fa": "ضربه ماه‌شکن ۴x", "price": 25000},
@@ -96,21 +92,60 @@ BLEACH_BANKAI = {
     "Retsu Unohana": {"name": "Minazuki", "atk_per_round": 6, "heal_per_round": 5, "max_atk": 30, "max_heal": 20},
     "Marechiyo Omaeda": {"name": "Jizō Engaku", "atk_per_round": 4, "dodge_per_round": 3, "max_atk": 20, "max_dodge": 15},
 }
-# ============================================================
-# BOSSES
-# ============================================================
-BLEACH_BOSSES = {
-    "Aizen (Final Form)": {"display_name": "Sosuke Aizen (Final)", "hp": 60000, "atk": 2500, "reward": 150000},
-    "Yhwach (Soul King)": {"display_name": "Yhwach (Soul King)", "hp": 70000, "atk": 2800, "reward": 150000},
-    "Ichigo (Vasto Lorde)": {"display_name": "Ichigo (Vasto Lorde)", "hp": 45000, "atk": 2200, "reward": 130000},
-    "Yamamoto (Bankai)": {"display_name": "Yamamoto (Bankai)", "hp": 50000, "atk": 2400, "reward": 130000},
-    "Ulquiorra (Segunda Etapa)": {"display_name": "Ulquiorra (2nd Etapa)", "hp": 40000, "atk": 2000, "reward": 100000},
-    "Gerard Valkyrie": {"display_name": "Gerard (Miracle)", "hp": 55000, "atk": 2300, "reward": 150000},
-}
 
 # ============================================================
-# FODDER
+# BOSSES (مرتب‌شده بر اساس قدرت)
 # ============================================================
+BLEACH_BOSSES = {
+    # 🟢 ضعیف (HP < 5k، ATK < 300)
+    "Hollow": {
+        "display_name": "هالو",
+        "hp": 500, "atk": 40, "reward": 50000,
+    },
+    "Menos Grande": {
+        "display_name": "منوس گرانده",
+        "hp": 800, "atk": 60, "reward": 50000,
+    },
+    "Adjuchas": {
+        "display_name": "آدجوچاس",
+        "hp": 1200, "atk": 90, "reward": 50000,
+    },
+
+    # 🟡 متوسط (HP 5k-20k، ATK 300-800)
+    "Weak Vasto Lorde": {
+        "display_name": "واستو لرد ضعیف",
+        "hp": 2000, "atk": 150, "reward": 100000,
+    },
+
+    # 🟠 قوی (HP 20k-50k، ATK 800-2k)
+    "Ulquiorra (Segunda Etapa)": {
+        "display_name": "اولکویورا (مرحله دوم)",
+        "hp": 40000, "atk": 2000, "reward": 200000,
+    },
+    "Ichigo (Vasto Lorde)": {
+        "display_name": "ایچیگو (واستو لرد)",
+        "hp": 45000, "atk": 2200, "reward": 200000,
+    },
+    "Yamamoto (Bankai)": {
+        "display_name": "یاماموتو (بانکای)",
+        "hp": 50000, "atk": 2400, "reward": 200000,
+    },
+    "Aizen (Final Form)": {
+        "display_name": "آیزن (فرم نهایی)",
+        "hp": 60000, "atk": 2500, "reward": 200000,
+    },
+
+    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+)
+    "Gerard Valkyrie": {
+        "display_name": "جرارد (معجزه)",
+        "hp": 85000, "atk": 2300, "reward": 500000,
+    },
+    "Yhwach (Soul King)": {
+        "display_name": "یواچ (پادشاه روح)",
+        "hp": 100000, "atk": 2800, "reward": 500000,
+    },
+}
+
 BLEACH_FODDER = {
     "Hollow": {"display_name": "هالو", "hp": 500, "atk": 40, "reward": 5000},
     "Menos Grande": {"display_name": "منوس گرانده", "hp": 800, "atk": 60, "reward": 5000},
