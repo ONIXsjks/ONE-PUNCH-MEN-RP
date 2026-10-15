@@ -2334,8 +2334,7 @@ def main():
     except Exception:
         pass
 
-    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
-
+    app = Application.builder().token(BOT_TOKEN).build()
     # ========== Commands ==========
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("profile", profile))
