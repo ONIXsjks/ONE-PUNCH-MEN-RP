@@ -91,6 +91,7 @@ def get_multi_kb(session_id):
         [InlineKeyboardButton("🔥 Ability", callback_data=f"mb_ability_{session_id}"),
          InlineKeyboardButton("🔥 باف", callback_data=f"mb_buff_{session_id}")],
         [InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")],
+        [InlineKeyboardButton("⏭️ رد کردن نوبت", callback_data=f"mb_skip_{session_id}")],
     ]
 
 
