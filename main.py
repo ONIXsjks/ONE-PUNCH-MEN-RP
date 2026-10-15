@@ -1307,12 +1307,9 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(user_id):
         await update.message.reply_text("❌ تو ادمین نیستی!")
         return
-
     text = "👑 پنل ادمین\n━━━━━━━━━━━━━━━━━━━\n\n"
-
     if is_owner(user_id):
         text += "🔑 مالک اصلی\n\n"
-
     text += "💰 سکه:\n"
     text += "  /give <user_id> <amount>\n"
     text += "  /take <user_id> <amount>\n\n"
@@ -1325,7 +1322,6 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "🎭 کاراکتر:\n"
     text += "  /givechar <user_id> <name> <rank>\n"
     text += "  /resetchar <user_id>\n\n"
-
     if is_owner(user_id):
         text += "👑 ادمین‌ها:\n"
         text += "  /addadmin <user_id>\n"
@@ -1343,7 +1339,6 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text += "🎯 کوئست:\n"
         text += "  /setquest <key> <target> <reward>\n"
         text += "  /viewquests\n"
-
     await update.message.reply_text(text)
 
 
@@ -1494,13 +1489,7 @@ async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         msg = send_gift(user_id, target_id, amount)
         await update.message.reply_text(msg)
         return
-    await update.message.reply_text(
-        "🎁 چطوری هدیه بدم:\n\n"
-        "روش ۱: ریپلای کن و بنویس:\n"
-        "  /gift 500\n\n"
-        "روش ۲: با آیدی:\n"
-        "  /gift 123456789 500"
-    )
+    await update.message.reply_text("🎁 /gift 500 یا ریپلای + /gift 500")
 
 
 async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1509,12 +1498,12 @@ async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not rows:
         await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
         return
-    text = "🎁 تاریخچه هدیه‌ها:\n\n"
+    text = "🎁 تاریخچه:\n\n"
     for from_id, to_id, amount, date in rows:
         if from_id == user_id:
-            text += f"📤 تو → {to_id}: {amount:,} 💰\n"
+            text += f"📤 تو → {to_id}: {amount:,}\n"
         else:
-            text += f"📥 {from_id} → تو: {amount:,} 💰\n"
+            text += f"📥 {from_id} → تو: {amount:,}\n"
     await update.message.reply_text(text)
 
 
@@ -1526,13 +1515,13 @@ async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
     for i, (uid, total) in enumerate(rows, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {uid} — {total:,} 💰\n"
+        text += f"{medal} {uid} — {total:,}\n"
     await update.message.reply_text(text)
 # ============ ADMIN پیشرفته ============
 
 async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین اضافه کنه!")
+        await update.message.reply_text("❌ فقط مالک!")
         return
     if not ctx.args:
         await update.message.reply_text("Usage: /addadmin <user_id>")
@@ -1543,12 +1532,12 @@ async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ آیدی معتبر بده.")
         return
     add_admin(target_id, "all", update.effective_user.id)
-    await update.message.reply_text(f"✅ کاربر {target_id} ادمین شد!")
+    await update.message.reply_text(f"✅ {target_id} ادمین شد!")
 
 
 async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین حذف کنه!")
+        await update.message.reply_text("❌ فقط مالک!")
         return
     if not ctx.args:
         await update.message.reply_text("Usage: /removeadmin <user_id>")
@@ -1566,9 +1555,9 @@ async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id):
         return
     admins = list_admins()
-    text = "👑 لیست ادمین‌ها:\n\n"
+    text = "👑 ادمین‌ها:\n\n"
     for uid, role, perms in admins:
-        text += f"👤 {uid} — {role}\n   دسترسی: {perms}\n"
+        text += f"👤 {uid} — {role} | {perms}\n"
     if not admins:
         text = "📭 هیچ ادمینی اضافه نشده."
     await update.message.reply_text(text)
@@ -1631,9 +1620,9 @@ async def viewhelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not helps:
         await update.message.reply_text("📭 هیچ Help ذخیره نشده.")
         return
-    text = "📜 Help های ذخیره شده:\n\n"
+    text = "📜 Help:\n\n"
     for key, val in helps:
-        text += f"🔹 {key}: {val[:50]}...\n"
+        text += f"🔹 {key}: {val[:50]}\n"
     await update.message.reply_text(text)
 
 
@@ -1641,11 +1630,7 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not has_permission(update.effective_user.id, "manage_images"):
         return
     if not update.message.photo:
-        await update.message.reply_text(
-            "❌ باید با عکس بفرستی!\n\n"
-            "روش: یه عکس بفرست و توی کپشن بنویس:\n"
-            "`/setcharimage <اسم کاراکتر>`"
-        )
+        await update.message.reply_text("❌ عکس بفرست + کپشن:\n/setcharimage <اسم کاراکتر>")
         return
     caption = update.message.caption or ""
     text_part = caption.replace("/setcharimage", "").strip()
@@ -1655,30 +1640,26 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     char_name = text_part
     file_id = update.message.photo[-1].file_id
 
-    # ===== دیباگ =====
-    debug_info = f"🔍 طول: {len(char_name)}\n🔍 کدها: {[ord(c) for c in char_name]}\n\n"
-    debug_info += "📋 نمونه کاراکترها:\n"
-
+    debug_info = f"🔍 اسم: {char_name}\n\n"
+    debug_info += f"📋 JJK: {len(CHARACTERS_JJK)}\n"
+    debug_info += f"📋 BLEACH: {len(CHARACTERS_BLEACH)}\n"
+    debug_info += f"📋 OPM: {len(CHARACTERS_OPM)}\n"
+    debug_info += f"📋 کل CHARACTERS: {len(CHARACTERS)}\n\n"
+    debug_info += f"🔑 کلیدها: {list(CHARACTERS.keys())}\n\n"
     sample_list = []
     for r in CHARACTERS:
-        for cn in list(CHARACTERS[r].keys())[:4]:
+        for cn in list(CHARACTERS[r].keys())[:3]:
             sample_list.append(f"• {cn} ({r})")
+    debug_info += "📋 نمونه:\n" + "\n".join(sample_list[:12])
 
-    debug_info += "\n".join(sample_list[:15])
-
-    # ===== چک کردن =====
     found = False
     for rank in CHARACTERS:
         if char_name in CHARACTERS[rank]:
             found = True
             break
-
     if not found:
-        await update.message.reply_text(
-            f"❌ کاراکتر «{char_name}» پیدا نشد!\n\n{debug_info}"
-        )
+        await update.message.reply_text(f"❌ پیدا نشد!\n\n{debug_info}")
         return
-
     ok, msg = set_char_image(char_name, file_id)
     await update.message.reply_text(msg)
 
@@ -1710,7 +1691,7 @@ async def listchannels_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not channels:
         await update.message.reply_text("📭 هیچ کانالی اضافه نشده.")
         return
-    text = "📢 کانال‌های جوین اجباری:\n\n"
+    text = "📢 کانال‌ها:\n\n"
     for ch_id, ch_name in channels:
         text += f"🔹 {ch_name} ({ch_id})\n"
     await update.message.reply_text(text)
@@ -1729,8 +1710,7 @@ async def setquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except ValueError:
         await update.message.reply_text("❌ اعداد معتبر بده.")
         return
-    desc = f"کوئست {key}"
-    ok, msg = set_custom_quest(key, desc, target, reward)
+    ok, msg = set_custom_quest(key, f"کوئست {key}", target, reward)
     await update.message.reply_text(msg)
 
 
@@ -1741,226 +1721,9 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not quests:
         await update.message.reply_text("📭 هیچ کوئست سفارشی ذخیره نشده.")
         return
-    text = "🎯 کوئست‌های سفارشی:\n\n"
+    text = "🎯 کوئست‌ها:\n\n"
     for key, desc, target, reward in quests:
-        text += f"🔹 {key}: هدف {target} — جایزه {reward:,}\n"
-    await update.message.reply_text(text)
-# ============ ADMIN پیشرفته ============
-
-async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین اضافه کنه!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /addadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    add_admin(target_id, "all", update.effective_user.id)
-    await update.message.reply_text(f"✅ کاربر {target_id} ادمین شد!")
-
-
-async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین حذف کنه!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /removeadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = remove_admin(target_id)
-    await update.message.reply_text(msg)
-
-
-async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        return
-    admins = list_admins()
-    text = "👑 لیست ادمین‌ها:\n\n"
-    for uid, role, perms in admins:
-        text += f"👤 {uid} — {role}\n   دسترسی: {perms}\n"
-    if not admins:
-        text = "📭 هیچ ادمینی اضافه نشده."
-    await update.message.reply_text(text)
-
-
-async def givechar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if len(ctx.args) < 3:
-        await update.message.reply_text("Usage: /givechar <user_id> <char_name> <rank>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    rank = ctx.args[-1]
-    char_name = " ".join(ctx.args[1:-1])
-    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
-        await update.message.reply_text("❌ کاراکتر پیدا نشد.")
-        return
-    stats = get_all_stats(char_name, rank)
-    ok, msg = give_character(target_id, char_name, rank,
-                             stats.get("hp", 400), stats.get("atk", 60),
-                             stats.get("def", 20), stats.get("dodge", 10))
-    await update.message.reply_text(msg)
-
-
-async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /resetchar <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = reset_character(target_id)
-    await update.message.reply_text(msg)
-
-
-async def sethelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_help"):
-        return
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /sethelp <key> <text>")
-        return
-    key = ctx.args[0]
-    text = " ".join(ctx.args[1:])
-    ok, msg = set_help(key, text)
-    await update.message.reply_text(msg)
-
-
-async def viewhelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    helps = get_all_help()
-    if not helps:
-        await update.message.reply_text("📭 هیچ Help ذخیره نشده.")
-        return
-    text = "📜 Help های ذخیره شده:\n\n"
-    for key, val in helps:
-        text += f"🔹 {key}: {val[:50]}...\n"
-    await update.message.reply_text(text)
-
-
-async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_images"):
-        return
-    if not update.message.photo:
-        await update.message.reply_text(
-            "❌ باید با عکس بفرستی!\n\n"
-            "روش: یه عکس بفرست و توی کپشن بنویس:\n"
-            "`/setcharimage <اسم کاراکتر>`"
-        )
-        return
-    caption = update.message.caption or ""
-    text_part = caption.replace("/setcharimage", "").strip()
-    if not text_part:
-        await update.message.reply_text("❌ اسم کاراکتر رو توی کپشن بنویس!")
-        return
-    char_name = text_part
-    file_id = update.message.photo[-1].file_id
-
-    # ===== دیباگ =====
-    debug_info = f"🔍 طول: {len(char_name)}\n🔍 کدها: {[ord(c) for c in char_name]}\n\n"
-    debug_info += "📋 نمونه کاراکترها:\n"
-
-    sample_list = []
-    for r in CHARACTERS:
-        for cn in list(CHARACTERS[r].keys())[:4]:
-            sample_list.append(f"• {cn} ({r})")
-
-    debug_info += "\n".join(sample_list[:15])
-
-    # ===== چک کردن =====
-    found = False
-    for rank in CHARACTERS:
-        if char_name in CHARACTERS[rank]:
-            found = True
-            break
-
-    if not found:
-        await update.message.reply_text(
-            f"❌ کاراکتر «{char_name}» پیدا نشد!\n\n{debug_info}"
-        )
-        return
-
-    ok, msg = set_char_image(char_name, file_id)
-    await update.message.reply_text(msg)
-
-
-async def addchannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_channels"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /addchannel <channel_id>")
-        return
-    ok, msg = add_force_channel(ctx.args[0], ctx.args[0])
-    await update.message.reply_text(msg)
-
-
-async def removechannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_channels"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /removechannel <channel_id>")
-        return
-    ok, msg = remove_force_channel(ctx.args[0])
-    await update.message.reply_text(msg)
-
-
-async def listchannels_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    channels = get_force_channels()
-    if not channels:
-        await update.message.reply_text("📭 هیچ کانالی اضافه نشده.")
-        return
-    text = "📢 کانال‌های جوین اجباری:\n\n"
-    for ch_id, ch_name in channels:
-        text += f"🔹 {ch_name} ({ch_id})\n"
-    await update.message.reply_text(text)
-
-
-async def setquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_quests"):
-        return
-    if len(ctx.args) < 3:
-        await update.message.reply_text("Usage: /setquest <key> <target> <reward>")
-        return
-    key = ctx.args[0]
-    try:
-        target = int(ctx.args[1])
-        reward = int(ctx.args[2])
-    except ValueError:
-        await update.message.reply_text("❌ اعداد معتبر بده.")
-        return
-    desc = f"کوئست {key}"
-    ok, msg = set_custom_quest(key, desc, target, reward)
-    await update.message.reply_text(msg)
-
-
-async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    quests = get_all_custom_quests()
-    if not quests:
-        await update.message.reply_text("📭 هیچ کوئست سفارشی ذخیره نشده.")
-        return
-    text = "🎯 کوئست‌های سفارشی:\n\n"
-    for key, desc, target, reward in quests:
-        text += f"🔹 {key}: هدف {target} — جایزه {reward:,}\n"
+        text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
 # ============ JJK MENU ============
 
@@ -1970,56 +1733,39 @@ async def jjk_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🐾 نوچه‌ها (فارم)", callback_data="jjk_fodder")],
         [InlineKeyboardButton("👹 باس‌های ویژه", callback_data="jjk_bosses")],
     ]
-    await update.message.reply_text(
-        "🌀 جوجوتسو کایسن\n━━━━━━━━━━━━━━━━━━━\n\n"
-        "یه بخش انتخاب کن:",
-        reply_markup=InlineKeyboardMarkup(kb)
-    )
+    await update.message.reply_text("🌀 جوجوتسو\nیه بخش انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
 async def jjk_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
-
     if data == "jjk_chars":
         kb = []
         for rank in ["S", "A", "B", "C"]:
             if rank in CHARACTERS_JJK:
                 kb.append([InlineKeyboardButton(f"📦 {rank} Rank", callback_data=f"jjkrank_{rank}")])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
-        await q.edit_message_text("🛒 کاراکترهای جوجوتسو:", reply_markup=InlineKeyboardMarkup(kb))
-
+        await q.edit_message_text("🛒 کاراکترها:", reply_markup=InlineKeyboardMarkup(kb))
     elif data == "jjk_fodder":
         kb = []
         for fname, fdata in FODDER_JJK.items():
-            kb.append([InlineKeyboardButton(
-                f"{fdata['display_name']} (HP {fdata['hp']:,}) — {fdata['reward']:,} 💰",
-                callback_data=f"jjkfodder_{fname}"
-            )])
+            kb.append([InlineKeyboardButton(f"{fdata['display_name']} (HP {fdata['hp']:,}) — {fdata['reward']:,} 💰", callback_data=f"jjkfodder_{fname}")])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
         await q.edit_message_text("🐾 نوچه‌ها:", reply_markup=InlineKeyboardMarkup(kb))
-
     elif data == "jjk_bosses":
         kb = []
         for bname, bdata in BOSSES_JJK.items():
-            kb.append([InlineKeyboardButton(
-                f"{bdata['display_name']} (HP {bdata['hp']:,})",
-                callback_data=f"jjkboss_{bname}"
-            )])
+            kb.append([InlineKeyboardButton(f"{bdata['display_name']} (HP {bdata['hp']:,})", callback_data=f"jjkboss_{bname}")])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_back")])
-        await q.edit_message_text("👹 باس‌های ویژه جوجوتسو:", reply_markup=InlineKeyboardMarkup(kb))
-
+        await q.edit_message_text("👹 باس‌ها:", reply_markup=InlineKeyboardMarkup(kb))
     elif data == "jjk_back":
         kb = [
             [InlineKeyboardButton("🛒 کاراکترها", callback_data="jjk_chars")],
             [InlineKeyboardButton("🐾 نوچه‌ها (فارم)", callback_data="jjk_fodder")],
             [InlineKeyboardButton("👹 باس‌های ویژه", callback_data="jjk_bosses")],
         ]
-        await q.edit_message_text(
-            "🌀 جوجوتسو کایسن\n━━━━━━━━━━━━━━━━━━━\n\nیه بخش انتخاب کن:",
-            reply_markup=InlineKeyboardMarkup(kb)
-        )
+        await q.edit_message_text("🌀 جوجوتسو\nیه بخش انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
 async def jjk_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2029,10 +1775,7 @@ async def jjk_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = []
     for name, title in CHARACTERS_JJK.get(rank, {}).items():
         price = get_char_price(name, rank)
-        kb.append([InlineKeyboardButton(
-            f"{name} — {price:,} 💰",
-            callback_data=f"jjkbuy_{name}_{rank}"
-        )])
+        kb.append([InlineKeyboardButton(f"{name} — {price:,} 💰", callback_data=f"jjkbuy_{name}_{rank}")])
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="jjk_chars")])
     await q.edit_message_text(f"🦸 {rank} Rank:", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -2042,13 +1785,11 @@ async def jjk_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     data = q.data.replace("jjkbuy_", "")
     parts = data.rsplit("_", 1)
-    char_name = parts[0]
-    rank = parts[1]
-    result = buy_character(q.from_user.id, char_name, rank)
+    result = buy_character(q.from_user.id, parts[0], parts[1])
     if "Not enough" in str(result) or "کافی" in str(result):
-        await q.message.reply_text(f"❌ {char_name}\n💰 پولت کمه!")
+        await q.message.reply_text(f"❌ {parts[0]}\n💰 پولت کمه!")
     else:
-        await q.message.reply_text(f"✅ {char_name} ({rank})\n🎉 خریدی!")
+        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خریدی!")
 
 
 async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2068,8 +1809,7 @@ async def jjk_fodder_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         end_battle(existing["id"])
     create_battle(user_id, fodder_name, char[5], fdata["hp"])
     battle_data = get_battle(user_id)
-    text = build_battle_message(battle_data, char)
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    await q.message.reply_text(build_battle_message(battle_data, char), reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2089,8 +1829,7 @@ async def jjk_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         end_battle(existing["id"])
     create_battle(user_id, boss_name, char[5], bdata["hp"])
     battle_data = get_battle(user_id)
-    text = build_battle_message(battle_data, char)
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    await q.message.reply_text(build_battle_message(battle_data, char), reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 # ============ OPM MENU ============
@@ -2100,45 +1839,32 @@ async def opm_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🛒 کاراکترها", callback_data="opm_chars")],
         [InlineKeyboardButton("👹 باس‌ها", callback_data="opm_bosses")],
     ]
-    await update.message.reply_text(
-        "💪 One-Punch Man\n━━━━━━━━━━━━━━━━━━━\n\n"
-        "یه بخش انتخاب کن:",
-        reply_markup=InlineKeyboardMarkup(kb)
-    )
+    await update.message.reply_text("💪 One-Punch Man\nیه بخش انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
 async def opm_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
-
     if data == "opm_chars":
         kb = []
         for rank in ["S", "A", "B", "C"]:
             if rank in CHARACTERS_OPM:
                 kb.append([InlineKeyboardButton(f"📦 {rank} Rank", callback_data=f"opmrank_{rank}")])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="opm_back")])
-        await q.edit_message_text("🛒 کاراکترهای One-Punch:", reply_markup=InlineKeyboardMarkup(kb))
-
+        await q.edit_message_text("🛒 کاراکترها:", reply_markup=InlineKeyboardMarkup(kb))
     elif data == "opm_bosses":
         kb = []
         for bname, bdata in BOSSES_OPM.items():
-            kb.append([InlineKeyboardButton(
-                f"{bdata['display_name']} (HP {bdata['hp']:,})",
-                callback_data=f"opmboss_{bname}"
-            )])
+            kb.append([InlineKeyboardButton(f"{bdata['display_name']} (HP {bdata['hp']:,})", callback_data=f"opmboss_{bname}")])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="opm_back")])
-        await q.edit_message_text("👹 باس‌های One-Punch:", reply_markup=InlineKeyboardMarkup(kb))
-
+        await q.edit_message_text("👹 باس‌ها:", reply_markup=InlineKeyboardMarkup(kb))
     elif data == "opm_back":
         kb = [
             [InlineKeyboardButton("🛒 کاراکترها", callback_data="opm_chars")],
             [InlineKeyboardButton("👹 باس‌ها", callback_data="opm_bosses")],
         ]
-        await q.edit_message_text(
-            "💪 One-Punch Man\n━━━━━━━━━━━━━━━━━━━\n\nیه بخش انتخاب کن:",
-            reply_markup=InlineKeyboardMarkup(kb)
-        )
+        await q.edit_message_text("💪 One-Punch Man\nیه بخش انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
 async def opm_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2148,10 +1874,7 @@ async def opm_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = []
     for name, title in CHARACTERS_OPM.get(rank, {}).items():
         price = get_char_price(name, rank)
-        kb.append([InlineKeyboardButton(
-            f"{name} — {price:,} 💰",
-            callback_data=f"opmbuy_{name}_{rank}"
-        )])
+        kb.append([InlineKeyboardButton(f"{name} — {price:,} 💰", callback_data=f"opmbuy_{name}_{rank}")])
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="opm_chars")])
     await q.edit_message_text(f"🦸 {rank} Rank:", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -2161,13 +1884,11 @@ async def opm_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     data = q.data.replace("opmbuy_", "")
     parts = data.rsplit("_", 1)
-    char_name = parts[0]
-    rank = parts[1]
-    result = buy_character(q.from_user.id, char_name, rank)
+    result = buy_character(q.from_user.id, parts[0], parts[1])
     if "Not enough" in str(result) or "کافی" in str(result):
-        await q.message.reply_text(f"❌ {char_name}\n💰 پولت کمه!")
+        await q.message.reply_text(f"❌ {parts[0]}\n💰 پولت کمه!")
     else:
-        await q.message.reply_text(f"✅ {char_name} ({rank})\n🎉 خریدی!")
+        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خریدی!")
 
 
 async def opm_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2187,19 +1908,16 @@ async def opm_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         end_battle(existing["id"])
     create_battle(user_id, boss_name, char[5], bdata["hp"])
     battle_data = get_battle(user_id)
-    text = build_battle_message(battle_data, char)
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(BATTLE_KB))
+    await q.message.reply_text(build_battle_message(battle_data, char), reply_markup=InlineKeyboardMarkup(BATTLE_KB))
 
 
 # ============ HELP ============
 
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     custom = get_help("general")
-    text = "🎮 BANG BANG RP — راهنما\n"
-    text += "━━━━━━━━━━━━━━━━━━━\n\n"
+    text = "🎮 BANG BANG RP — راهنما\n━━━━━━━━━━━━━━━━━━━\n\n"
     if custom:
         text += f"{custom}\n\n"
-
     text += "👤 /profile /select /coins\n"
     text += "🏪 /shop /upgrade\n"
     text += "⚔️ /battle /pvp /team /coop\n"
@@ -2210,8 +1928,6 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "💪 /opm\n"
     text += "❓ /help\n"
     await update.message.reply_text(text)
-
-
 # ============ MAIN ============
 
 async def post_init(app):
