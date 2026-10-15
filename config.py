@@ -10,7 +10,7 @@ from jjk_data import (
 
 from bleach_data import (
     CHARACTERS_BLEACH, CHAR_PRICES_BLEACH, BLEACH_ABILITIES_SHOP,
-    BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
+    BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER, ABILITIES_BLEACH
 )
 
 from opm_data import (
@@ -36,7 +36,7 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
-# ============ LEVEL COST (پله‌ای، هر ۱۰ لول دو برابر) ============
+# ============ LEVEL COST (پله‌ای) ============
 LEVEL_COST = [
     (1, 10, 2000),
     (10, 20, 5000),
@@ -58,6 +58,7 @@ LEVEL_COST = [
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
+# ============ ABILITIES (Shop) ============
 ABILITIES = {
     "Iron Skin":       {"effect": "DEF +50",           "effect_fa": "دفاع +۵۰",              "price": 5000},
     "Shadow Step":     {"effect": "DODGE +15%",          "effect_fa": "جاخالی +۱۵٪",            "price": 6000},
@@ -138,7 +139,7 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
-# ============ MERGE CHARACTERS (ادغام Rank ها) ============
+# ============ MERGE CHARACTERS ============
 CHARACTERS = {}
 
 for rank, chars in CHARACTERS_JJK.items():
@@ -161,15 +162,37 @@ CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
 CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
-# ============ MERGE BOSSES ============
+# ============ MERGE BOSSES (OPM + JJK + Bleach) ============
 BOSSES = {}
-BOSSES.update(BOSSES_JJK)
-BOSSES.update(BLEACH_BOSSES)
-BOSSES.update(BOSSES_OPM)
 
-# ============ MERGE ABILITIES ============
+# OPM Bosses
+for key, val in BOSSES_OPM.items():
+    BOSSES[key] = val
+
+# JJK Bosses
+for key, val in BOSSES_JJK.items():
+    BOSSES[key] = val
+
+# Bleach Bosses
+for key, val in BLEACH_BOSSES.items():
+    BOSSES[key] = val
+
+# ============ MERGE ALL ABILITIES (Shop + Bleach + OPM) ============
 ABILITIES.update(BLEACH_ABILITIES_SHOP)
-ABILITIES.update(ABILITIES_OPM)
+
+# ============ MERGE 3-ABILITY (JJK + Bleach + OPM) ============
+ABILITIES_3 = {}
+ABILITIES_3.update(ABILITIES_JJK)
+ABILITIES_3.update(ABILITIES_BLEACH)
+ABILITIES_3.update(ABILITIES_OPM)
+
+# ============ MERGE DOMAINS ============
+DOMAINS = {}
+DOMAINS.update(DOMAINS_JJK)
+
+# ============ MERGE BANKAI ============
+BANKAI = {}
+BANKAI.update(BLEACH_BANKAI)
 
 # ============ ADMIN ============
 ADMIN_IDS = [
