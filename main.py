@@ -1654,14 +1654,248 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_name = text_part
     file_id = update.message.photo[-1].file_id
+
+    # ===== دیباگ =====
+    debug_info = f"🔍 طول: {len(char_name)}\n🔍 کدها: {[ord(c) for c in char_name]}\n\n"
+    debug_info += "📋 نمونه کاراکترها:\n"
+
+    sample_list = []
+    for r in CHARACTERS:
+        for cn in list(CHARACTERS[r].keys())[:4]:
+            sample_list.append(f"• {cn} ({r})")
+
+    debug_info += "\n".join(sample_list[:15])
+
+    # ===== چک کردن =====
     found = False
     for rank in CHARACTERS:
         if char_name in CHARACTERS[rank]:
             found = True
             break
+
     if not found:
-        await update.message.reply_text(f"❌ کاراکتر «{char_name}» پیدا نشد!")
+        await update.message.reply_text(
+            f"❌ کاراکتر «{char_name}» پیدا نشد!\n\n{debug_info}"
+        )
         return
+
+    ok, msg = set_char_image(char_name, file_id)
+    await update.message.reply_text(msg)
+
+
+async def addchannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_channels"):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /addchannel <channel_id>")
+        return
+    ok, msg = add_force_channel(ctx.args[0], ctx.args[0])
+    await update.message.reply_text(msg)
+
+
+async def removechannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_channels"):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /removechannel <channel_id>")
+        return
+    ok, msg = remove_force_channel(ctx.args[0])
+    await update.message.reply_text(msg)
+
+
+async def listchannels_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    channels = get_force_channels()
+    if not channels:
+        await update.message.reply_text("📭 هیچ کانالی اضافه نشده.")
+        return
+    text = "📢 کانال‌های جوین اجباری:\n\n"
+    for ch_id, ch_name in channels:
+        text += f"🔹 {ch_name} ({ch_id})\n"
+    await update.message.reply_text(text)
+
+
+async def setquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_quests"):
+        return
+    if len(ctx.args) < 3:
+        await update.message.reply_text("Usage: /setquest <key> <target> <reward>")
+        return
+    key = ctx.args[0]
+    try:
+        target = int(ctx.args[1])
+        reward = int(ctx.args[2])
+    except ValueError:
+        await update.message.reply_text("❌ اعداد معتبر بده.")
+        return
+    desc = f"کوئست {key}"
+    ok, msg = set_custom_quest(key, desc, target, reward)
+    await update.message.reply_text(msg)
+
+
+async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    quests = get_all_custom_quests()
+    if not quests:
+        await update.message.reply_text("📭 هیچ کوئست سفارشی ذخیره نشده.")
+        return
+    text = "🎯 کوئست‌های سفارشی:\n\n"
+    for key, desc, target, reward in quests:
+        text += f"🔹 {key}: هدف {target} — جایزه {reward:,}\n"
+    await update.message.reply_text(text)
+# ============ ADMIN پیشرفته ============
+
+async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id):
+        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین اضافه کنه!")
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /addadmin <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    add_admin(target_id, "all", update.effective_user.id)
+    await update.message.reply_text(f"✅ کاربر {target_id} ادمین شد!")
+
+
+async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id):
+        await update.message.reply_text("❌ فقط مالک می‌تونه ادمین حذف کنه!")
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /removeadmin <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    ok, msg = remove_admin(target_id)
+    await update.message.reply_text(msg)
+
+
+async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id):
+        return
+    admins = list_admins()
+    text = "👑 لیست ادمین‌ها:\n\n"
+    for uid, role, perms in admins:
+        text += f"👤 {uid} — {role}\n   دسترسی: {perms}\n"
+    if not admins:
+        text = "📭 هیچ ادمینی اضافه نشده."
+    await update.message.reply_text(text)
+
+
+async def givechar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_chars"):
+        return
+    if len(ctx.args) < 3:
+        await update.message.reply_text("Usage: /givechar <user_id> <char_name> <rank>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    rank = ctx.args[-1]
+    char_name = " ".join(ctx.args[1:-1])
+    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
+        await update.message.reply_text("❌ کاراکتر پیدا نشد.")
+        return
+    stats = get_all_stats(char_name, rank)
+    ok, msg = give_character(target_id, char_name, rank,
+                             stats.get("hp", 400), stats.get("atk", 60),
+                             stats.get("def", 20), stats.get("dodge", 10))
+    await update.message.reply_text(msg)
+
+
+async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_chars"):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /resetchar <user_id>")
+        return
+    try:
+        target_id = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ آیدی معتبر بده.")
+        return
+    ok, msg = reset_character(target_id)
+    await update.message.reply_text(msg)
+
+
+async def sethelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_help"):
+        return
+    if len(ctx.args) < 2:
+        await update.message.reply_text("Usage: /sethelp <key> <text>")
+        return
+    key = ctx.args[0]
+    text = " ".join(ctx.args[1:])
+    ok, msg = set_help(key, text)
+    await update.message.reply_text(msg)
+
+
+async def viewhelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        return
+    helps = get_all_help()
+    if not helps:
+        await update.message.reply_text("📭 هیچ Help ذخیره نشده.")
+        return
+    text = "📜 Help های ذخیره شده:\n\n"
+    for key, val in helps:
+        text += f"🔹 {key}: {val[:50]}...\n"
+    await update.message.reply_text(text)
+
+
+async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_images"):
+        return
+    if not update.message.photo:
+        await update.message.reply_text(
+            "❌ باید با عکس بفرستی!\n\n"
+            "روش: یه عکس بفرست و توی کپشن بنویس:\n"
+            "`/setcharimage <اسم کاراکتر>`"
+        )
+        return
+    caption = update.message.caption or ""
+    text_part = caption.replace("/setcharimage", "").strip()
+    if not text_part:
+        await update.message.reply_text("❌ اسم کاراکتر رو توی کپشن بنویس!")
+        return
+    char_name = text_part
+    file_id = update.message.photo[-1].file_id
+
+    # ===== دیباگ =====
+    debug_info = f"🔍 طول: {len(char_name)}\n🔍 کدها: {[ord(c) for c in char_name]}\n\n"
+    debug_info += "📋 نمونه کاراکترها:\n"
+
+    sample_list = []
+    for r in CHARACTERS:
+        for cn in list(CHARACTERS[r].keys())[:4]:
+            sample_list.append(f"• {cn} ({r})")
+
+    debug_info += "\n".join(sample_list[:15])
+
+    # ===== چک کردن =====
+    found = False
+    for rank in CHARACTERS:
+        if char_name in CHARACTERS[rank]:
+            found = True
+            break
+
+    if not found:
+        await update.message.reply_text(
+            f"❌ کاراکتر «{char_name}» پیدا نشد!\n\n{debug_info}"
+        )
+        return
+
     ok, msg = set_char_image(char_name, file_id)
     await update.message.reply_text(msg)
 
@@ -2070,7 +2304,7 @@ def main():
     for cmd, fn in handlers:
         app.add_handler(CommandHandler(cmd, fn))
 
-    # 👇 این خط برای عکس + کپشن مهمه
+    # عکس + کپشن برای setcharimage
     app.add_handler(MessageHandler(
         filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
         setcharimage_cmd
