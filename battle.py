@@ -98,8 +98,6 @@ def box_simple(text, width=24):
     if len(text) > width - 2:
         text = text[:width - 2]
     return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
-
-
 def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
     roll = random.randint(1, 100)
     if roll <= 33:
@@ -192,8 +190,6 @@ def apply_bankai_effects(battle, php, pmax, bhp, bmax):
         php = max(0, php - dmg)
         text += f"\n🩸 بانکای: خودت -{format_num(dmg)} HP"
     return php, bhp, text
-
-
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -357,7 +353,6 @@ def player_dodge(battle, char):
         return "lost", text, battle
     return "active", text, battle
 def player_ability(battle, char, ability_name):
-    """Ability های ۳گانه جدید با Spam Prevention"""
     boss = get_boss_data(battle["boss_name"])
     if not boss:
         return "active", "❌ باس پیدا نشد.", battle
@@ -425,7 +420,7 @@ def player_ability(battle, char, ability_name):
             return "won", text, battle
         return "active", text, battle
 
-    # ========== ABILITY های ۳گانه (1, 2, 3) ==========
+    # ========== ABILITY های ۳گانه ==========
     abilities = ABILITIES_3.get(char_name, {})
     if not abilities:
         return "active", "❌ Ability پیدا نشد.", battle
