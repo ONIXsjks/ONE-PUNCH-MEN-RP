@@ -133,20 +133,34 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
-# ============ MERGE CHARACTERS ============
+# ============ MERGE CHARACTERS (ادغام Rank ها) ============
 CHARACTERS = {}
 
-CHARACTERS.update(CHARACTERS_JJK)
-CHARACTERS.update(CHARACTERS_BLEACH)
-CHARACTERS.update(CHARACTERS_OPM)
+# ادغام JJK
+for rank, chars in CHARACTERS_JJK.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
 
+# ادغام BLEACH
+for rank, chars in CHARACTERS_BLEACH.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+# ادغام OPM
+for rank, chars in CHARACTERS_OPM.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+# ============ MERGE CHAR PRICES ============
 CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
 CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
 # ============ MERGE BOSSES ============
 BOSSES = {}
-
 BOSSES.update(BOSSES_JJK)
 BOSSES.update(BLEACH_BOSSES)
 BOSSES.update(BOSSES_OPM)
