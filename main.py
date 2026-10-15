@@ -20,7 +20,8 @@ from battle import (player_attack, player_defend, player_dodge,
                     finish_battle)
 from multi_battle import (init_multi_table, create_multi_battle, get_multi_battle,
                           update_multi_battle, end_multi_battle, player_action,
-                          finish_multi_battle, build_battle_view, get_player)
+                          finish_multi_battle, build_battle_view, get_player,
+                          next_turn)
 from quests import (init_quests_table, reset_daily_quests,
                     update_quest_progress, get_user_quests, claim_quest, QUESTS)
 from leaderboard import get_top_by_coins, get_top_by_level, get_top_by_rank
@@ -1131,6 +1132,40 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
 
 
+async def multi_skip_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    session_id = q.data.replace("mb_skip_", "")
+    user_id = q.from_user.id
+
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.answer("نبرد نیست!", show_alert=True)
+        return
+
+    if str(battle["host"]) != str(user_id):
+        await q.answer("❌ فقط سازنده‌ی نبرد می‌تونه نوبت رو رد کنه!", show_alert=True)
+        return
+
+    next_turn(battle)
+
+    next_player, _ = get_player(battle, battle["current_turn"])
+    if next_player and next_player.get("frozen", 0) > 0:
+        next_player["frozen"] -= 1
+        next_turn(battle)
+
+    update_multi_battle(session_id, battle)
+
+    log = "⏭️ نوبت به صورت دستی رد شد!"
+    view = build_battle_view(battle)
+    kb = get_multi_kb(session_id)
+
+    try:
+        await q.edit_message_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
+    except Exception:
+        await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1445,8 +1480,6 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 # ============ QUESTS ============
 
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1705,203 +1738,6 @@ async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {uid} — {total:,}\n"
     await update.message.reply_text(text)
-# ============ ADMIN پیشرفته ============
-
-async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /addadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    add_admin(target_id, "all", update.effective_user.id)
-    await update.message.reply_text(f"✅ {target_id} ادمین شد!")
-
-
-async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /removeadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = remove_admin(target_id)
-    await update.message.reply_text(msg)
-
-
-async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        return
-    admins = list_admins()
-    text = "👑 ادمین‌ها:\n\n"
-    for uid, role, perms in admins:
-        text += f"👤 {uid} — {role} | {perms}\n"
-    if not admins:
-        text = "📭 هیچ ادمینی اضافه نشده."
-    await update.message.reply_text(text)
-
-
-async def givechar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if len(ctx.args) < 3:
-        await update.message.reply_text("Usage: /givechar <user_id> <char_name> <rank>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    rank = ctx.args[-1]
-    char_name = " ".join(ctx.args[1:-1])
-    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
-        await update.message.reply_text("❌ کاراکتر پیدا نشد.")
-        return
-    stats = get_all_stats(char_name, rank)
-    ok, msg = give_character(target_id, char_name, rank,
-                             stats.get("hp", 400), stats.get("atk", 60),
-                             stats.get("def", 20), stats.get("dodge", 10))
-    await update.message.reply_text(msg)
-
-
-async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /resetchar <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = reset_character(target_id)
-    await update.message.reply_text(msg)
-
-
-async def sethelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_help"):
-        return
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /sethelp <key> <text>")
-        return
-    key = ctx.args[0]
-    text = " ".join(ctx.args[1:])
-    ok, msg = set_help(key, text)
-    await update.message.reply_text(msg)
-
-
-async def viewhelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    helps = get_all_help()
-    if not helps:
-        await update.message.reply_text("📭 هیچ Help ذخیره نشده.")
-        return
-    text = "📜 Help:\n\n"
-    for key, val in helps:
-        text += f"🔹 {key}: {val[:50]}\n"
-    await update.message.reply_text(text)
-
-
-async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_images"):
-        return
-    if not update.message.photo:
-        await update.message.reply_text("❌ عکس بفرست + کپشن:\n/setcharimage <اسم کاراکتر>")
-        return
-    caption = update.message.caption or ""
-    text_part = caption.replace("/setcharimage", "").strip()
-    if not text_part:
-        await update.message.reply_text("❌ اسم کاراکتر رو توی کپشن بنویس!")
-        return
-    char_name = text_part
-    file_id = update.message.photo[-1].file_id
-    found = False
-    for rank in CHARACTERS:
-        if char_name in CHARACTERS[rank]:
-            found = True
-            break
-    if not found:
-        await update.message.reply_text(f"❌ کاراکتر «{char_name}» پیدا نشد!")
-        return
-    ok, msg = set_char_image(char_name, file_id)
-    await update.message.reply_text(msg)
-
-
-async def addchannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_channels"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /addchannel <channel_id>")
-        return
-    ok, msg = add_force_channel(ctx.args[0], ctx.args[0])
-    await update.message.reply_text(msg)
-
-
-async def removechannel_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_channels"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /removechannel <channel_id>")
-        return
-    ok, msg = remove_force_channel(ctx.args[0])
-    await update.message.reply_text(msg)
-
-
-async def listchannels_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    channels = get_force_channels()
-    if not channels:
-        await update.message.reply_text("📭 هیچ کانالی اضافه نشده.")
-        return
-    text = "📢 کانال‌ها:\n\n"
-    for ch_id, ch_name in channels:
-        text += f"🔹 {ch_name} ({ch_id})\n"
-    await update.message.reply_text(text)
-
-
-async def setquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_quests"):
-        return
-    if len(ctx.args) < 3:
-        await update.message.reply_text("Usage: /setquest <key> <target> <reward>")
-        return
-    key = ctx.args[0]
-    try:
-        target = int(ctx.args[1])
-        reward = int(ctx.args[2])
-    except ValueError:
-        await update.message.reply_text("❌ اعداد معتبر بده.")
-        return
-    ok, msg = set_custom_quest(key, f"کوئست {key}", target, reward)
-    await update.message.reply_text(msg)
-
-
-async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    quests = get_all_custom_quests()
-    if not quests:
-        await update.message.reply_text("📭 هیچ کوئست سفارشی ذخیره نشده.")
-        return
-    text = "🎯 کوئست‌ها:\n\n"
-    for key, desc, target, reward in quests:
-        text += f"🔹 {key}: {target} — {reward:,}\n"
-    await update.message.reply_text(text)
-
-
 # ============ JJK MENU ============
 
 async def jjk_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2065,7 +1901,7 @@ async def opm_buy_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if "Not enough" in str(result) or "کافی" in str(result):
         await q.message.reply_text(f"❌ {parts[0]}\n💰 پولت کمه!")
     else:
-        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خرید!")
+        await q.message.reply_text(f"✅ {parts[0]} ({parts[1]})\n🎉 خریدی!")
 
 
 async def opm_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2169,7 +2005,6 @@ def main():
     for cmd, fn in handlers:
         app.add_handler(CommandHandler(cmd, fn))
 
-    # عکس + کپشن برای setcharimage
     app.add_handler(MessageHandler(
         filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
         setcharimage_cmd
@@ -2188,6 +2023,7 @@ def main():
         ("^mb_buffuse_", multi_buff_use_callback),
         ("^mb_buff_", multi_buff_menu_callback),
         ("^mb_back_", multi_back_callback),
+        ("^mb_skip_", multi_skip_callback),
         ("^mb_", multi_action_callback),
         ("^act_", action_callback),
         ("^ab_", ability_use_callback),
@@ -2209,7 +2045,7 @@ def main():
         ("^jjk_", jjk_callback),
         ("^opmrank_", opm_rank_callback),
         ("^opmbuy_", opm_buy_callback),
-        ("^opmboss_", opm_boss_callback)
+        ("^opmboss_", opm_boss_callback),
         ("^opm_", opm_callback),
     ]
     for pattern, fn in callbacks:
