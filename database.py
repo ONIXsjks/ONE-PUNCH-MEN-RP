@@ -292,6 +292,16 @@ def get_abilities(user_id, char_name):
     return [r[0] for r in rows]
 
 
+def remove_user_ability(user_id, char_name, ability_name):
+    """🆕 حذف Ability بعد از مصرف (۱ بار مصرف)"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM abilities_owned WHERE user_id=? AND char_name=? AND ability_name=?",
+              (user_id, char_name, ability_name))
+    conn.commit()
+    conn.close()
+
+
 def get_items(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
