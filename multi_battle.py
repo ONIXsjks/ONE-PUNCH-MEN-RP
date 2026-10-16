@@ -85,10 +85,12 @@ def create_multi_battle(session_id, battle_type, host_id, players, team1, team2,
     c.execute("""INSERT INTO multi_battles
         (session_id, battle_type, host_id, players, team1, team2,
          boss_name, boss_hp, boss_max_hp, current_turn, turn_index, status)
-        VALUES (?,?,?,?,?,?,?,?,?,?,0,'active')""",
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
         (session_id, battle_type, host_id, json.dumps(players),
          json.dumps(team1), json.dumps(team2),
-         boss_name, boss_hp, boss_hp, json.dumps(players[0] if players else None)))
+         boss_name, boss_hp, boss_hp,
+         json.dumps(players[0] if players else None),
+         0, 'active'))
     conn.commit()
     conn.close()
 
@@ -215,6 +217,8 @@ def get_boss_atk(boss_name):
     if boss_name in BOSSES:
         return BOSSES[boss_name]["atk"]
     return 100
+
+
 def build_battle_view(battle):
     btype = battle.get("type", "").upper()
     type_icons = {"PVP": "⚔️ PVP BATTLE", "COOP": "👥 CO-OP BATTLE", "TEAM": "⚔️ TEAM BATTLE"}
@@ -303,8 +307,6 @@ def boss_attack_players(battle, log):
     target["defense_action"] = None
 
     return log
-
-
 def player_action(session_id, uid, action, extra=None):
     battle = get_multi_battle(session_id)
     if not battle:
@@ -518,6 +520,8 @@ def player_action(session_id, uid, action, extra=None):
 
     update_multi_battle(session_id, battle)
     return "active", log
+
+
 def finish_multi_battle(session_id):
     battle = get_multi_battle(session_id)
     if not battle:
