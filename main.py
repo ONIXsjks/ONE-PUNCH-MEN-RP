@@ -1375,7 +1375,6 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
 async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
-    await q.answer()
     data = q.data
     parts = data.split("_", 2)
     action = parts[1]
@@ -1399,6 +1398,7 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if player["hp"] <= 0:
         await q.answer("💀 تو مرده‌ای!", show_alert=True)
         return
+      await q.answer()
 
     if action in ("ab1", "ab2", "ab3"):
         action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
