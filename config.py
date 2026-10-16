@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ============================================================
+# IMPORTS — Old Animes (JJK, Bleach, OPM)
+# ============================================================
 from jjk_data import (
     CHARACTERS_JJK, CHAR_PRICES_JJK, ABILITIES_JJK,
     DOMAINS_JJK, BOSSES_JJK, FODDER_JJK, COOLDOWNS_JJK
@@ -17,6 +20,50 @@ from opm_data import (
     CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM
 )
 
+# ============================================================
+# IMPORTS — New Animes (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man)
+# ============================================================
+from aot_data import (
+    CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
+    AOT_BOSSES, AOT_FODDER
+)
+
+from blackclover_data import (
+    CHARACTERS_BLACKCLOVER, CHAR_PRICES_BLACKCLOVER, ABILITIES_BLACKCLOVER,
+    BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER
+)
+
+from berserk_data import (
+    CHARACTERS_BERSERK, CHAR_PRICES_BERSERK, ABILITIES_BERSERK,
+    BERSERK_BOSSES, BERSERK_FODDER
+)
+
+from demonslayer_data import (
+    CHARACTERS_DEMONSLAYER, CHAR_PRICES_DEMONSLAYER, ABILITIES_DEMONSLAYER,
+    DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER
+)
+
+from chainsawman_data import (
+    CHARACTERS_CHAINSAWMAN, CHAR_PRICES_CHAINSAWMAN, ABILITIES_CHAINSAWMAN,
+    CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER
+)
+
+# ============================================================
+# EXTENDED SHOP ABILITIES (5 new animes)
+# ============================================================
+from shop_abilities_extended import (
+    AOT_ABILITIES_SHOP,
+    BLACKCLOVER_ABILITIES_SHOP,
+    BERSERK_ABILITIES_SHOP,
+    DEMONSLAYER_ABILITIES_SHOP,
+    CHAINSAWMAN_ABILITIES_SHOP,
+    EXTENDED_SHOP_ABILITIES,
+    EXTENDED_SHOP_ABILITIES_FA,
+)
+
+# ============================================================
+# BOT CONFIG
+# ============================================================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_NAME = "/data/game.db"
 
@@ -27,6 +74,9 @@ COMBO_BONUS = 50
 COOP_WIN = 200
 GROUP_BOSS_WIN = 400
 
+# ============================================================
+# RANK STATS
+# ============================================================
 RANK_STATS = {
     "S": {"hp": 1500, "atk": 300, "def": 100, "dodge": 25, "slots": 8},
     "A": {"hp": 1000, "atk": 200, "def": 70,  "dodge": 20, "slots": 7},
@@ -36,6 +86,9 @@ RANK_STATS = {
 
 FREE_SLOTS = 3
 
+# ============================================================
+# LEVEL COSTS
+# ============================================================
 LEVEL_COST = [
     (1, 10, 2000),
     (10, 20, 5000),
@@ -57,6 +110,9 @@ LEVEL_COST = [
 
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
+# ============================================================
+# GENERAL ABILITIES (Shop)
+# ============================================================
 ABILITIES = {
     "Iron Skin":       {"effect": "DEF +50",           "effect_fa": "دفاع +۵۰",              "price": 5000},
     "Shadow Step":     {"effect": "DODGE +15%",          "effect_fa": "جاخالی +۱۵٪",            "price": 6000},
@@ -74,6 +130,9 @@ ABILITIES = {
     "Dragon Fist":     {"effect": "ATK +250 (3 turns)",  "effect_fa": "حمله +۲۵۰ (۳ راند)",     "price": 22000},
 }
 
+# ============================================================
+# ITEMS
+# ============================================================
 ITEMS = {
     "Health Potion":  {"effect": "HP +500",           "effect_fa": "HP +۵۰۰",           "price": 1500},
     "Mega Potion":    {"effect": "HP +1500",          "effect_fa": "HP +۱۵۰۰",          "price": 3500},
@@ -86,6 +145,9 @@ ITEMS = {
     "Smoke Bomb":     {"effect": "DODGE +50%",        "effect_fa": "جاخالی +۵۰٪",        "price": 7000},
 }
 
+# ============================================================
+# BUFFS
+# ============================================================
 BUFFS = {
     "HP Buff":        {"effect": "Max HP +500",     "effect_fa": "Max HP +۵۰۰",      "price": 8000},
     "Power Buff":     {"effect": "ATK +150",        "effect_fa": "حمله +۱۵۰",        "price": 9000},
@@ -97,6 +159,9 @@ BUFFS = {
     "God Buff":       {"effect": "all +50% (1h)",   "effect_fa": "همه +۵۰٪ (۱ ساعت)", "price": 60000},
 }
 
+# ============================================================
+# FA TRANSLATIONS
+# ============================================================
 ABILITY_FA = {
     "Iron Skin": "پوست آهنین",
     "Shadow Step": "قدم سایه",
@@ -137,8 +202,12 @@ BUFF_FA = {
     "God Buff": "باف خدا",
 }
 
+# ============================================================
+# MERGE — CHARACTERS (همه ۸ انیمه)
+# ============================================================
 CHARACTERS = {}
 
+# انیمه‌های قبلی
 for rank, chars in CHARACTERS_JJK.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
@@ -154,34 +223,95 @@ for rank, chars in CHARACTERS_OPM.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
+# انیمه‌های جدید (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man)
+for rank, chars in CHARACTERS_AOT.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_BLACKCLOVER.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_BERSERK.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_DEMONSLAYER.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_CHAINSAWMAN.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+# ============================================================
+# MERGE — CHAR_PRICES
+# ============================================================
 CHAR_PRICES = {"C": 50000, "B": 150000, "A": 500000, "S": 2000000}
 CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
+# ============================================================
+# MERGE — BOSSES (همه ۸ انیمه)
+# ============================================================
 BOSSES = {}
 
+# انیمه‌های قبلی
 for key, val in BOSSES_OPM.items():
     BOSSES[key] = val
-
 for key, val in BOSSES_JJK.items():
     BOSSES[key] = val
-
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
-ABILITIES.update(BLEACH_ABILITIES_SHOP)
+# انیمه‌های جدید
+for key, val in AOT_BOSSES.items():
+    BOSSES[key] = val
+for key, val in BLACKCLOVER_BOSSES.items():
+    BOSSES[key] = val
+for key, val in BERSERK_BOSSES.items():
+    BOSSES[key] = val
+for key, val in DEMONSLAYER_BOSSES.items():
+    BOSSES[key] = val
+for key, val in CHAINSAWMAN_BOSSES.items():
+    BOSSES[key] = val
 
+# ============================================================
+# MERGE — ABILITIES (Shop)
+# ============================================================
+ABILITIES.update(BLEACH_ABILITIES_SHOP)
+ABILITIES.update(EXTENDED_SHOP_ABILITIES)
+
+# ============================================================
+# MERGE — ABILITIES_3 (۳ Ability هر کاراکتر)
+# ============================================================
 ABILITIES_3 = {}
 ABILITIES_3.update(ABILITIES_JJK)
 ABILITIES_3.update(ABILITIES_BLEACH)
 ABILITIES_3.update(ABILITIES_OPM)
+ABILITIES_3.update(ABILITIES_AOT)
+ABILITIES_3.update(ABILITIES_BLACKCLOVER)
+ABILITIES_3.update(ABILITIES_BERSERK)
+ABILITIES_3.update(ABILITIES_DEMONSLAYER)
+ABILITIES_3.update(ABILITIES_CHAINSAWMAN)
 
+# ============================================================
+# MERGE — DOMAINS / BANKAI
+# ============================================================
 DOMAINS = {}
 DOMAINS.update(DOMAINS_JJK)
 
 BANKAI = {}
 BANKAI.update(BLEACH_BANKAI)
 
+# ============================================================
+# ABILITY MULTIPLIERS
+# ============================================================
 ABILITY_MULTIPLIERS = {
     "ability_1": 3,
     "ability_2": 5,
@@ -191,6 +321,9 @@ ABILITY_MULTIPLIERS = {
     "simple": 1,
 }
 
+# ============================================================
+# ADMIN
+# ============================================================
 ADMIN_IDS = [
     7023690411,
 ]
