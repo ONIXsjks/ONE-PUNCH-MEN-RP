@@ -13,7 +13,7 @@ REGIONS = {
         "name": "🌲 جنگل",
         "level_range": "1-10",
         "min_level": 1,
-        "rewards": {"min": 1000, "max": 5000},
+        "rewards": {"min": 2000, "max": 10000},
         "enemies": ["Small Shadow", "Cursed Spirit", "Shadow Wolf"],
         "boss": "Mahito",
         "unlock": None,
@@ -24,7 +24,7 @@ REGIONS = {
         "name": "🏜️ بیابان",
         "level_range": "10-30",
         "min_level": 10,
-        "rewards": {"min": 5000, "max": 20000},
+        "rewards": {"min": 10000, "max": 40000},
         "enemies": ["Demon Fish", "Sky King", "Cursed Worm"],
         "boss": "Mahoraga",
         "unlock": "forest",
@@ -35,7 +35,7 @@ REGIONS = {
         "name": "🏔️ کوه",
         "level_range": "30-60",
         "min_level": 30,
-        "rewards": {"min": 20000, "max": 50000},
+        "rewards": {"min": 40000, "max": 100000},
         "enemies": ["Adjuchas", "Weak Vasto Lorde", "Hell Spider"],
         "boss": "Sukuna Megumi",
         "unlock": "desert",
@@ -46,7 +46,7 @@ REGIONS = {
         "name": "🌋 آتشفشان",
         "level_range": "60-100",
         "min_level": 60,
-        "rewards": {"min": 50000, "max": 100000},
+        "rewards": {"min": 100000, "max": 200000},
         "enemies": ["Goku Lv2", "Menos Grande", "Tiger Beast"],
         "boss": "Sukuna Heian",
         "unlock": "mountain",
@@ -57,7 +57,7 @@ REGIONS = {
         "name": "🏰 سیاه‌چال",
         "level_range": "100+",
         "min_level": 100,
-        "rewards": {"min": 100000, "max": 500000},
+        "rewards": {"min": 200000, "max": 400000},
         "enemies": ["Goku Lv3", "Yhwach (Soul King)", "Aizen (Final Form)"],
         "boss": "Saitama Phase 1",
         "unlock": "volcano",
@@ -101,9 +101,9 @@ TREASURES = {
     },
     "gold_bag": {
         "name": "💰 کیسه طلا",
-        "effect": "100,000 سکه",
+        "effect": "50,000 سکه",
         "type": "coins",
-        "value": 100000,
+        "value": 50000,
         "chance": 20,
     },
     "gift_box": {
@@ -115,16 +115,16 @@ TREASURES = {
     },
     "mega_coins": {
         "name": "💎 سکه مگا",
-        "effect": "500,000 سکه",
+        "effect": "200,000 سکه",
         "type": "coins",
-        "value": 500000,
+        "value": 200000,
         "chance": 5,
     },
 }
 
 
 # ============================================================
-# EXPLORE EVENTS (اتفاق‌های گشتن)
+# EXPLORE EVENTS
 # ============================================================
 EXPLORE_EVENTS = [
     {"type": "enemy", "chance": 30, "name": "👹 دشمن ظاهر شد!"},
@@ -151,7 +151,6 @@ def get_region_name(region_key):
 
 
 def random_explore_event():
-    """انتخاب یه اتفاق تصادفی"""
     roll = random.randint(1, 100)
     cumulative = 0
     for event in EXPLORE_EVENTS:
@@ -162,7 +161,6 @@ def random_explore_event():
 
 
 def random_treasure():
-    """انتخاب یه گنج تصادفی بر اساس شانس"""
     roll = random.randint(1, 100)
     cumulative = 0
     for key, treasure in TREASURES.items():
@@ -173,30 +171,41 @@ def random_treasure():
 
 
 def random_reward(region_key):
-    """جایزه تصادفی برای منطقه"""
+    """جایزه کمتر (نصف شد)"""
     region = REGIONS.get(region_key)
     if not region:
-        return 1000
+        return 500
     r = region["rewards"]
-    return random.randint(r["min"], r["max"])
+    return random.randint(r["min"] // 2, r["max"] // 2)
 
 
 def can_unlock_region(user_id, region_key):
-    """چک کن کاربر می‌تونه این منطقه رو باز کنه"""
+    """چک میکنه کاربر میتونه این منطقه رو باز کنه (با چک لول)"""
     region = REGIONS.get(region_key)
     if not region:
         return False, "منطقه پیدا نشد"
     unlocked = get_unlocked_regions(user_id)
     if region_key in unlocked:
         return True, "باز است"
+    # چک لول کاراکتر
+    try:
+        from characters import get_active_character
+        char = get_active_character(user_id)
+        if not char:
+            return False, "❌ کاراکتر فعال نداری!"
+        char_level = char[4]
+        min_level = region.get("min_level", 1)
+        if char_level < min_level:
+            return False, f"❌ برای این منطقه به لول {min_level} نیاز داری!\n📊 لول فعلی: {char_level}"
+    except Exception as e:
+        return False, f"❌ خطا: {e}"
     parent = region.get("unlock")
     if parent and parent not in unlocked:
-        return False, f"❌ اول باید {get_region_name(parent)} رو تموم کنی!"
+        return False, f"❌ اول باید {get_region_name(parent)} رو باز کنی!"
     return True, "می‌تونی باز کنی"
 
 
 def get_player_region_view(user_id):
-    """نمای نقشه برای کاربر"""
     unlocked = get_unlocked_regions(user_id)
     current = get_current_region(user_id)
 
@@ -215,7 +224,6 @@ def get_player_region_view(user_id):
 
 
 def get_region_view(user_id, region_key):
-    """نمای داخل یه منطقه"""
     region = REGIONS.get(region_key)
     if not region:
         return "❌ منطقه پیدا نشد"
@@ -232,12 +240,10 @@ def get_region_view(user_id, region_key):
 
 
 def format_treasure(treasure_key, treasure):
-    """فرمت گنج برای نمایش"""
     return f"{treasure['name']}\n📝 {treasure['effect']}"
 
 
 def format_world_progress(user_id):
-    """نمای پیشرفت کاربر توی دنیا"""
     progress = get_world_progress(user_id)
     if not progress:
         return "❌ اطلاعاتی نیست"
@@ -257,7 +263,6 @@ def format_world_progress(user_id):
 
 
 def format_treasures_list(user_id):
-    """لیست گنج‌های کاربر"""
     treasures = get_world_treasures(user_id)
     if not treasures:
         return "📭 هنوز هیچ گنجی پیدا نکردی!"
