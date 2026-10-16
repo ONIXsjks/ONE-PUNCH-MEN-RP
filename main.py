@@ -1,7 +1,7 @@
+import sqlite3
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, BotCommand
 from telegram.ext import (Application, CommandHandler, ContextTypes,
                           CallbackQueryHandler, MessageHandler, filters)
-import sqlite3
 from config import *
 from database import (init_db, get_user, add_coins, get_coins,
                       create_battle, get_battle, update_battle, end_battle,
@@ -10,7 +10,9 @@ from database import (init_db, get_user, add_coins, get_coins,
                       get_world_progress, update_world_region, unlock_world_region,
                       increment_world_stat, add_world_treasure, get_world_treasures,
                       get_unlocked_regions, get_current_region,
-                      get_char_image, get_custom_quest_db)
+                      get_char_image, get_custom_quest_db,
+                      get_user_buffs, remove_user_buff,
+                      reset_all_players, get_total_users_count)
 from characters import (create_character, get_user_characters,
                         get_active_character, set_active, buy_character)
 from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
@@ -19,7 +21,8 @@ from guild import (create_new_guild, join_existing_guild, leave_current_guild,
                    format_guild, format_members, GUILD_CREATE_COST, GUILD_MIN_LEVEL)
 from battle import (player_attack, player_defend, player_dodge,
                     player_ability, player_item, build_battle_message,
-                    finish_battle, player_ability_v2)
+                    finish_battle, player_ability_v2,
+                    player_ability_shop, player_buff_shop)
 from multi_battle import (init_multi_table, create_multi_battle, get_multi_battle,
                           update_multi_battle, end_multi_battle, player_action,
                           finish_multi_battle, build_battle_view, get_player,
@@ -102,6 +105,10 @@ def get_battle_kb(char_name=None, user_id=None):
     kb.append([
         InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"),
         InlineKeyboardButton("💊 آیتم", callback_data="act_item")
+    ])
+    kb.append([
+        InlineKeyboardButton("🔥 Ability", callback_data="act_shop_ability"),
+        InlineKeyboardButton("✨ باف", callback_data="act_shop_buff")
     ])
     if char_name:
         has_domain, has_bankai = get_character_domain_bankai(char_name)
@@ -774,6 +781,41 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb = [[InlineKeyboardButton(f"{ITEM_FA.get(n, n)} (x{c})", callback_data=f"it_{n}")] for n, c in items]
         await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
         return
+    elif action == "shop_ability":
+        abilities = get_abilities(user_id, char[2])
+        if not abilities:
+            await q.answer("❌ Ability خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = []
+        for a in abilities:
+            fa = ABILITY_FA.get(a, a)
+            kb.append([InlineKeyboardButton(fa, callback_data=f"shopab_{a}")])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("🔥 Ability خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "shop_buff":
+        buffs = get_user_buffs(user_id, char[2])
+        if not buffs:
+            await q.answer("❌ باف خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = []
+        for b in buffs:
+            fa = BUFF_FA.get(b, b)
+            kb.append([InlineKeyboardButton(fa, callback_data=f"shopbf_{b}")])
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("✨ باف خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "back":
+        text = build_battle_message(battle, char)
+        try:
+            await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
+                get_battle_kb(char[2], user_id)
+            ))
+        except Exception:
+            await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(
+                get_battle_kb(char[2], user_id)
+            ))
+        return
     elif action == "domain":
         if char[2] not in DOMAINS_JJK:
             await q.answer("❌ این کاراکتر Domain نداره!", show_alert=True)
@@ -828,6 +870,85 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("❌ آیتم نداری.")
         return
     status, text, battle = player_item(battle, char, item_name)
+    if status == "won":
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        end_battle(battle["id"])
+        try:
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
+        return
+    elif status == "lost":
+        end_battle(battle["id"])
+        try:
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        return
+    update_battle(battle)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
+            get_battle_kb(char[2], user_id)
+        ))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
+            get_battle_kb(char[2], user_id)
+        ))
+
+
+async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    ability_name = q.data.replace("shopab_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    battle = get_battle(user_id)
+    if not battle:
+        return
+    status, text, battle = player_ability_shop(battle, char, ability_name)
+    if status == "won":
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        end_battle(battle["id"])
+        try:
+            await q.edit_message_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin")
+        return
+    elif status == "lost":
+        end_battle(battle["id"])
+        try:
+            await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception:
+            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        return
+    update_battle(battle)
+    full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
+            get_battle_kb(char[2], user_id)
+        ))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
+            get_battle_kb(char[2], user_id)
+        ))
+
+
+async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    buff_name = q.data.replace("shopbf_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    battle = get_battle(user_id)
+    if not battle:
+        return
+    status, text, battle = player_buff_shop(battle, char, buff_name)
+    remove_user_buff(user_id, char[2], buff_name)
     if status == "won":
         reward = finish_battle(user_id, battle["boss_name"], True)
         end_battle(battle["id"])
@@ -1302,6 +1423,7 @@ async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not can:
             await q.answer(msg, show_alert=True)
             return
+        unlock_world_region(user_id, region_key)
     update_world_region(user_id, region_key)
     text = get_region_view(user_id, region_key)
     kb = [
@@ -1322,26 +1444,57 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         return
     event = random_explore_event()
     increment_world_stat(user_id, "explores")
+
     if event == "enemy":
         enemy_name = random.choice(region["enemies"])
         char = get_active_character(user_id)
         existing = get_battle(user_id)
         if existing:
             end_battle(existing["id"])
-        create_battle(user_id, enemy_name, char[5], 5000)
+        enemy_hp = 10000
+        if region_key == "forest":
+            enemy_hp = 10000
+        elif region_key == "desert":
+            enemy_hp = 30000
+        elif region_key == "mountain":
+            enemy_hp = 80000
+        elif region_key == "volcano":
+            enemy_hp = 200000
+        elif region_key == "dungeon":
+            enemy_hp = 500000
+        create_battle(user_id, enemy_name, char[5], enemy_hp)
         battle_data = get_battle(user_id)
         text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
             get_battle_kb(char[2], user_id)
         ))
+
     elif event == "treasure":
         t_key, t_data = random_treasure()
         if t_data:
             if t_data["type"] == "coins":
-                add_coins(user_id, t_data["value"])
-                reward_text = f"💰 +{t_data['value']:,} سکه"
+                amount = t_data["value"] // 2
+                add_coins(user_id, amount)
+                reward_text = f"💰 +{amount:,} سکه"
             elif t_data["type"] == "item":
-                reward_text = "🎁 یه آیتم تصادفی (به زودی)"
+                try:
+                    item_names = ["Health Potion", "Mega Potion", "Damage Boost", "Bomb"]
+                    chosen_item = random.choice(item_names)
+                    conn = sqlite3.connect(DB_NAME)
+                    c = conn.cursor()
+                    c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?",
+                              (user_id, chosen_item))
+                    row = c.fetchone()
+                    if row:
+                        c.execute("UPDATE items SET quantity = quantity + 1 WHERE id=?", (row[0],))
+                    else:
+                        c.execute("INSERT INTO items (user_id, item_name, quantity) VALUES (?,?,1)",
+                                  (user_id, chosen_item))
+                    conn.commit()
+                    conn.close()
+                    reward_text = f"🎁 آیتم: {chosen_item}"
+                except Exception as e:
+                    reward_text = f"❌ خطا در دادن آیتم: {e}"
             else:
                 reward_text = f"✨ {t_data['effect']}"
             add_world_treasure(user_id, t_data["name"])
@@ -1354,8 +1507,9 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
     elif event == "mine":
-        amount = random_reward(region_key) // 2
+        amount = random_reward(region_key) // 4
         add_coins(user_id, amount)
         text = f"💎 یه معدن پیدا کردی!\n\n💰 +{amount:,} سکه"
         kb = [
@@ -1363,6 +1517,7 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
     elif event == "gate":
         all_regions = list(REGIONS.keys())
         current_idx = all_regions.index(region_key) if region_key in all_regions else 0
@@ -1380,8 +1535,9 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
     elif event == "riddle":
-        riddle_rewards = [1000, 5000, 10000, 20000, 50000]
+        riddle_rewards = [500, 2000, 5000, 10000]
         reward = random.choice(riddle_rewards)
         add_coins(user_id, reward)
         text = f"❓ یه معما حل کردی!\n\n💰 +{reward:,} سکه"
@@ -1390,18 +1546,31 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
     elif event == "rare_boss":
         boss_name = region["boss"]
         char = get_active_character(user_id)
         existing = get_battle(user_id)
         if existing:
             end_battle(existing["id"])
-        create_battle(user_id, boss_name, char[5], 10000)
+        boss_hp = 50000
+        if region_key == "forest":
+            boss_hp = 50000
+        elif region_key == "desert":
+            boss_hp = 120000
+        elif region_key == "mountain":
+            boss_hp = 300000
+        elif region_key == "volcano":
+            boss_hp = 600000
+        elif region_key == "dungeon":
+            boss_hp = 1500000
+        create_battle(user_id, boss_name, char[5], boss_hp)
         battle_data = get_battle(user_id)
         text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
             get_battle_kb(char[2], user_id)
         ))
+
     elif event == "trap":
         loss = random_reward(region_key) // 4
         coins = get_coins(user_id)
@@ -1922,9 +2091,11 @@ async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id):
         await update.message.reply_text("❌ فقط مالک!")
         return
+    total = get_total_users_count()
     text = (
         "👑 پنل مالک\n"
         "━━━━━━━━━━━━━━━━━━━\n\n"
+        f"👥 تعداد کل پلیرها: {total:,}\n\n"
         "🔄 /resetuser <id> → ریست یه پلیر\n"
         "💥 /resetall → ریست همه\n"
     )
@@ -1934,17 +2105,7 @@ async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id):
         return
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM users")
-    total = c.fetchone()[0]
-    c.execute("UPDATE users SET coins=0")
-    c.execute("DELETE FROM characters")
-    c.execute("DELETE FROM abilities_owned")
-    c.execute("DELETE FROM buffs")
-    c.execute("DELETE FROM active_battles")
-    conn.commit()
-    conn.close()
+    total = reset_all_players()
     await update.message.reply_text(f"💥 {total:,} پلیر ریست شدند!")
 
 
@@ -2057,6 +2218,8 @@ def main():
     app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(action_callback, pattern="^act_"))
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
+    app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
+    app.add_handler(CallbackQueryHandler(shop_buff_use_callback, pattern="^shopbf_"))
     app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
     app.add_handler(CallbackQueryHandler(
         multi_action_callback,
