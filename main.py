@@ -56,6 +56,13 @@ from world import (REGIONS, TREASURES, get_region, get_region_name,
                    can_unlock_region, get_player_region_view, get_region_view,
                    format_treasure, format_world_progress, format_treasures_list)
 
+# ============ 🆕 ANIME REGISTRY ============
+from anime_registry import (
+    ANIME_REGISTRY, get_anime, get_anime_list,
+    get_characters_by_anime, get_char_price_by_anime,
+    find_char_anime, get_anime_bosses, get_anime_shop_abilities
+)
+
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
@@ -74,8 +81,12 @@ def get_char_price(char_name, rank):
     if "price" in stats:
         return stats["price"]
     return CHAR_PRICES.get(rank, 8000)
+
+
 def get_character_abilities(char_name):
-    for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM]:
+    for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM,
+                 ABILITIES_AOT, ABILITIES_BLACKCLOVER, ABILITIES_BERSERK,
+                 ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN]:
         if char_name in data:
             return data[char_name]
     return None
@@ -278,6 +289,8 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -345,6 +358,22 @@ async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Coins: {c:,}")
 
 
+async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    chars = get_user_characters(user_id)
+    if not chars:
+        await update.message.reply_text("No characters.")
+        return
+    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
+    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    char_id = int(q.data.replace("sel_", ""))
+    set_active(q.from_user.id, char_id)
+    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -378,6 +407,8 @@ async def edit_shop_msg(q, caption, keyboard):
                     photo=SHOP_IMAGE, caption=caption,
                     reply_markup=InlineKeyboardMarkup(keyboard)
                 )
+
+
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -405,10 +436,13 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await edit_shop_msg(q, "🔥 باف‌ها:", kb)
     elif data == "shop_char":
         kb = []
-        for rank, chars in CHARACTERS.items():
-            kb.append([InlineKeyboardButton(f"📦 {rank} Rank", callback_data=f"shchrank_{rank}")])
+        for anime_key, emoji, name, name_fa in get_anime_list():
+            kb.append([InlineKeyboardButton(
+                f"{emoji} {name_fa}",
+                callback_data=f"shchanime_{anime_key}"
+            )])
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
-        await edit_shop_msg(q, "🦸 کاراکترها:", kb)
+        await edit_shop_msg(q, "🦸 انیمه انتخاب کن:", kb)
     elif data == "shop_main":
         kb = [
             [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -417,6 +451,89 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
         ]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)
+
+
+# ============ 🆕 ANIME SELECTION ============
+async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    anime_key = q.data.replace("shchanime_", "")
+    anime = get_anime(anime_key)
+    if not anime:
+        await q.answer("❌ انیمه پیدا نشد.", show_alert=True)
+        return
+    kb = []
+    for rank in anime["characters"].keys():
+        count = len(anime["characters"][rank])
+        kb.append([InlineKeyboardButton(
+            f"📦 {rank} Rank — {count} کاراکتر",
+            callback_data=f"shchrank_{anime_key}_{rank}"
+        )])
+    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_char")])
+    await edit_shop_msg(
+        q,
+        f"{anime['emoji']} {anime['name_fa']} — رنک انتخاب کن:",
+        kb
+    )
+
+
+async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    raw = q.data.replace("shchrank_", "")
+    parts = raw.rsplit("_", 1)
+    if len(parts) != 2:
+        await q.answer("❌ خطا در اطلاعات.", show_alert=True)
+        return
+    anime_key, rank = parts[0], parts[1]
+    anime = get_anime(anime_key)
+    if not anime:
+        await q.answer("❌ انیمه پیدا نشد.", show_alert=True)
+        return
+    chars = anime["characters"].get(rank, {})
+    if not chars:
+        await q.answer("❌ کاراکتری توی این رنک نیست.", show_alert=True)
+        return
+    kb = []
+    for name, title in chars.items():
+        price = anime["prices"].get(rank, 8000)
+        safe_name = name.replace(" ", "§")
+        kb.append([InlineKeyboardButton(
+            f"🎭 {name} — {price:,} 💰",
+            callback_data=f"buych_{anime_key}_{rank}_{safe_name}"
+        )])
+    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data=f"shchanime_{anime_key}")])
+    await edit_shop_msg(
+        q,
+        f"{anime['emoji']} {anime['name_fa']} — {rank} Rank:",
+        kb
+    )
+
+
+async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    raw = q.data.replace("buych_", "")
+    parts = raw.split("_", 2)
+    if len(parts) < 3:
+        await q.answer("❌ خطا در اطلاعات.", show_alert=True)
+        return
+    anime_key = parts[0]
+    rank = parts[1]
+    char_name = parts[2].replace("§", " ")
+    anime = get_anime(anime_key)
+    if not anime:
+        await q.answer("❌ انیمه پیدا نشد.", show_alert=True)
+        return
+    result = buy_character(q.from_user.id, char_name, rank)
+    if "Not enough" in str(result) or "کافی" in str(result):
+        await q.answer("💰 پولت کمه!", show_alert=True)
+        await q.message.reply_text(f"❌ {char_name} ({rank})\n💰 پولت کافی نیست!")
+    else:
+        await q.answer("✅ خریداری شد!")
+        await q.message.reply_text(
+            f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!"
+        )
 
 
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -467,52 +584,8 @@ async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
 
-async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    rank = q.data.replace("shchrank_", "")
-    kb = []
-    for name, title in CHARACTERS[rank].items():
-        price = get_char_price(name, rank)
-        kb.append([InlineKeyboardButton(f"{name} ({title}) — {price:,} 💰", callback_data=f"buych_{name}_{rank}")])
-    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_char")])
-    await edit_shop_msg(q, f"🦸 {rank} Rank:", kb)
-
-
-async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    data = q.data.replace("buych_", "")
-    parts = data.rsplit("_", 1)
-    char_name = parts[0]
-    rank = parts[1]
-    result = buy_character(q.from_user.id, char_name, rank)
-    if "Not enough" in str(result) or "کافی" in str(result):
-        await q.message.reply_text(f"❌ {char_name}\n💰 پولت کمه!")
-    else:
-        await q.message.reply_text(f"✅ {char_name} ({rank})\n🎉 خریدی!")
-
-
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("از /shop استفاده کن!")
-
-
-async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    chars = get_user_characters(user_id)
-    if not chars:
-        await update.message.reply_text("No characters.")
-        return
-    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
-    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    char_id = int(q.data.replace("sel_", ""))
-    set_active(q.from_user.id, char_id)
-    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 
 
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -711,6 +784,16 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
     for name, data in BOSSES_OPM.items():
         kb.append([InlineKeyboardButton(f"💪 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in AOT_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in BLACKCLOVER_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🍀 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in BERSERK_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🩸 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in DEMONSLAYER_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in CHAINSAWMAN_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
     await update.message.reply_text("⚔️ باس انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
@@ -738,6 +821,26 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         create_battle(user_id, boss_name, char[5], BOSSES_OPM[boss_name]["hp"])
     elif boss_name in BOSSES:
         create_battle(user_id, boss_name, char[5], BOSSES[boss_name]["hp"])
+    elif boss_name in AOT_BOSSES:
+        create_battle(user_id, boss_name, char[5], AOT_BOSSES[boss_name]["hp"])
+    elif boss_name in AOT_FODDER:
+        create_battle(user_id, boss_name, char[5], AOT_FODDER[boss_name]["hp"])
+    elif boss_name in BLACKCLOVER_BOSSES:
+        create_battle(user_id, boss_name, char[5], BLACKCLOVER_BOSSES[boss_name]["hp"])
+    elif boss_name in BLACKCLOVER_FODDER:
+        create_battle(user_id, boss_name, char[5], BLACKCLOVER_FODDER[boss_name]["hp"])
+    elif boss_name in BERSERK_BOSSES:
+        create_battle(user_id, boss_name, char[5], BERSERK_BOSSES[boss_name]["hp"])
+    elif boss_name in BERSERK_FODDER:
+        create_battle(user_id, boss_name, char[5], BERSERK_FODDER[boss_name]["hp"])
+    elif boss_name in DEMONSLAYER_BOSSES:
+        create_battle(user_id, boss_name, char[5], DEMONSLAYER_BOSSES[boss_name]["hp"])
+    elif boss_name in DEMONSLAYER_FODDER:
+        create_battle(user_id, boss_name, char[5], DEMONSLAYER_FODDER[boss_name]["hp"])
+    elif boss_name in CHAINSAWMAN_BOSSES:
+        create_battle(user_id, boss_name, char[5], CHAINSAWMAN_BOSSES[boss_name]["hp"])
+    elif boss_name in CHAINSAWMAN_FODDER:
+        create_battle(user_id, boss_name, char[5], CHAINSAWMAN_FODDER[boss_name]["hp"])
     else:
         await q.message.reply_text("❌ باس پیدا نشد.")
         return
@@ -991,6 +1094,16 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
     for name, data in BOSSES_OPM.items():
         kb.append([InlineKeyboardButton(f"💪 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in AOT_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in BLACKCLOVER_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🍀 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in BERSERK_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🩸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in DEMONSLAYER_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in CHAINSAWMAN_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
     await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
 
 
@@ -1058,6 +1171,16 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         boss_hp = BOSSES_OPM[s["boss"]]["hp"]
     elif s["boss"] in BOSSES:
         boss_hp = BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in AOT_BOSSES:
+        boss_hp = AOT_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in BLACKCLOVER_BOSSES:
+        boss_hp = BLACKCLOVER_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in BERSERK_BOSSES:
+        boss_hp = BERSERK_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in DEMONSLAYER_BOSSES:
+        boss_hp = DEMONSLAYER_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in CHAINSAWMAN_BOSSES:
+        boss_hp = CHAINSAWMAN_BOSSES[s["boss"]]["hp"]
     team1 = [
         {"uid": p1_id, "name": char1[2], "display": get_username(p1_id),
          "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7],
@@ -1219,8 +1342,6 @@ async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             session_id, s["team1"][0][1][2], battle["current_turn"], s["host"]
         ))
     )
-
-
 async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1622,8 +1743,6 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -1650,6 +1769,8 @@ async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     msg = claim_quest(update.effective_user.id, key)
     await update.message.reply_text(msg)
+
+
 async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
@@ -1683,6 +1804,77 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(text)
 
 
+async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if update.message.reply_to_message:
+        target = update.message.reply_to_message.from_user
+        target_id = target.id
+        target_name = target.first_name
+        if not ctx.args:
+            await update.message.reply_text("❌ مقدار رو بنویس: /gift <amount>")
+            return
+        try:
+            amount = int(ctx.args[0])
+        except ValueError:
+            await update.message.reply_text("❌ مقدار معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
+        return
+    if len(ctx.args) >= 2:
+        try:
+            target_id = int(ctx.args[0])
+            amount = int(ctx.args[1])
+        except ValueError:
+            await update.message.reply_text("❌ اعداد معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(msg)
+        return
+    await update.message.reply_text("🎁 /gift 500 یا ریپلای + /gift 500")
+
+
+async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    rows = get_gift_history(user_id, 10)
+    if not rows:
+        await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
+        return
+    text = "🎁 تاریخچه:\n\n"
+    for from_id, to_id, amount, date in rows:
+        if from_id == user_id:
+            text += f"📤 تو → {to_id}: {amount:,}\n"
+        else:
+            text += f"📥 {from_id} → تو: {amount:,}\n"
+    await update.message.reply_text(text)
+
+
+async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    rows = get_top_givers(10)
+    if not rows:
+        await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
+        return
+    text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
+    for i, (uid, total) in enumerate(rows, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {uid} — {total:,}\n"
+    await update.message.reply_text(text)
+
+
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    custom = get_help("general")
+    text = "🎮 BANG BANG RP — راهنما\n━━━━━━━━━━━━━━━━━━━\n\n"
+    if custom:
+        text += f"{custom}\n\n"
+    text += "👤 /profile /select /coins\n"
+    text += "🏪 /shop /upgrade\n"
+    text += "⚔️ /battle /pvp /team /coop\n"
+    text += "🏰 /guild\n"
+    text += "📜 /quests /leaderboard\n"
+    text += "🎁 /gift\n"
+    text += "🗺️ /world\n"
+    text += "❓ /help\n"
+    await update.message.reply_text(text)
 async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not is_admin(user_id):
@@ -2014,77 +2206,6 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key, desc, target, reward in quests:
         text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
-async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if update.message.reply_to_message:
-        target = update.message.reply_to_message.from_user
-        target_id = target.id
-        target_name = target.first_name
-        if not ctx.args:
-            await update.message.reply_text("❌ مقدار رو بنویس: /gift <amount>")
-            return
-        try:
-            amount = int(ctx.args[0])
-        except ValueError:
-            await update.message.reply_text("❌ مقدار معتبر بده.")
-            return
-        msg = send_gift(user_id, target_id, amount)
-        await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
-        return
-    if len(ctx.args) >= 2:
-        try:
-            target_id = int(ctx.args[0])
-            amount = int(ctx.args[1])
-        except ValueError:
-            await update.message.reply_text("❌ اعداد معتبر بده.")
-            return
-        msg = send_gift(user_id, target_id, amount)
-        await update.message.reply_text(msg)
-        return
-    await update.message.reply_text("🎁 /gift 500 یا ریپلای + /gift 500")
-
-
-async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    rows = get_gift_history(user_id, 10)
-    if not rows:
-        await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
-        return
-    text = "🎁 تاریخچه:\n\n"
-    for from_id, to_id, amount, date in rows:
-        if from_id == user_id:
-            text += f"📤 تو → {to_id}: {amount:,}\n"
-        else:
-            text += f"📥 {from_id} → تو: {amount:,}\n"
-    await update.message.reply_text(text)
-
-
-async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    rows = get_top_givers(10)
-    if not rows:
-        await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
-        return
-    text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
-    for i, (uid, total) in enumerate(rows, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {uid} — {total:,}\n"
-    await update.message.reply_text(text)
-
-
-async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    custom = get_help("general")
-    text = "🎮 BANG BANG RP — راهنما\n━━━━━━━━━━━━━━━━━━━\n\n"
-    if custom:
-        text += f"{custom}\n\n"
-    text += "👤 /profile /select /coins\n"
-    text += "🏪 /shop /upgrade\n"
-    text += "⚔️ /battle /pvp /team /coop\n"
-    text += "🏰 /guild\n"
-    text += "📜 /quests /leaderboard\n"
-    text += "🎁 /gift\n"
-    text += "🗺️ /world\n"
-    text += "❓ /help\n"
-    await update.message.reply_text(text)
 
 
 async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2107,8 +2228,6 @@ async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     total = reset_all_players()
     await update.message.reply_text(f"💥 {total:,} پلیر ریست شدند!")
-
-
 async def post_init(app):
     commands_list = [
         BotCommand("start", "شروع بازی"),
@@ -2128,8 +2247,6 @@ async def post_init(app):
         BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
-
-
 def main():
     init_db()
     init_multi_table()
@@ -2209,18 +2326,29 @@ def main():
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
+
+    # 🆕 Shop Anime Selectors (مهم: قبل از shop_callback)
+    app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
+    app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
+    app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
+
+    # Shop عمومی
     app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
     app.add_handler(CallbackQueryHandler(buy_ability_callback, pattern="^buyab_"))
     app.add_handler(CallbackQueryHandler(buy_item_callback, pattern="^buyit_"))
     app.add_handler(CallbackQueryHandler(buy_buff_callback, pattern="^buybf_"))
-    app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
-    app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
+
+    # Battle
     app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(action_callback, pattern="^act_"))
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
     app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
     app.add_handler(CallbackQueryHandler(shop_buff_use_callback, pattern="^shopbf_"))
+
+    # Coop
     app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
+
+    # Multi Battle
     app.add_handler(CallbackQueryHandler(
         multi_action_callback,
         pattern="^mb_(attack|defend|dodge|ab1|ab2|ab3)_"
@@ -2231,6 +2359,8 @@ def main():
     app.add_handler(CallbackQueryHandler(multi_item_callback, pattern="^mb_item_"))
     app.add_handler(CallbackQueryHandler(multi_wait_callback, pattern="^mb_wait_"))
     app.add_handler(CallbackQueryHandler(multi_back_callback, pattern="^mb_back_"))
+
+    # World
     app.add_handler(CallbackQueryHandler(
         world_region_callback,
         pattern="^world_(forest|desert|mountain|volcano|dungeon)$"
@@ -2239,6 +2369,8 @@ def main():
     app.add_handler(CallbackQueryHandler(world_progress_callback, pattern="^world_progress$"))
     app.add_handler(CallbackQueryHandler(world_treasures_callback, pattern="^world_treasures$"))
     app.add_handler(CallbackQueryHandler(world_back_callback, pattern="^world_back$"))
+
+    # Guild / Leaderboard
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
