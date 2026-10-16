@@ -1398,7 +1398,7 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if player["hp"] <= 0:
         await q.answer("💀 تو مرده‌ای!", show_alert=True)
         return
-      await q.answer()
+       await q.answer()
 
     if action in ("ab1", "ab2", "ab3"):
         action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
