@@ -219,45 +219,45 @@ BOSSES_JJK = {
     "Cursed Spirit": {"display_name": "روح سرگردان", "hp": 800, "atk": 60, "reward": 50000},
     "Shadow Wolf": {"display_name": "گرگ سایه", "hp": 1200, "atk": 90, "reward": 50000},
 
-    # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000
-    "Cursed Worm": {"display_name": "کرم نفرین‌شده", "hp": 3000, "atk": 200, "reward": 100000},
-    "Hell Spider": {"display_name": "عنکبوت جهنمی", "hp": 4000, "atk": 250, "reward": 100000},
+    # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000 (۲ برابر)
+    "Cursed Worm": {"display_name": "کرم نفرین‌شده", "hp": 6000, "atk": 400, "reward": 100000},
+    "Hell Spider": {"display_name": "عنکبوت جهنمی", "hp": 8000, "atk": 500, "reward": 100000},
 
-    # 🟠 قوی (HP 20k-50k، ATK 800-2k) — جایزه: 200,000
+    # 🟠 قوی (HP 20k-50k، ATK 800-2k) — جایزه: 200,000 (۲ برابر)
     "Uraume": {
-        "display_name": "اوراومه", "hp": 30000, "atk": 1300, "reward": 200000,
+        "display_name": "اوراومه", "hp": 60000, "atk": 2600, "reward": 200000,
         "fodder": ["Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Frozen Domain", "effect": "Freeze enemy (1 turn)", "type": "freeze"},
         "ability_2": {"name": "Ice Tomb", "effect": "ATK x4", "type": "damage"},
     },
     "Mahito": {
-        "display_name": "ماهیتو", "hp": 35000, "atk": 1500, "reward": 200000,
+        "display_name": "ماهیتو", "hp": 70000, "atk": 3000, "reward": 200000,
         "fodder": ["Cursed Spirit", "Cursed Spirit", "Small Shadow", "Small Shadow"],
         "ability_1": {"name": "Idle Transfiguration", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Soul Manipulation", "effect": "20% HP damage", "type": "damage"},
     },
     "Mahoraga": {
-        "display_name": "ماهوراگا", "hp": 40000, "atk": 2500, "reward": 200000,
+        "display_name": "ماهوراگا", "hp": 80000, "atk": 5000, "reward": 200000,
         "fodder": ["Shadow Wolf", "Shadow Wolf"],
         "ability_1": {"name": "Adaptation Wheel", "effect": "ATK +100 per turn", "type": "buff"},
         "ability_2": {"name": "Sword of Extermination", "effect": "ATK x5 (ignore DEF)", "type": "damage"},
     },
     "Sukuna Megumi": {
-        "display_name": "سوکونا (بدن مگومی)", "hp": 45000, "atk": 1800, "reward": 200000,
+        "display_name": "سوکونا (بدن مگومی)", "hp": 90000, "atk": 3600, "reward": 200000,
         "fodder": ["Small Shadow", "Shadow Wolf", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Ten Shadows", "effect": "2 shadows x2 ATK", "type": "multi"},
     },
 
-    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
+    # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000 (۲ برابر)
     "Dabura": {
-        "display_name": "دابورا", "hp": 95000, "atk": 2500, "reward": 500000,
+        "display_name": "دابورا", "hp": 190000, "atk": 5000, "reward": 500000,
         "fodder": ["Small Shadow", "Small Shadow", "Cursed Spirit"],
         "ability_1": {"name": "Cursed Energy Blast", "effect": "ATK x4", "type": "damage"},
         "ability_2": {"name": "Dark Rift", "effect": "25% HP damage", "type": "damage"},
     },
     "Sukuna Heian": {
-        "display_name": "سوکونا (فرم هیان)", "hp": 100000, "atk": 3000, "reward": 500000,
+        "display_name": "سوکونا (فرم هیان)", "hp": 200000, "atk": 6000, "reward": 500000,
         "fodder": ["Small Shadow", "Cursed Spirit", "Cursed Spirit"],
         "ability_1": {"name": "Dismantle", "effect": "ATK x3", "type": "damage"},
         "ability_2": {"name": "Cleave", "effect": "ATK x5", "type": "damage"},
