@@ -101,7 +101,7 @@ def get_multi_battle(session_id):
     c.execute("""SELECT id, session_id, battle_type, host_id, players,
                         team1, team2, boss_name, boss_hp, boss_max_hp,
                         current_turn, turn_index, status
-                 FROM multi_battles WHERE session_id=? AND status='active'""",
+                 FROM multi_battles WHERE session_id=?""",
         (session_id,))
     row = c.fetchone()
     conn.close()
