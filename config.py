@@ -207,7 +207,7 @@ BUFF_FA = {
 # ============================================================
 CHARACTERS = {}
 
-# انیمه‌های قبلی
+# --- انیمه‌های قبلی ---
 for rank, chars in CHARACTERS_JJK.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
@@ -223,7 +223,7 @@ for rank, chars in CHARACTERS_OPM.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# انیمه‌های جدید (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man)
+# --- انیمه‌های جدید ---
 for rank, chars in CHARACTERS_AOT.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
@@ -261,7 +261,7 @@ CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 # ============================================================
 BOSSES = {}
 
-# انیمه‌های قبلی
+# --- انیمه‌های قبلی ---
 for key, val in BOSSES_OPM.items():
     BOSSES[key] = val
 for key, val in BOSSES_JJK.items():
@@ -269,7 +269,7 @@ for key, val in BOSSES_JJK.items():
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
-# انیمه‌های جدید
+# --- انیمه‌های جدید ---
 for key, val in AOT_BOSSES.items():
     BOSSES[key] = val
 for key, val in BLACKCLOVER_BOSSES.items():
