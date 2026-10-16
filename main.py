@@ -53,14 +53,12 @@ from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
 from opm_stats import OPM_STATS
 
-# 🆕 Stats ۵ انیمه اول
+# 🆕 Stats
 from aot_stats import AOT_STATS
 from blackclover_stats import BLACKCLOVER_STATS
 from berserk_stats import BERSERK_STATS
 from demonslayer_stats import DEMONSLAYER_STATS
 from chainsawman_stats import CHAINSAWMAN_STATS
-
-# 🆕 Stats Naruto + SDS
 from naruto_stats import NARUTO_STATS
 from sevendeadlysins_stats import SDS_STATS
 
@@ -75,6 +73,12 @@ from anime_registry import (
     get_characters_by_anime, get_char_price_by_anime,
     find_char_anime, get_anime_bosses, get_anime_shop_abilities
 )
+
+# 🆕 MODES
+from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd,
+                   zombie_cmd, zombie_callback, tower_cmd, tower_callback)
+
+
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
@@ -184,6 +188,7 @@ COMMAND_DESCRIPTIONS = {
     "pvp": "نبرد 1v1", "team": "نبرد تیمی", "coop": "نبرد گروهی",
     "quests": "کوئست روزانه", "leaderboard": "لیدربورد", "guild": "کلن",
     "gift": "هدیه دادن", "world": "دنیای آزاد", "help": "راهنما",
+    "modes": "مودها", "castle": "قلعه", "zombie": "زامبی", "tower": "برج",
 }
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -225,6 +230,8 @@ async def first_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"✅ کاراکتر {char_name} (C Rank) انتخاب شد!\n\n"
         f"/profile\n/shop\n/battle\n/help"
     )
+
+
 async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -256,11 +263,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         a1 = abs_data.get("ability_1", {}).get("name", "—")
         a2 = abs_data.get("ability_2", {}).get("name", "—")
         a3 = abs_data.get("ability_3", {}).get("name", "—")
-        abs_text = (
-            f"🔵 {a1}\n"
-            f"🔴 {a2}\n"
-            f"🟣 {a3} (۱ بار)\n"
-        )
+        abs_text = f"🔵 {a1}\n🔴 {a2}\n🟣 {a3} (۱ بار)\n"
     else:
         abs_text = "❌ Ability تعریف نشده\n"
     text = (
@@ -278,8 +281,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"├ 🛡️ DEF: {dfn:,}\n"
         f"├ 💨 DODGE: {dodge}%\n"
         f"└ 🎰 Slots: {slots}\n\n"
-        f"🔥 Ability ها:\n"
-        f"{abs_text}\n"
+        f"🔥 Ability ها:\n{abs_text}\n"
         f"🌀 Domain: {has_domain_str}{domain_name}\n"
         f"⚔️ Bankai: {has_bankai_str}{bankai_name}\n\n"
         f"💰 سکه: {get_coins(user_id):,}\n"
@@ -328,10 +330,8 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "prof_gift":
         await q.message.reply_text(
             "🎁 برای هدیه دادن:\n\n"
-            "روش ۱: روی پیام کسی ریپلای کن و بنویس:\n"
-            "  /gift 500\n\n"
-            "روش ۲: با آیدی:\n"
-            "  /gift 123456789 500"
+            "روش ۱: روی پیام کسی ریپلای کن و بنویس:\n  /gift 500\n\n"
+            "روش ۲: با آیدی:\n  /gift 123456789 500"
         )
     elif data == "prof_battle":
         await q.message.reply_text("⚔️ برای نبرد: /battle")
@@ -364,11 +364,11 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
              InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
         ]
         await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c:,}")
-
-
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -446,6 +446,8 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
         ]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)
+
+
 async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -526,6 +528,8 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(
             f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!"
         )
+
+
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1540,6 +1544,8 @@ async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -1578,8 +1584,6 @@ async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1598,19 +1602,17 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         existing = get_battle(user_id)
         if existing:
             end_battle(existing["id"])
-            enemy_hp = 20000                
-    if region_key == "forest":
         enemy_hp = 20000
-    elif region_key == "desert":
-        enemy_hp = 50000
-    elif region_key == "mountain":
-        enemy_hp = 120000
-    elif region_key == "volcano":
-        enemy_hp = 250000
-    elif region_key == "dungeon":
-        enemy_hp = 500000
-    create_battle(user_id, enemy_name, char[5], enemy_hp)
-    ...
+        if region_key == "forest":
+            enemy_hp = 20000
+        elif region_key == "desert":
+            enemy_hp = 50000
+        elif region_key == "mountain":
+            enemy_hp = 120000
+        elif region_key == "volcano":
+            enemy_hp = 250000
+        elif region_key == "dungeon":
+            enemy_hp = 500000
         create_battle(user_id, enemy_name, char[5], enemy_hp)
         battle_data = get_battle(user_id)
         text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
@@ -1703,18 +1705,18 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         if existing:
             end_battle(existing["id"])
         boss_hp = 50000
-if boss_name == "Saitama Phase 1":
-    boss_hp = 160000
-elif region_key == "forest":
-    boss_hp = 50000
-elif region_key == "desert":
-    boss_hp = 120000
-elif region_key == "mountain":
-    boss_hp = 300000
-elif region_key == "volcano":
-    boss_hp = 600000
-elif region_key == "dungeon":
-    boss_hp = 150000
+        if boss_name == "Saitama Phase 1":
+            boss_hp = 160000
+        elif region_key == "forest":
+            boss_hp = 50000
+        elif region_key == "desert":
+            boss_hp = 120000
+        elif region_key == "mountain":
+            boss_hp = 300000
+        elif region_key == "volcano":
+            boss_hp = 600000
+        elif region_key == "dungeon":
+            boss_hp = 150000
         create_battle(user_id, boss_name, char[5], boss_hp)
         battle_data = get_battle(user_id)
         text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
@@ -1773,8 +1775,6 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -1847,12 +1847,13 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "💰 /give /take\n"
     text += "👤 /userinfo /allusers /resetuser /ban /unban\n"
     text += "🎭 /givechar /resetchar\n"
+    text += "📜 /editquest /viewquests\n"
     if is_owner(user_id):
         text += "\n👑 /addadmin /removeadmin /listadmins\n"
         text += "📜 /sethelp /viewhelp\n"
         text += "🖼️ عکس + کپشن /setcharimage <name>\n"
         text += "📢 /addchannel /removechannel /listchannels\n"
-        text += "🎯 /setquest /viewquests\n"
+        text += "🎯 /setquest\n"
         text += "\n👑 /ownerpanel\n"
     await update.message.reply_text(text)
 
@@ -2052,6 +2053,125 @@ async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     ok, msg = reset_character(target_id)
     await update.message.reply_text(msg)
+# 🆕 EDIT QUEST — ادیت کوئست از تلگرام
+async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("❌ فقط ادمین!")
+        return
+    if not ctx.args:
+        text = (
+            "🎯 **ادیت کوئست**\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            "**دستورات:**\n"
+            "`/editquest list` — لیست کوئست‌ها\n"
+            "`/editquest show <key>` — نمایش یه کوئست\n"
+            "`/editquest add <key> <target> <reward>` — اضافه کردن\n"
+            "`/editquest remove <key>` — حذف\n"
+            "`/editquest desc <key> <text>` — تغییر توضیح\n"
+        )
+        await update.message.reply_text(text)
+        return
+
+    action = ctx.args[0]
+
+    if action == "list":
+        from quests import QUESTS
+        text = "📜 **کوئست‌های فعلی:**\n\n"
+        for key, q in QUESTS.items():
+            text += f"🔹 `{key}` — {q.get('desc', '?')} (هدف: {q.get('target', '?')}, جایزه: {q.get('reward', '?')})\n"
+        await update.message.reply_text(text)
+        return
+
+    if action == "show":
+        if len(ctx.args) < 2:
+            await update.message.reply_text("Usage: /editquest show <key>")
+            return
+        key = ctx.args[1]
+        from quests import QUESTS
+        if key not in QUESTS:
+            await update.message.reply_text("❌ پیدا نشد.")
+            return
+        q = QUESTS[key]
+        text = (
+            f"🔹 **{key}**\n"
+            f"📝 توضیح: {q.get('desc', '?')}\n"
+            f"🎯 هدف: {q.get('target', '?')}\n"
+            f"💰 جایزه: {q.get('reward', '?')}\n"
+        )
+        await update.message.reply_text(text)
+        return
+
+    if action == "add":
+        if len(ctx.args) < 4:
+            await update.message.reply_text("Usage: /editquest add <key> <target> <reward>")
+            return
+        key = ctx.args[1]
+        try:
+            target = int(ctx.args[2])
+            reward = int(ctx.args[3])
+        except ValueError:
+            await update.message.reply_text("❌ اعداد معتبر بده.")
+            return
+        try:
+            from quests import QUESTS
+            QUESTS[key] = {"desc": f"کوئست {key}", "target": target, "reward": reward}
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
+                key TEXT PRIMARY KEY,
+                desc TEXT,
+                target INTEGER,
+                reward INTEGER
+            )""")
+            c.execute("INSERT OR REPLACE INTO custom_quests (key, desc, target, reward) VALUES (?,?,?,?)",
+                      (key, f"کوئست {key}", target, reward))
+            conn.commit()
+            conn.close()
+            await update.message.reply_text(f"✅ کوئست `{key}` اضافه شد!")
+        except Exception as e:
+            await update.message.reply_text(f"❌ خطا: {e}")
+        return
+
+    if action == "remove":
+        if len(ctx.args) < 2:
+            await update.message.reply_text("Usage: /editquest remove <key>")
+            return
+        key = ctx.args[1]
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("DELETE FROM custom_quests WHERE key=?", (key,))
+            conn.commit()
+            conn.close()
+            from quests import QUESTS
+            if key in QUESTS:
+                del QUESTS[key]
+            await update.message.reply_text(f"🗑️ کوئست `{key}` حذف شد.")
+        except Exception as e:
+            await update.message.reply_text(f"❌ خطا: {e}")
+        return
+
+    if action == "desc":
+        if len(ctx.args) < 3:
+            await update.message.reply_text("Usage: /editquest desc <key> <text>")
+            return
+        key = ctx.args[1]
+        desc = " ".join(ctx.args[2:])
+        try:
+            from quests import QUESTS
+            if key in QUESTS:
+                QUESTS[key]["desc"] = desc
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("UPDATE custom_quests SET desc=? WHERE key=?", (desc, key))
+            conn.commit()
+            conn.close()
+            await update.message.reply_text(f"✅ توضیح `{key}` عوض شد!")
+        except Exception as e:
+            await update.message.reply_text(f"❌ خطا: {e}")
+        return
+
+    await update.message.reply_text("❌ دستور نامعتبر. `/editquest` رو بزن.")
 
 
 async def sethelp_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2167,6 +2287,8 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key, desc, target, reward in quests:
         text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
+
+
 async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if update.message.reply_to_message:
@@ -2236,6 +2358,7 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text += "📜 /quests /leaderboard\n"
     text += "🎁 /gift\n"
     text += "🗺️ /world\n"
+    text += "🎮 /modes — مودها (قلعه، زامبی، برج)\n"
     text += "❓ /help\n"
     await update.message.reply_text(text)
 
@@ -2251,6 +2374,7 @@ async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"👥 تعداد کل پلیرها: {total:,}\n\n"
         "🔄 /resetuser <id> → ریست یه پلیر\n"
         "💥 /resetall → ریست همه\n"
+        "🎯 /editquest → ادیت کوئست‌ها\n"
     )
     await update.message.reply_text(text)
 
@@ -2260,8 +2384,6 @@ async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     total = reset_all_players()
     await update.message.reply_text(f"💥 {total:,} پلیر ریست شدند!")
-
-
 async def post_init(app):
     commands_list = [
         BotCommand("start", "شروع بازی"),
@@ -2278,9 +2400,12 @@ async def post_init(app):
         BotCommand("leaderboard", "لیدربورد"),
         BotCommand("guild", "کلن"),
         BotCommand("gift", "هدیه دادن"),
+        BotCommand("modes", "مودها (قلعه/زامبی/برج)"),
         BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
+
+
 def main():
     init_db()
     init_multi_table()
@@ -2340,6 +2465,7 @@ def main():
     app.add_handler(CommandHandler("listadmins", listadmins_cmd))
     app.add_handler(CommandHandler("givechar", givechar_cmd))
     app.add_handler(CommandHandler("resetchar", resetchar_cmd))
+    app.add_handler(CommandHandler("editquest", editquest_cmd))
     app.add_handler(CommandHandler("sethelp", sethelp_cmd))
     app.add_handler(CommandHandler("viewhelp", viewhelp_cmd))
     app.add_handler(CommandHandler("addchannel", addchannel_cmd))
@@ -2349,6 +2475,13 @@ def main():
     app.add_handler(CommandHandler("viewquests", viewquests_cmd))
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
+
+    # 🆕 MODES Commands
+    app.add_handler(CommandHandler("modes", modes_cmd))
+    app.add_handler(CommandHandler("castle", castle_cmd))
+    app.add_handler(CommandHandler("joincastle", join_castle_cmd))
+    app.add_handler(CommandHandler("zombie", zombie_cmd))
+    app.add_handler(CommandHandler("tower", tower_cmd))
 
     # Message Handler for setcharimage
     app.add_handler(MessageHandler(
@@ -2361,7 +2494,7 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
 
-    # 🆕 Shop Anime Selectors (قبل از shop_callback)
+    # 🆕 Shop Anime Selectors
     app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
     app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
     app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
@@ -2408,9 +2541,15 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
+    # 🆕 Modes Callbacks
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
+
     print("🤖 Bot Started!")
     app.run_polling()
 
 
 if __name__ == "__main__":
-    main()   
+    main()
