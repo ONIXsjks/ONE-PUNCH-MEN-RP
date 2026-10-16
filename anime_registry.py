@@ -1,5 +1,5 @@
 # ============================================================
-# ANIME REGISTRY — Central Registry for All 8 Animes
+# ANIME REGISTRY — Central Registry for All 7 Animes
 # ============================================================
 
 # ============ OPM ============
@@ -57,6 +57,20 @@ from chainsawman_data import (
     CHAR_PRICES_CHAINSAWMAN
 )
 
+# ============ NARUTO ============
+from naruto_data import (
+    CHARACTERS_NARUTO, ABILITIES_NARUTO,
+    NARUTO_BOSSES, NARUTO_FODDER,
+    CHAR_PRICES_NARUTO
+)
+
+# ============ SEVEN DEADLY SINS ============
+from sevendeadlysins_data import (
+    CHARACTERS_SDS, ABILITIES_SDS,
+    SDS_BOSSES, SDS_FODDER,
+    CHAR_PRICES_SDS
+)
+
 # ============ EXTENDED SHOP ABILITIES ============
 from shop_abilities_extended import (
     AOT_ABILITIES_SHOP,
@@ -82,7 +96,7 @@ ANIME_REGISTRY = {
         "bosses": BOSSES_OPM,
         "fodder": OPM_FODDER,
         "prices": {"S": 2000000, "A": 500000, "B": 150000, "C": 50000},
-        "shop_abilities": {},  # OPM shop جدا نداره، از ABILITIES عمومی استفاده می‌کنه
+        "shop_abilities": {},
         "has_domain": False,
         "has_bankai": False,
     },
@@ -179,6 +193,32 @@ ANIME_REGISTRY = {
         "has_domain": False,
         "has_bankai": False,
     },
+    "naruto": {
+        "name": "Naruto",
+        "name_fa": "ناروتو",
+        "emoji": "🍥",
+        "characters": CHARACTERS_NARUTO,
+        "abilities": ABILITIES_NARUTO,
+        "bosses": NARUTO_BOSSES,
+        "fodder": NARUTO_FODDER,
+        "prices": CHAR_PRICES_NARUTO,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "sds": {
+        "name": "Seven Deadly Sins",
+        "name_fa": "هفت گناه کبیره",
+        "emoji": "⚔️",
+        "characters": CHARACTERS_SDS,
+        "abilities": ABILITIES_SDS,
+        "bosses": SDS_BOSSES,
+        "fodder": SDS_FODDER,
+        "prices": CHAR_PRICES_SDS,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
 }
 
 
@@ -187,12 +227,10 @@ ANIME_REGISTRY = {
 # ============================================================
 
 def get_anime(anime_key):
-    """گرفتن اطلاعات یه انیمه"""
     return ANIME_REGISTRY.get(anime_key)
 
 
 def get_anime_list():
-    """لیست همه انیمه‌ها برای منو"""
     return [
         (key, data["emoji"], data["name"], data["name_fa"])
         for key, data in ANIME_REGISTRY.items()
@@ -200,7 +238,6 @@ def get_anime_list():
 
 
 def get_characters_by_anime(anime_key, rank):
-    """کاراکترهای یه انیمه توی یه رنک"""
     anime = ANIME_REGISTRY.get(anime_key)
     if not anime:
         return {}
@@ -208,7 +245,6 @@ def get_characters_by_anime(anime_key, rank):
 
 
 def get_char_price_by_anime(anime_key, rank):
-    """قیمت کاراکتر بر اساس انیمه و رنک"""
     anime = ANIME_REGISTRY.get(anime_key)
     if not anime:
         return 0
@@ -216,7 +252,6 @@ def get_char_price_by_anime(anime_key, rank):
 
 
 def find_char_anime(char_name):
-    """پیدا کردن انیمه‌ی یه کاراکتر بر اساس اسمش"""
     for anime_key, data in ANIME_REGISTRY.items():
         for rank, chars in data["characters"].items():
             if char_name in chars:
@@ -225,7 +260,6 @@ def find_char_anime(char_name):
 
 
 def get_char_abilities(char_name):
-    """گرفتن Abilityهای یه کاراکتر از هر انیمه‌ای"""
     for anime_key, data in ANIME_REGISTRY.items():
         if char_name in data["abilities"]:
             return data["abilities"][char_name]
@@ -233,7 +267,6 @@ def get_char_abilities(char_name):
 
 
 def get_anime_bosses(anime_key):
-    """گرفتن باس‌های یه انیمه"""
     anime = ANIME_REGISTRY.get(anime_key)
     if not anime:
         return {}
@@ -241,7 +274,6 @@ def get_anime_bosses(anime_key):
 
 
 def get_anime_shop_abilities(anime_key):
-    """گرفتن Abilityهای Shop یه انیمه"""
     anime = ANIME_REGISTRY.get(anime_key)
     if not anime:
         return {}
