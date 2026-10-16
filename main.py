@@ -487,7 +487,7 @@ async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE
         return
     kb = []
     for name, title in chars.items():
-        price = anime["prices"].get(rank, 8000)
+        price = get_char_price(name, rank)
         safe_name = name.replace(" ", "§")
         kb.append([InlineKeyboardButton(
             f"🎭 {name} — {price:,} 💰",
