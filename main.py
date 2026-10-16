@@ -1598,17 +1598,19 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         existing = get_battle(user_id)
         if existing:
             end_battle(existing["id"])
-        enemy_hp = 10000
-        if region_key == "forest":
-            enemy_hp = 10000
-        elif region_key == "desert":
-            enemy_hp = 30000
-        elif region_key == "mountain":
-            enemy_hp = 80000
-        elif region_key == "volcano":
-            enemy_hp = 200000
-        elif region_key == "dungeon":
-            enemy_hp = 500000
+            enemy_hp = 20000                
+    if region_key == "forest":
+        enemy_hp = 20000
+    elif region_key == "desert":
+        enemy_hp = 50000
+    elif region_key == "mountain":
+        enemy_hp = 120000
+    elif region_key == "volcano":
+        enemy_hp = 250000
+    elif region_key == "dungeon":
+        enemy_hp = 500000
+    create_battle(user_id, enemy_name, char[5], enemy_hp)
+    ...
         create_battle(user_id, enemy_name, char[5], enemy_hp)
         battle_data = get_battle(user_id)
         text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
