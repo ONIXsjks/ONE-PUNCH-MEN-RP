@@ -1701,16 +1701,18 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         if existing:
             end_battle(existing["id"])
         boss_hp = 50000
-        if region_key == "forest":
-            boss_hp = 50000
-        elif region_key == "desert":
-            boss_hp = 120000
-        elif region_key == "mountain":
-            boss_hp = 300000
-        elif region_key == "volcano":
-            boss_hp = 600000
-        elif region_key == "dungeon":
-            boss_hp = 1500000
+if boss_name == "Saitama Phase 1":
+    boss_hp = 160000
+elif region_key == "forest":
+    boss_hp = 50000
+elif region_key == "desert":
+    boss_hp = 120000
+elif region_key == "mountain":
+    boss_hp = 300000
+elif region_key == "volcano":
+    boss_hp = 600000
+elif region_key == "dungeon":
+    boss_hp = 150000
         create_battle(user_id, boss_name, char[5], boss_hp)
         battle_data = get_battle(user_id)
         text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
