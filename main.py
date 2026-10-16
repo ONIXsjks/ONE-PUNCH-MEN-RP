@@ -51,26 +51,39 @@ from opm_data import (CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM)
 from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
 from opm_stats import OPM_STATS
+
+# 🆕 Stats ۵ انیمه اول
+from aot_stats import AOT_STATS
+from blackclover_stats import BLACKCLOVER_STATS
+from berserk_stats import BERSERK_STATS
+from demonslayer_stats import DEMONSLAYER_STATS
+from chainsawman_stats import CHAINSAWMAN_STATS
+
+# 🆕 Stats Naruto + SDS
+from naruto_stats import NARUTO_STATS
+from sevendeadlysins_stats import SDS_STATS
+
 from world import (REGIONS, TREASURES, get_region, get_region_name,
                    random_explore_event, random_treasure, random_reward,
                    can_unlock_region, get_player_region_view, get_region_view,
                    format_treasure, format_world_progress, format_treasures_list)
 
-# ============ 🆕 ANIME REGISTRY ============
+# 🆕 ANIME REGISTRY
 from anime_registry import (
     ANIME_REGISTRY, get_anime, get_anime_list,
     get_characters_by_anime, get_char_price_by_anime,
     find_char_anime, get_anime_bosses, get_anime_shop_abilities
 )
-
-
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
 
 
 def get_all_stats(char_name, rank):
-    for stats_dict in [JJK_STATS, BLEACH_STATS, OPM_STATS]:
+    for stats_dict in [JJK_STATS, BLEACH_STATS, OPM_STATS,
+                       AOT_STATS, BLACKCLOVER_STATS, BERSERK_STATS,
+                       DEMONSLAYER_STATS, CHAINSAWMAN_STATS,
+                       NARUTO_STATS, SDS_STATS]:
         if char_name in stats_dict:
             return stats_dict[char_name]
     return RANK_STATS.get(rank, RANK_STATS["C"])
@@ -86,7 +99,8 @@ def get_char_price(char_name, rank):
 def get_character_abilities(char_name):
     for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM,
                  ABILITIES_AOT, ABILITIES_BLACKCLOVER, ABILITIES_BERSERK,
-                 ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN]:
+                 ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN,
+                 ABILITIES_NARUTO, ABILITIES_SDS]:
         if char_name in data:
             return data[char_name]
     return None
@@ -210,8 +224,6 @@ async def first_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"✅ کاراکتر {char_name} (C Rank) انتخاب شد!\n\n"
         f"/profile\n/shop\n/battle\n/help"
     )
-
-
 async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -351,29 +363,11 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
              InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
         ]
         await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c:,}")
 
 
-async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    chars = get_user_characters(user_id)
-    if not chars:
-        await update.message.reply_text("No characters.")
-        return
-    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
-    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    char_id = int(q.data.replace("sel_", ""))
-    set_active(q.from_user.id, char_id)
-    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -451,9 +445,6 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
         ]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)
-
-
-# ============ 🆕 ANIME SELECTION ============
 async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -534,8 +525,6 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(
             f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!"
         )
-
-
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -586,6 +575,24 @@ async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("از /shop استفاده کن!")
+
+
+async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    chars = get_user_characters(user_id)
+    if not chars:
+        await update.message.reply_text("No characters.")
+        return
+    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
+    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    char_id = int(q.data.replace("sel_", ""))
+    set_active(q.from_user.id, char_id)
+    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 
 
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -794,6 +801,10 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
     for name, data in CHAINSAWMAN_BOSSES.items():
         kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in NARUTO_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🍥 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
+    for name, data in SDS_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
     await update.message.reply_text("⚔️ باس انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
 
 
@@ -841,6 +852,14 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         create_battle(user_id, boss_name, char[5], CHAINSAWMAN_BOSSES[boss_name]["hp"])
     elif boss_name in CHAINSAWMAN_FODDER:
         create_battle(user_id, boss_name, char[5], CHAINSAWMAN_FODDER[boss_name]["hp"])
+    elif boss_name in NARUTO_BOSSES:
+        create_battle(user_id, boss_name, char[5], NARUTO_BOSSES[boss_name]["hp"])
+    elif boss_name in NARUTO_FODDER:
+        create_battle(user_id, boss_name, char[5], NARUTO_FODDER[boss_name]["hp"])
+    elif boss_name in SDS_BOSSES:
+        create_battle(user_id, boss_name, char[5], SDS_BOSSES[boss_name]["hp"])
+    elif boss_name in SDS_FODDER:
+        create_battle(user_id, boss_name, char[5], SDS_FODDER[boss_name]["hp"])
     else:
         await q.message.reply_text("❌ باس پیدا نشد.")
         return
@@ -1104,6 +1123,10 @@ async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
     for name, data in CHAINSAWMAN_BOSSES.items():
         kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in NARUTO_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"🍥 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
+    for name, data in SDS_BOSSES.items():
+        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
     await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
 
 
@@ -1181,6 +1204,10 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         boss_hp = DEMONSLAYER_BOSSES[s["boss"]]["hp"]
     elif s["boss"] in CHAINSAWMAN_BOSSES:
         boss_hp = CHAINSAWMAN_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in NARUTO_BOSSES:
+        boss_hp = NARUTO_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in SDS_BOSSES:
+        boss_hp = SDS_BOSSES[s["boss"]]["hp"]
     team1 = [
         {"uid": p1_id, "name": char1[2], "display": get_username(p1_id),
          "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7],
@@ -1199,8 +1226,6 @@ async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             session_id, char1[2], battle["current_turn"], p1_id
         ))
     )
-
-
 async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not get_active_character(user_id):
@@ -1743,6 +1768,8 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -1804,77 +1831,6 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(text)
 
 
-async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if update.message.reply_to_message:
-        target = update.message.reply_to_message.from_user
-        target_id = target.id
-        target_name = target.first_name
-        if not ctx.args:
-            await update.message.reply_text("❌ مقدار رو بنویس: /gift <amount>")
-            return
-        try:
-            amount = int(ctx.args[0])
-        except ValueError:
-            await update.message.reply_text("❌ مقدار معتبر بده.")
-            return
-        msg = send_gift(user_id, target_id, amount)
-        await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
-        return
-    if len(ctx.args) >= 2:
-        try:
-            target_id = int(ctx.args[0])
-            amount = int(ctx.args[1])
-        except ValueError:
-            await update.message.reply_text("❌ اعداد معتبر بده.")
-            return
-        msg = send_gift(user_id, target_id, amount)
-        await update.message.reply_text(msg)
-        return
-    await update.message.reply_text("🎁 /gift 500 یا ریپلای + /gift 500")
-
-
-async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    rows = get_gift_history(user_id, 10)
-    if not rows:
-        await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
-        return
-    text = "🎁 تاریخچه:\n\n"
-    for from_id, to_id, amount, date in rows:
-        if from_id == user_id:
-            text += f"📤 تو → {to_id}: {amount:,}\n"
-        else:
-            text += f"📥 {from_id} → تو: {amount:,}\n"
-    await update.message.reply_text(text)
-
-
-async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    rows = get_top_givers(10)
-    if not rows:
-        await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
-        return
-    text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
-    for i, (uid, total) in enumerate(rows, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {uid} — {total:,}\n"
-    await update.message.reply_text(text)
-
-
-async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    custom = get_help("general")
-    text = "🎮 BANG BANG RP — راهنما\n━━━━━━━━━━━━━━━━━━━\n\n"
-    if custom:
-        text += f"{custom}\n\n"
-    text += "👤 /profile /select /coins\n"
-    text += "🏪 /shop /upgrade\n"
-    text += "⚔️ /battle /pvp /team /coop\n"
-    text += "🏰 /guild\n"
-    text += "📜 /quests /leaderboard\n"
-    text += "🎁 /gift\n"
-    text += "🗺️ /world\n"
-    text += "❓ /help\n"
-    await update.message.reply_text(text)
 async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not is_admin(user_id):
@@ -2206,6 +2162,77 @@ async def viewquests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key, desc, target, reward in quests:
         text += f"🔹 {key}: {target} — {reward:,}\n"
     await update.message.reply_text(text)
+async def gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if update.message.reply_to_message:
+        target = update.message.reply_to_message.from_user
+        target_id = target.id
+        target_name = target.first_name
+        if not ctx.args:
+            await update.message.reply_text("❌ مقدار رو بنویس: /gift <amount>")
+            return
+        try:
+            amount = int(ctx.args[0])
+        except ValueError:
+            await update.message.reply_text("❌ مقدار معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(f"🎁 به {target_name}:\n{msg}")
+        return
+    if len(ctx.args) >= 2:
+        try:
+            target_id = int(ctx.args[0])
+            amount = int(ctx.args[1])
+        except ValueError:
+            await update.message.reply_text("❌ اعداد معتبر بده.")
+            return
+        msg = send_gift(user_id, target_id, amount)
+        await update.message.reply_text(msg)
+        return
+    await update.message.reply_text("🎁 /gift 500 یا ریپلای + /gift 500")
+
+
+async def gift_history(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    rows = get_gift_history(user_id, 10)
+    if not rows:
+        await update.message.reply_text("📭 هیچ هدیه‌ای نداری.")
+        return
+    text = "🎁 تاریخچه:\n\n"
+    for from_id, to_id, amount, date in rows:
+        if from_id == user_id:
+            text += f"📤 تو → {to_id}: {amount:,}\n"
+        else:
+            text += f"📥 {from_id} → تو: {amount:,}\n"
+    await update.message.reply_text(text)
+
+
+async def top_givers(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    rows = get_top_givers(10)
+    if not rows:
+        await update.message.reply_text("📭 هنوز کسی هدیه نداده.")
+        return
+    text = "🏆 برترین هدیه‌دهنده‌ها:\n\n"
+    for i, (uid, total) in enumerate(rows, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {uid} — {total:,}\n"
+    await update.message.reply_text(text)
+
+
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    custom = get_help("general")
+    text = "🎮 BANG BANG RP — راهنما\n━━━━━━━━━━━━━━━━━━━\n\n"
+    if custom:
+        text += f"{custom}\n\n"
+    text += "👤 /profile /select /coins\n"
+    text += "🏪 /shop /upgrade\n"
+    text += "⚔️ /battle /pvp /team /coop\n"
+    text += "🏰 /guild\n"
+    text += "📜 /quests /leaderboard\n"
+    text += "🎁 /gift\n"
+    text += "🗺️ /world\n"
+    text += "❓ /help\n"
+    await update.message.reply_text(text)
 
 
 async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2228,6 +2255,8 @@ async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     total = reset_all_players()
     await update.message.reply_text(f"💥 {total:,} پلیر ریست شدند!")
+
+
 async def post_init(app):
     commands_list = [
         BotCommand("start", "شروع بازی"),
@@ -2327,12 +2356,12 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
 
-    # 🆕 Shop Anime Selectors (مهم: قبل از shop_callback)
+    # 🆕 Shop Anime Selectors (قبل از shop_callback)
     app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
     app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
     app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
 
-    # Shop عمومی
+    # Shop
     app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
     app.add_handler(CallbackQueryHandler(buy_ability_callback, pattern="^buyab_"))
     app.add_handler(CallbackQueryHandler(buy_item_callback, pattern="^buyit_"))
@@ -2379,4 +2408,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()   
