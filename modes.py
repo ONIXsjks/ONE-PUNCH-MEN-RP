@@ -87,6 +87,40 @@ async def castle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     data = q.data
 
+    # 🆕 اگر کاربر روی دکمه‌ی «قلعه» توی منوی modes زد
+    if data == "modes_castle":
+        user_id = q.from_user.id
+        char = get_active_character(user_id)
+        if not char:
+            await q.edit_message_text("❌ کاراکتر فعال نداری. /start بزن.")
+            return
+        session_id = f"castle_{user_id}"
+        CASTLE_SESSIONS[session_id] = {
+            "host": user_id,
+            "players": {user_id: {"name": get_username(user_id), "dmg": 0}},
+            "wave": 0,
+            "castle_hp": 5000,
+            "castle_max_hp": 5000,
+            "started": False,
+            "last_wave_time": time.time(),
+        }
+        kb = [
+            [InlineKeyboardButton("⚔️ شروع دفاع", callback_data=f"castle_start_{session_id}")],
+            [InlineKeyboardButton("👥 دعوت دوستان", callback_data=f"castle_invite_{session_id}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="modes_back")],
+        ]
+        text = (
+            "🏰 **قلعه‌ی تو**\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            f"🏰 HP قلعه: {format_num(5000)}/5000\n"
+            f"👥 بازیکن‌ها: 1\n"
+            f"🌊 موج: 0\n\n"
+            "💡 هر ۱ ساعت و نیم، یه موج جدید میاد!\n"
+            "🎯 دوستات رو دعوت کن تا با هم دفاع کنین.\n"
+        )
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+        return
+
     if data == "modes_back":
         kb = [
             [InlineKeyboardButton("🏰 قلعه", callback_data="modes_castle")],
@@ -300,6 +334,37 @@ async def zombie_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
+
+    # 🆕 اگر کاربر روی دکمه‌ی «زامبی» توی منوی modes زد
+    if data == "modes_zombie":
+        user_id = q.from_user.id
+        char = get_active_character(user_id)
+        if not char:
+            await q.edit_message_text("❌ کاراکتر فعال نداری. /start بزن.")
+            return
+        ZOMBIE_SESSIONS[user_id] = {
+            "wave": 0,
+            "hp": char[5],
+            "max_hp": char[5],
+            "char": char,
+            "total_reward": 0,
+            "active": False,
+        }
+        kb = [
+            [InlineKeyboardButton("🧟 شروع موج ۱", callback_data=f"zombie_start_{user_id}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="modes_back")],
+        ]
+        text = (
+            "🧟 **زامبی مود (بقا)**\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            f"❤️ HP: {format_num(char[5])}/{format_num(char[5])}\n"
+            f"🌊 موج فعلی: 0\n"
+            f"💰 جایزه‌ی کل: 0\n\n"
+            "🎯 هر موج سخت‌تر، ولی جایزه بیشتر!\n"
+            "🛑 سقف جایزه هر موج: 700,000\n"
+        )
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+        return
 
     if data == "modes_back":
         kb = [
@@ -531,6 +596,35 @@ async def tower_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
+
+    # 🆕 اگر کاربر روی دکمه‌ی «برج» توی منوی modes زد
+    if data == "modes_tower":
+        user_id = q.from_user.id
+        char = get_active_character(user_id)
+        if not char:
+            await q.edit_message_text("❌ کاراکتر فعال نداری. /start بزن.")
+            return
+        TOWER_SESSIONS[user_id] = {
+            "floor": 0,
+            "hp": char[5],
+            "max_hp": char[5],
+            "char": char,
+            "total_reward": 0,
+        }
+        kb = [
+            [InlineKeyboardButton("🗼 شروع طبقه ۱", callback_data=f"tower_start_{user_id}")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="modes_back")],
+        ]
+        text = (
+            "🗼 **برج بی‌پایان**\n"
+            "━━━━━━━━━━━━━━━━━━━\n\n"
+            "🎯 طبقه به طبقه بالا برو\n"
+            "👹 هر طبقه: ۲ باس\n"
+            "🌟 هر ۳ طبقه: باس کوچیک (+50K سکه)\n"
+            "💰 هر طبقه: +100K سکه\n"
+        )
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+        return
 
     if data == "modes_back":
         kb = [
