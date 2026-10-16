@@ -144,7 +144,7 @@ def init_db():
         found_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # اضافه کردن ستون spam_state به جدول قدیمی (اگه نبود)
+    # اضافه کردن ستون spam_state به جدول قدیمی
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
         print("✅ Column spam_state added")
@@ -316,6 +316,29 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
+
+
+# ============ BUFFS ============
+
+def get_user_buffs(user_id, char_name):
+    """گرفتن باف‌های خریداری‌شده کاربر"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT buff_name FROM buffs WHERE user_id=? AND char_name=?",
+              (user_id, char_name))
+    rows = c.fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+
+def remove_user_buff(user_id, char_name, buff_name):
+    """حذف باف بعد از استفاده (۱ بار مصرف)"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM buffs WHERE user_id=? AND char_name=? AND buff_name=?",
+              (user_id, char_name, buff_name))
+    conn.commit()
+    conn.close()
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -822,3 +845,36 @@ def get_default_help(key):
         "general": "برای راهنما: /help",
     }
     return defaults.get(key, "")
+
+
+# ============ OWNER RESET ============
+
+def reset_all_players():
+    """ریست کوین و کاراکترهای همه پلیرها"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    try:
+        c.execute("SELECT COUNT(*) FROM users")
+        total = c.fetchone()[0]
+        c.execute("UPDATE users SET coins = 0")
+        c.execute("DELETE FROM characters")
+        c.execute("DELETE FROM abilities_owned")
+        c.execute("DELETE FROM buffs")
+        c.execute("DELETE FROM active_battles")
+        conn.commit()
+        return total
+    except Exception as e:
+        conn.rollback()
+        print(f"Reset all error: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def get_total_users_count():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM users")
+    count = c.fetchone()[0]
+    conn.close()
+    return count
