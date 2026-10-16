@@ -157,13 +157,13 @@ BOSSES_OPM = {
     "Demon Fish": {"display_name": "ماهی شیطانی", "hp": 2500, "atk": 150, "reward": 50000},
 
     # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000
-    "Sky King": {"display_name": "پادشاه آسمان", "hp": 4000, "atk": 250, "reward": 100000},
-    "Deep Sea King": {"display_name": "پادشاه اعماق دریا", "hp": 6000, "atk": 350, "reward": 100000},
-    "Carnage Kabuto": {"display_name": "کارنیج کابوتو", "hp": 8000, "atk": 600, "reward": 100000},
-    "Elder Centipede": {"display_name": "هزارپای بزرگ", "hp": 9000, "atk": 500, "reward": 100000},
-    "Beefcake": {"display_name": "کیک‌گوشتی", "hp": 12000, "atk": 700, "reward": 100000},
+    "Sky King": {"display_name": "پادشاه آسمان", "hp": 8000, "atk": 500, "reward": 100000},
+    "Deep Sea King": {"display_name": "پادشاه اعماق دریا", "hp": 12000, "atk": 700, "reward": 100000},
+    "Carnage Kabuto": {"display_name": "کارنیج کابوتو", "hp": 16000, "atk": 1200, "reward": 100000},
+    "Elder Centipede": {"display_name": "هزارپای بزرگ", "hp": 18000, "atk": 1000, "reward": 100000},
+    "Beefcake": {"display_name": "کیک‌گوشتی", "hp": 24000, "atk": 1400, "reward": 100000},
 
     # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
-    "Monster Garou": {"display_name": "گارو هیولا", "hp": 80000, "atk": 2500, "reward": 500000},
-    "Saitama Phase 1": {"display_name": "سایتاما (فاز ۱)", "hp": 90000, "atk": 3000, "reward": 500000},
+    "Monster Garou": {"display_name": "گارو هیولا", "hp": 160000, "atk": 5000, "reward": 500000},
+    "Saitama Phase 1": {"display_name": "سایتاما (فاز ۱)", "hp": 180000, "atk": 6000, "reward": 500000},
 }
