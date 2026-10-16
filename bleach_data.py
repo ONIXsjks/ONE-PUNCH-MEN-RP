@@ -277,17 +277,17 @@ BLEACH_BOSSES = {
     "Adjuchas": {"display_name": "آدجوچاس", "hp": 1200, "atk": 90, "reward": 50000},
 
     # 🟡 متوسط (HP 5k-20k، ATK 300-800) — جایزه: 100,000
-    "Weak Vasto Lorde": {"display_name": "واستو لرد ضعیف", "hp": 2000, "atk": 150, "reward": 100000},
+    "Weak Vasto Lorde": {"display_name": "واستو لرد ضعیف", "hp": 4000, "atk": 300, "reward": 100000},
 
     # 🟠 قوی (HP 20k-50k، ATK 800-2k) — جایزه: 200,000
-    "Ulquiorra (Segunda Etapa)": {"display_name": "اولکویورا (مرحله دوم)", "hp": 40000, "atk": 2000, "reward": 200000},
-    "Ichigo (Vasto Lorde)": {"display_name": "ایچیگو (واستو لرد)", "hp": 45000, "atk": 2200, "reward": 200000},
-    "Yamamoto (Bankai)": {"display_name": "یاماموتو (بانکای)", "hp": 50000, "atk": 2400, "reward": 200000},
-    "Aizen (Final Form)": {"display_name": "آیزن (فرم نهایی)", "hp": 60000, "atk": 2500, "reward": 200000},
+    "Ulquiorra (Segunda Etapa)": {"display_name": "اولکویورا (مرحله دوم)", "hp": 80000, "atk": 4000, "reward": 200000},
+    "Ichigo (Vasto Lorde)": {"display_name": "ایچیگو (واستو لرد)", "hp": 90000, "atk": 4400, "reward": 200000},
+    "Yamamoto (Bankai)": {"display_name": "یاماموتو (بانکای)", "hp": 100000, "atk": 4800, "reward": 200000},
+    "Aizen (Final Form)": {"display_name": "آیزن (فرم نهایی)", "hp": 120000, "atk": 5000, "reward": 200000},
 
     # 🔴 افسانه‌ای (HP 50k+، ATK 2k+) — جایزه: 500,000
-    "Gerard Valkyrie": {"display_name": "جرارد (معجزه)", "hp": 85000, "atk": 2300, "reward": 500000},
-    "Yhwach (Soul King)": {"display_name": "یاوخ (پادشاه روح)", "hp": 100000, "atk": 2800, "reward": 500000},
+    "Gerard Valkyrie": {"display_name": "جرارد (معجزه)", "hp": 170000, "atk": 4600, "reward": 500000},
+    "Yhwach (Soul King)": {"display_name": "یاوخ (پادشاه روح)", "hp": 200000, "atk": 5600, "reward": 500000},
 }
 
 # ============================================================
