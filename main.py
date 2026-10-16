@@ -82,8 +82,6 @@ from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd,
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
-
-
 def get_all_stats(char_name, rank):
     for stats_dict in [JJK_STATS, BLEACH_STATS, OPM_STATS,
                        AOT_STATS, BLACKCLOVER_STATS, BERSERK_STATS,
@@ -151,9 +149,7 @@ def get_battle_kb(char_name=None, user_id=None):
 
 
 def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
-    if current_turn is not None and user_id is not None:
-        if str(current_turn) != str(user_id):
-            return [[InlineKeyboardButton("⏳ منتظر نوبت...", callback_data=f"mb_wait_{session_id}")]]
+    # ✅ چک نوبت حذف شد — دکمه‌ها برای همه باز هستن
     kb = []
     if char_name:
         abs_data = get_character_abilities(char_name)
@@ -369,6 +365,24 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c = get_coins(update.effective_user.id)
     await update.message.reply_text(f"Coins: {c:,}")
+
+
+async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    chars = get_user_characters(user_id)
+    if not chars:
+        await update.message.reply_text("No characters.")
+        return
+    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
+    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    char_id = int(q.data.replace("sel_", ""))
+    set_active(q.from_user.id, char_id)
+    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
         [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
@@ -580,24 +594,6 @@ async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("از /shop استفاده کن!")
-
-
-async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    chars = get_user_characters(user_id)
-    if not chars:
-        await update.message.reply_text("No characters.")
-        return
-    kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
-    await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    char_id = int(q.data.replace("sel_", ""))
-    set_active(q.from_user.id, char_id)
-    await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 
 
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1270,11 +1266,16 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"],
                         players=[s["host"], user_id], team1=team1, team2=team2)
     battle = get_multi_battle(session_id)
+
+    # ✅ پیام توی گروه — با دکمه‌های کامل
+    current_turn = battle["current_turn"]
+    next_player, _ = get_player(battle, current_turn)
+    next_char = next_player["name"] if next_player else char_host[2]
+
+    kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
     await update.message.reply_text(
         build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(
-            session_id, char_host[2], battle["current_turn"], s["host"]
-        ))
+        reply_markup=InlineKeyboardMarkup(kb)
     )
 
 
@@ -1384,6 +1385,21 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not battle:
         await q.answer("نبرد فعال نیست!", show_alert=True)
         return
+
+    # 🆕 چک نوبت
+    if str(battle["current_turn"]) != str(user_id):
+        await q.answer("⏳ نوبت تو نیست! صبر کن...", show_alert=True)
+        return
+
+    # 🆕 چک اینکه کاربر توی نبرد هست
+    player, _ = get_player(battle, user_id)
+    if not player:
+        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
+        return
+    if player["hp"] <= 0:
+        await q.answer("💀 تو مرده‌ای!", show_alert=True)
+        return
+
     if action in ("ab1", "ab2", "ab3"):
         action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
         status, log = player_action(session_id, user_id, action_map[action])
@@ -1465,7 +1481,15 @@ async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     session_id = q.data.replace("mb_domain_", "")
-    status, log = player_action(session_id, q.from_user.id, "domain")
+    user_id = q.from_user.id
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.answer("نبرد نیست!", show_alert=True)
+        return
+    if str(battle["current_turn"]) != str(user_id):
+        await q.answer("⏳ نوبت تو نیست!", show_alert=True)
+        return
+    status, log = player_action(session_id, user_id, "domain")
     if status is None:
         await q.answer(log, show_alert=True)
         return
@@ -1487,7 +1511,15 @@ async def multi_bankai_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     session_id = q.data.replace("mb_bankai_", "")
-    status, log = player_action(session_id, q.from_user.id, "bankai")
+    user_id = q.from_user.id
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.answer("نبرد نیست!", show_alert=True)
+        return
+    if str(battle["current_turn"]) != str(user_id):
+        await q.answer("⏳ نوبت تو نیست!", show_alert=True)
+        return
+    status, log = player_action(session_id, user_id, "bankai")
     if status is None:
         await q.answer(log, show_alert=True)
         return
@@ -1544,8 +1576,6 @@ async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -1584,6 +1614,8 @@ async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -2053,7 +2085,6 @@ async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     ok, msg = reset_character(target_id)
     await update.message.reply_text(msg)
-# 🆕 EDIT QUEST — ادیت کوئست از تلگرام
 async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id):
         await update.message.reply_text("❌ فقط ادمین!")
@@ -2075,7 +2106,6 @@ async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     action = ctx.args[0]
 
     if action == "list":
-        from quests import QUESTS
         text = "📜 **کوئست‌های فعلی:**\n\n"
         for key, q in QUESTS.items():
             text += f"🔹 `{key}` — {q.get('desc', '?')} (هدف: {q.get('target', '?')}, جایزه: {q.get('reward', '?')})\n"
@@ -2087,7 +2117,6 @@ async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Usage: /editquest show <key>")
             return
         key = ctx.args[1]
-        from quests import QUESTS
         if key not in QUESTS:
             await update.message.reply_text("❌ پیدا نشد.")
             return
@@ -2113,7 +2142,6 @@ async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ اعداد معتبر بده.")
             return
         try:
-            from quests import QUESTS
             QUESTS[key] = {"desc": f"کوئست {key}", "target": target, "reward": reward}
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
@@ -2143,7 +2171,6 @@ async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             c.execute("DELETE FROM custom_quests WHERE key=?", (key,))
             conn.commit()
             conn.close()
-            from quests import QUESTS
             if key in QUESTS:
                 del QUESTS[key]
             await update.message.reply_text(f"🗑️ کوئست `{key}` حذف شد.")
@@ -2158,7 +2185,6 @@ async def editquest_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         key = ctx.args[1]
         desc = " ".join(ctx.args[2:])
         try:
-            from quests import QUESTS
             if key in QUESTS:
                 QUESTS[key]["desc"] = desc
             conn = sqlite3.connect(DB_NAME)
@@ -2476,7 +2502,7 @@ def main():
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
 
-    # 🆕 MODES Commands
+    # 🆕 MODES
     app.add_handler(CommandHandler("modes", modes_cmd))
     app.add_handler(CommandHandler("castle", castle_cmd))
     app.add_handler(CommandHandler("joincastle", join_castle_cmd))
@@ -2494,7 +2520,7 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
 
-    # 🆕 Shop Anime Selectors
+    # Shop Anime Selectors
     app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
     app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
     app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
@@ -2541,7 +2567,7 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # 🆕 Modes Callbacks
+    # Modes Callbacks
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
