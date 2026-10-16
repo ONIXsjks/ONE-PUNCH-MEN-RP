@@ -2567,11 +2567,18 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # Modes Callbacks
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
-    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
-    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
+    # Modes Menu
+app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
+app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
+app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
+
+# Modes Game Callbacks
+app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
+app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
+app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
+
+# Modes Back
+app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
 
     print("🤖 Bot Started!")
     app.run_polling()
