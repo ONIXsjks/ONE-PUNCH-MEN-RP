@@ -21,7 +21,7 @@ from opm_data import (
 )
 
 # ============================================================
-# IMPORTS — New Animes (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man)
+# IMPORTS — New Animes (5 first)
 # ============================================================
 from aot_data import (
     CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
@@ -46,6 +46,19 @@ from demonslayer_data import (
 from chainsawman_data import (
     CHARACTERS_CHAINSAWMAN, CHAR_PRICES_CHAINSAWMAN, ABILITIES_CHAINSAWMAN,
     CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER
+)
+
+# ============================================================
+# IMPORTS — New Animes (Naruto + SDS)
+# ============================================================
+from naruto_data import (
+    CHARACTERS_NARUTO, CHAR_PRICES_NARUTO, ABILITIES_NARUTO,
+    NARUTO_BOSSES, NARUTO_FODDER
+)
+
+from sevendeadlysins_data import (
+    CHARACTERS_SDS, CHAR_PRICES_SDS, ABILITIES_SDS,
+    SDS_BOSSES, SDS_FODDER
 )
 
 # ============================================================
@@ -203,7 +216,7 @@ BUFF_FA = {
 }
 
 # ============================================================
-# MERGE — CHARACTERS (همه ۸ انیمه)
+# MERGE — CHARACTERS (همه ۱۰ انیمه)
 # ============================================================
 CHARACTERS = {}
 
@@ -223,7 +236,7 @@ for rank, chars in CHARACTERS_OPM.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# --- انیمه‌های جدید ---
+# --- ۵ انیمه اول جدید ---
 for rank, chars in CHARACTERS_AOT.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
@@ -249,6 +262,17 @@ for rank, chars in CHARACTERS_CHAINSAWMAN.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
+# --- Naruto + SDS ---
+for rank, chars in CHARACTERS_NARUTO.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_SDS.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
 # ============================================================
 # MERGE — CHAR_PRICES
 # ============================================================
@@ -257,7 +281,7 @@ CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
 # ============================================================
-# MERGE — BOSSES (همه ۸ انیمه)
+# MERGE — BOSSES (همه ۱۰ انیمه)
 # ============================================================
 BOSSES = {}
 
@@ -269,7 +293,7 @@ for key, val in BOSSES_JJK.items():
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
-# --- انیمه‌های جدید ---
+# --- ۵ انیمه اول جدید ---
 for key, val in AOT_BOSSES.items():
     BOSSES[key] = val
 for key, val in BLACKCLOVER_BOSSES.items():
@@ -279,6 +303,12 @@ for key, val in BERSERK_BOSSES.items():
 for key, val in DEMONSLAYER_BOSSES.items():
     BOSSES[key] = val
 for key, val in CHAINSAWMAN_BOSSES.items():
+    BOSSES[key] = val
+
+# --- Naruto + SDS ---
+for key, val in NARUTO_BOSSES.items():
+    BOSSES[key] = val
+for key, val in SDS_BOSSES.items():
     BOSSES[key] = val
 
 # ============================================================
@@ -299,6 +329,8 @@ ABILITIES_3.update(ABILITIES_BLACKCLOVER)
 ABILITIES_3.update(ABILITIES_BERSERK)
 ABILITIES_3.update(ABILITIES_DEMONSLAYER)
 ABILITIES_3.update(ABILITIES_CHAINSAWMAN)
+ABILITIES_3.update(ABILITIES_NARUTO)
+ABILITIES_3.update(ABILITIES_SDS)
 
 # ============================================================
 # MERGE — DOMAINS / BANKAI
