@@ -11,9 +11,9 @@ from database import (get_world_progress, update_world_region, unlock_world_regi
 REGIONS = {
     "forest": {
         "name": "🌲 جنگل",
-        "level_range": "1-10",
-        "min_level": 1,
-        "rewards": {"min": 2000, "max": 10000},
+        "level_range": "60-100",
+        "min_level": 60,
+        "rewards": {"min": 20000, "max": 100000},
         "enemies": ["Small Shadow", "Cursed Spirit", "Shadow Wolf"],
         "boss": "Mahito",
         "unlock": None,
@@ -22,9 +22,9 @@ REGIONS = {
     },
     "desert": {
         "name": "🏜️ بیابان",
-        "level_range": "10-30",
-        "min_level": 10,
-        "rewards": {"min": 10000, "max": 40000},
+        "level_range": "100-150",
+        "min_level": 100,
+        "rewards": {"min": 100000, "max": 400000},
         "enemies": ["Demon Fish", "Sky King", "Cursed Worm"],
         "boss": "Mahoraga",
         "unlock": "forest",
@@ -33,9 +33,9 @@ REGIONS = {
     },
     "mountain": {
         "name": "🏔️ کوه",
-        "level_range": "30-60",
-        "min_level": 30,
-        "rewards": {"min": 40000, "max": 100000},
+        "level_range": "150-200",
+        "min_level": 150,
+        "rewards": {"min": 400000, "max": 1000000},
         "enemies": ["Adjuchas", "Weak Vasto Lorde", "Hell Spider"],
         "boss": "Sukuna Megumi",
         "unlock": "desert",
@@ -44,9 +44,9 @@ REGIONS = {
     },
     "volcano": {
         "name": "🌋 آتشفشان",
-        "level_range": "60-100",
-        "min_level": 60,
-        "rewards": {"min": 100000, "max": 200000},
+        "level_range": "200-300",
+        "min_level": 200,
+        "rewards": {"min": 1000000, "max": 2000000},
         "enemies": ["Goku Lv2", "Menos Grande", "Tiger Beast"],
         "boss": "Sukuna Heian",
         "unlock": "mountain",
@@ -55,9 +55,9 @@ REGIONS = {
     },
     "dungeon": {
         "name": "🏰 سیاه‌چال",
-        "level_range": "100+",
-        "min_level": 100,
-        "rewards": {"min": 200000, "max": 400000},
+        "level_range": "300+",
+        "min_level": 300,
+        "rewards": {"min": 2000000, "max": 4000000},
         "enemies": ["Goku Lv3", "Yhwach (Soul King)", "Aizen (Final Form)"],
         "boss": "Saitama Phase 1",
         "unlock": "volcano",
@@ -202,6 +202,8 @@ def can_unlock_region(user_id, region_key):
     if parent and parent not in unlocked:
         return False, f"❌ اول باید {get_region_name(parent)} رو باز کنی!"
     return True, "می‌تونی باز کنی"
+
+
 def get_player_region_view(user_id):
     unlocked = get_unlocked_regions(user_id)
     current = get_current_region(user_id)
