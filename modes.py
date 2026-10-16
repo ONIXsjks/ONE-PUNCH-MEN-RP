@@ -6,13 +6,8 @@ import random
 import time
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from database import (add_coins, get_coins, get_battle, create_battle,
-                      get_battle, update_battle, end_battle, get_active_character,
-                      get_username, get_user_buffs)
-from config import (ABILITIES_3, ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM,
-                    ABILITIES_AOT, ABILITIES_BLACKCLOVER, ABILITIES_BERSERK,
-                    ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN,
-                    ABILITIES_NARUTO, ABILITIES_SDS)
+from database import (add_coins, get_coins, get_username, get_user_buffs)
+from characters import get_active_character
 
 
 # ============================================================
@@ -156,7 +151,6 @@ async def castle_start_wave(q, session_id):
     session = CASTLE_SESSIONS[session_id]
     wave = session["wave"]
 
-    # HP دشمن هر موج +50%
     enemy_hp = int(1000 * (1.5 ** (wave - 1)))
     enemy_atk = int(50 * (1.4 ** (wave - 1)))
 
@@ -208,11 +202,9 @@ async def castle_player_attack(q, session_id, user_id):
     )
 
     if session["enemy_hp"] <= 0:
-        # موج تموم شد
         wave = session["wave"]
         reward_pool = int(5000 * (1.6 ** (wave - 1)))
 
-        # تقسیم جایزه بر اساس دمیج
         total_dmg = sum(p["dmg"] for p in session["players"].values())
         if total_dmg <= 0:
             total_dmg = 1
@@ -237,7 +229,6 @@ async def castle_player_attack(q, session_id, user_id):
             await q.message.reply_text(reward_text, reply_markup=InlineKeyboardMarkup(kb))
         return
 
-    # دشمن حمله می‌کنه
     enemy_dmg = session["enemy_atk"]
     session["castle_hp"] -= enemy_dmg
 
@@ -268,6 +259,8 @@ async def castle_player_attack(q, session_id, user_id):
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 # ============================================================
 # 🧟 ZOMBIE SURVIVAL
 # ============================================================
@@ -352,7 +345,6 @@ async def zombie_start_wave(q, user_id):
     session["wave"] += 1
     wave = session["wave"]
 
-    # HP زامبی: هر موج +10%
     zombie_hp = int(1000 * (1.1 ** (wave - 1)))
     zombie_atk = int(50 * (1.1 ** (wave - 1)))
 
@@ -360,7 +352,6 @@ async def zombie_start_wave(q, user_id):
     session["zombie_max_hp"] = zombie_hp
     session["zombie_atk"] = zombie_atk
 
-    # جایزه: هر موج +10%، سقف 700,000
     base_reward = 5000
     reward = min(700000, int(base_reward * (1.1 ** (wave - 1))))
     session["wave_reward"] = reward
@@ -400,12 +391,10 @@ async def zombie_attack(q, user_id):
     text = f"⚔️ حمله! (-{format_num(dmg)} HP به زامبی)\n\n"
 
     if session["zombie_hp"] <= 0:
-        # زامبی کشته شد
         reward = session["wave_reward"]
         add_coins(user_id, reward)
         session["total_reward"] += reward
 
-        # ۴۰٪ HP برگرده
         heal = int(session["max_hp"] * 0.4)
         session["hp"] = min(session["max_hp"], session["hp"] + heal)
 
@@ -427,7 +416,6 @@ async def zombie_attack(q, user_id):
             await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
         return
 
-    # زامبی حمله می‌کنه
     z_dmg = int(session["zombie_atk"] * random.uniform(0.9, 1.2))
     session["hp"] -= z_dmg
 
@@ -469,7 +457,6 @@ async def zombie_heal(q, user_id):
         await q.answer("❌ سشن پیدا نشد.", show_alert=True)
         return
 
-    # آیتم HP
     heal = int(session["max_hp"] * 0.3)
     session["hp"] = min(session["max_hp"], session["hp"] + heal)
 
@@ -692,7 +679,6 @@ async def tower_attack(q, user_id):
                 await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
             return
 
-    # دشمن حمله
     e_dmg = int(session["enemy_atk"] * random.uniform(0.9, 1.2))
     session["hp"] -= e_dmg
 
