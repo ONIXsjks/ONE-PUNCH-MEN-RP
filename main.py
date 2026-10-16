@@ -1266,12 +1266,9 @@ async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"],
                         players=[s["host"], user_id], team1=team1, team2=team2)
     battle = get_multi_battle(session_id)
-
-    # ✅ پیام توی گروه — با دکمه‌های کامل
     current_turn = battle["current_turn"]
     next_player, _ = get_player(battle, current_turn)
     next_char = next_player["name"] if next_player else char_host[2]
-
     kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
     await update.message.reply_text(
         build_battle_view(battle),
@@ -1385,12 +1382,10 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.answer("نبرد فعال نیست!", show_alert=True)
         return
 
-    # 🆕 چک نوبت
     if str(battle["current_turn"]) != str(user_id):
         await q.answer("⏳ نوبت تو نیست! صبر کن...", show_alert=True)
         return
 
-    # 🆕 چک اینکه کاربر توی نبرد هست
     player, _ = get_player(battle, user_id)
     if not player:
         await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
@@ -1398,7 +1393,8 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if player["hp"] <= 0:
         await q.answer("💀 تو مرده‌ای!", show_alert=True)
         return
-       await q.answer()
+
+    await q.answer()
 
     if action in ("ab1", "ab2", "ab3"):
         action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
@@ -1479,7 +1475,6 @@ async def multi_skip_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
-    await q.answer()
     session_id = q.data.replace("mb_domain_", "")
     user_id = q.from_user.id
     battle = get_multi_battle(session_id)
@@ -1489,6 +1484,7 @@ async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if str(battle["current_turn"]) != str(user_id):
         await q.answer("⏳ نوبت تو نیست!", show_alert=True)
         return
+    await q.answer()
     status, log = player_action(session_id, user_id, "domain")
     if status is None:
         await q.answer(log, show_alert=True)
@@ -1509,7 +1505,6 @@ async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def multi_bankai_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
-    await q.answer()
     session_id = q.data.replace("mb_bankai_", "")
     user_id = q.from_user.id
     battle = get_multi_battle(session_id)
@@ -1519,6 +1514,7 @@ async def multi_bankai_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if str(battle["current_turn"]) != str(user_id):
         await q.answer("⏳ نوبت تو نیست!", show_alert=True)
         return
+    await q.answer()
     status, log = player_action(session_id, user_id, "bankai")
     if status is None:
         await q.answer(log, show_alert=True)
@@ -2442,7 +2438,7 @@ def main():
 
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
-    # Commands
+    # ============ COMMANDS ============
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("profile", profile))
     app.add_handler(CommandHandler("coins", coins))
@@ -2502,20 +2498,21 @@ def main():
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
 
-    # 🆕 MODES
+    # 🆕 MODES Commands
     app.add_handler(CommandHandler("modes", modes_cmd))
     app.add_handler(CommandHandler("castle", castle_cmd))
     app.add_handler(CommandHandler("joincastle", join_castle_cmd))
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
 
-    # Message Handler for setcharimage
+    # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(
         filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
         setcharimage_cmd
     ))
 
-    # Callbacks
+    # ============ CALLBACK HANDLERS ============
+    # Start / Profile / Select
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
@@ -2567,18 +2564,18 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # Modes Menu
-app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
-app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
-app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
+    # 🆕 Modes Menu
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
 
-# Modes Game Callbacks
-app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
-app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
-app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
+    # Modes Game Callbacks
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
 
-# Modes Back
-app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
+    # Modes Back
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
 
     print("🤖 Bot Started!")
     app.run_polling()
