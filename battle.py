@@ -15,7 +15,6 @@ from database import (add_coins, get_battle, update_battle, end_battle,
 # HELPER — پیدا کردن اطلاعات باس
 # ============================================================
 def get_boss_data(boss_name):
-    # 🆕 اگه باس Survival بود، یه ATK و HP پیش‌فرض بده تا ATK 0 نشون نده
     if "Survival" in boss_name:
         return {"display_name": boss_name, "atk": 150, "hp": 10000, "reward": 1000}
         
@@ -219,6 +218,8 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
 
     return php, bhp, text
+
+
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -226,13 +227,11 @@ def player_attack(battle, char):
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    # 🆕 کم کردن دمیج کاراکترهای JJK (۲۰٪ کمتر)
     if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
         dmg, crit = roll_damage(char[6] * 0.8, 0, 0)
     else:
         dmg, crit = roll_damage(char[6], 0, 0)
 
-    # 🆕 Arise Bonus
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
         dmg += shadow_bonus
@@ -331,6 +330,7 @@ def player_ability(battle, char, ability_name):
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
     abilities = ABILITIES_3.get(char_name, {})
+    extra_text = ""
 
     # 🆕 چک کردن انرژی نفرینی برای JJK
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
@@ -349,6 +349,11 @@ def player_ability(battle, char, ability_name):
             cost = JJK_CE_COST_ABILITY_2
         elif abilities and abilities.get("ability_3", {}).get("name") == ability_name:
             cost = JJK_CE_COST_ABILITY_3
+
+        # 🆕 اضافه شدن هزینه بر اساس لول (هر ۱۰ لول = ۲ انرژی بیشتر)
+        char_level = char[4]
+        level_penalty = (char_level // 10) * 2
+        cost += level_penalty
             
         if ce < cost:
             # 🆕 اگه انرژی کم بود، از HP کم میشه (هر ۱ انرژی = ۱۰ HP)
@@ -368,6 +373,8 @@ def player_ability(battle, char, ability_name):
             conn.close()
             extra_text = ""
 
+        battle["php"] = php # ذخیره HP جدید
+
     # ========== DOMAIN (×۲.۵ + فریز) ==========
     if ability_name == "DOMAIN":
         if battle.get("domain_used", 0) >= 1:
@@ -382,7 +389,6 @@ def player_ability(battle, char, ability_name):
         effects = domain.get("effects", {})
         battle["domain_atk_boost"] = effects.get("atk_boost", 0)
 
-        # 🆕 دمیج گسترش قلمرو بر اساس ATK کاراکتر (۲.۵ برابر)
         dmg = int(char[6] * 2.5)
         bhp = max(0, bhp - dmg)
         text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26)
@@ -481,7 +487,6 @@ def player_ability(battle, char, ability_name):
 
     mult = found_ab.get("mult", 3)
     dmg = int(char[6] * mult)
-    # 🆕 Arise Bonus
     if char_name == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char_name)
         dmg += shadow_bonus
@@ -517,7 +522,7 @@ def player_ability(battle, char, ability_name):
         return "lost", text, battle
     return "active", text, battle
 
-# 🆕 تابع فرم گوکو (فقط مخصوص سان گوکو)
+# 🆕 تابع فرم گوکو
 def goku_transform(battle, char):
     current_form = battle.get("goku_form", 0)
     if current_form >= 4:
@@ -533,8 +538,6 @@ def goku_transform(battle, char):
     }
     
     boost = boosts[new_form]
-    
-    # اعمال تغییرات توی نبرد
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
     battle["goku_form"] = new_form
     
@@ -793,10 +796,10 @@ def finish_battle(uid, boss_name, won):
             
         add_coins(uid, reward)
 
-        # 🆕 برگشت انرژی نفرینی بعد از برد (۲۰ واحد)
+        # 🆕 برگشت کامل انرژی نفرینی بعد از برد
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = MIN(max_cursed_energy, cursed_energy + 20) WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
         conn.commit()
         conn.close()
 
@@ -823,10 +826,10 @@ def finish_battle(uid, boss_name, won):
             conn.commit()
             conn.close()
         
-        # 🆕 برگشت انرژی نفرینی بعد از باخت (۱۰ واحد)
+        # 🆕 برگشت کامل انرژی نفرینی بعد از باخت
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = MIN(max_cursed_energy, cursed_energy + 10) WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
         conn.commit()
         conn.close()
         
