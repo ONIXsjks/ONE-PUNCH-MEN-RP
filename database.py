@@ -144,7 +144,6 @@ def init_db():
         found_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # 🆕 جدول سایه‌ها (Arise System)
     c.execute("""CREATE TABLE IF NOT EXISTS shadows (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
@@ -154,17 +153,24 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # اضافه کردن ستون spam_state به جدول قدیمی
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
         print("✅ Column spam_state added")
     except sqlite3.OperationalError:
         pass
 
+    # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
+    try:
+        c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
+        print("✅ King renamed to Harley Quinn in DB")
+    except Exception as e:
+        print(f"Rename DB error: {e}")
+
     conn.commit()
     conn.close()
-
-
 # ============ USERS ============
 
 def get_user(user_id, username=None):
@@ -303,7 +309,6 @@ def get_abilities(user_id, char_name):
 
 
 def remove_user_ability(user_id, char_name, ability_name):
-    """🆕 حذف Ability بعد از مصرف (۱ بار مصرف)"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("DELETE FROM abilities_owned WHERE user_id=? AND char_name=? AND ability_name=?",
@@ -341,7 +346,6 @@ def use_item(user_id, item_name):
 # ============ BUFFS ============
 
 def get_user_buffs(user_id, char_name):
-    """گرفتن باف‌های خریداری‌شده کاربر"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT buff_name FROM buffs WHERE user_id=? AND char_name=?",
@@ -352,7 +356,6 @@ def get_user_buffs(user_id, char_name):
 
 
 def remove_user_buff(user_id, char_name, buff_name):
-    """حذف باف بعد از استفاده (۱ بار مصرف)"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("DELETE FROM buffs WHERE user_id=? AND char_name=? AND buff_name=?",
@@ -364,7 +367,6 @@ def remove_user_buff(user_id, char_name, buff_name):
 # ============ 🆕 SHADOWS (Arise System) ============
 
 def add_shadow(user_id, char_name, shadow_name):
-    """اضافه کردن سایه جدید (بعد از کشتن باس)"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""INSERT INTO shadows (user_id, char_name, shadow_name, atk_bonus)
@@ -374,7 +376,6 @@ def add_shadow(user_id, char_name, shadow_name):
 
 
 def get_user_shadows(user_id, char_name):
-    """گرفتن لیست سایه‌های کاربر"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT shadow_name, atk_bonus FROM shadows
@@ -385,7 +386,6 @@ def get_user_shadows(user_id, char_name):
 
 
 def get_shadows_count(user_id, char_name):
-    """تعداد سایه‌های کاربر"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT COUNT(*) FROM shadows
@@ -396,7 +396,6 @@ def get_shadows_count(user_id, char_name):
 
 
 def get_shadows_atk_bonus(user_id, char_name):
-    """مجموع ATK سایه‌ها"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT COALESCE(SUM(atk_bonus), 0) FROM shadows
@@ -915,7 +914,6 @@ def get_default_help(key):
 # ============ OWNER RESET ============
 
 def reset_all_players():
-    """ریست کوین و کاراکترهای همه پلیرها"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     try:
@@ -926,7 +924,7 @@ def reset_all_players():
         c.execute("DELETE FROM abilities_owned")
         c.execute("DELETE FROM buffs")
         c.execute("DELETE FROM active_battles")
-        c.execute("DELETE FROM shadows")  # 🆕 ریست سایه‌ها
+        c.execute("DELETE FROM shadows")
         conn.commit()
         return total
     except Exception as e:
@@ -944,8 +942,10 @@ def get_total_users_count():
     count = c.fetchone()[0]
     conn.close()
     return count
+
+
+# 🆕 تابعی که ارور می‌داد و بهش نیاز بود
 def get_shadow_slots(user_id, char_name):
-    """گرفتن تعداد اسلات‌های سایه‌ی کاربر"""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""SELECT COUNT(*) FROM shadows
