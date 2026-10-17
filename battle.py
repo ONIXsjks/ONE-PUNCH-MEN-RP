@@ -1,88 +1,67 @@
 import random
-from config import (BOSSES, ABILITIES, ITEMS, ABILITY_FA, ITEM_FA,
-                    ABILITIES_3, DOMAINS, BANKAI, BUFFS, BUFF_FA)
-from database import add_coins, update_battle
-from images import IMAGES
-from quests import update_quest_progress
-from jjk_data import (ABILITIES_JJK, DOMAINS_JJK, BOSSES_JJK, FODDER_JJK)
-from bleach_data import BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER
-from opm_data import BOSSES_OPM
-
-# 🆕 ۵ انیمه جدید
-from aot_data import AOT_BOSSES, AOT_FODDER
-from blackclover_data import BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER
-from berserk_data import BERSERK_BOSSES, BERSERK_FODDER
-from demonslayer_data import DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER
-from chainsawman_data import CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER
+import sqlite3
+from config import (DB_NAME, ABILITIES_3, DOMAINS, BANKAI, ABILITIES, BUFFS, ITEMS,
+                    DOMAINS_JJK, BLEACH_BANKAI,
+                    BOSSES, BOSSES_JJK, BLEACH_BOSSES, BOSSES_OPM,
+                    AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
+                    DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES)
+from database import (add_coins, get_battle, update_battle, end_battle,
+                      get_coins, get_shadows_atk_bonus)
 
 
+# ============================================================
+# HELPER — پیدا کردن اطلاعات باس
+# ============================================================
 def get_boss_data(boss_name):
-    if boss_name in BLEACH_BOSSES:
-        data = BLEACH_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BLEACH_FODDER:
-        data = BLEACH_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES_JJK:
-        data = BOSSES_JJK[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in FODDER_JJK:
-        data = FODDER_JJK[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES_OPM:
-        data = BOSSES_OPM[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BOSSES:
-        data = BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data.get("reward", 5000),
-                "display_name": boss_name}
-    # 🆕 ۵ انیمه جدید
-    if boss_name in AOT_BOSSES:
-        data = AOT_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in AOT_FODDER:
-        data = AOT_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BLACKCLOVER_BOSSES:
-        data = BLACKCLOVER_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BLACKCLOVER_FODDER:
-        data = BLACKCLOVER_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BERSERK_BOSSES:
-        data = BERSERK_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in BERSERK_FODDER:
-        data = BERSERK_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in DEMONSLAYER_BOSSES:
-        data = DEMONSLAYER_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in DEMONSLAYER_FODDER:
-        data = DEMONSLAYER_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in CHAINSAWMAN_BOSSES:
-        data = CHAINSAWMAN_BOSSES[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
-    if boss_name in CHAINSAWMAN_FODDER:
-        data = CHAINSAWMAN_FODDER[boss_name]
-        return {"hp": data["hp"], "atk": data["atk"], "reward": data["reward"],
-                "display_name": data.get("display_name", boss_name)}
+    for bosses in [BLEACH_BOSSES, BOSSES_JJK, BOSSES_OPM, BOSSES,
+                   AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
+                   DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES]:
+        if boss_name in bosses:
+            return bosses[boss_name]
     return None
+
+
+# ============================================================
+# HELPER — نمایش
+# ============================================================
+def format_num(n):
+    try:
+        return f"{int(n):,}"
+    except Exception:
+        return str(n)
+
+
+def hp_bar(current, maximum, length=10):
+    if maximum <= 0:
+        return "💔 [" + "░" * length + "] ۰/۰"
+    pct = current / maximum
+    filled = int(pct * length)
+    filled = max(0, min(length, filled))
+    empty = length - filled
+    bar = "█" * filled + "░" * empty
+    if pct > 0.6:
+        icon = "❤️"
+    elif pct > 0.3:
+        icon = "🧡"
+    else:
+        icon = "💔"
+    return f"{icon} [{bar}] {format_num(current)}/{format_num(maximum)}"
+
+
+def box_title(text, width=26):
+    pad = width - len(text)
+    if pad < 0:
+        text = text[:width]
+        pad = 0
+    left = pad // 2
+    right = pad - left
+    return f"╔{'═' * width}╗\n║{' ' * left}{text}{' ' * right}║\n╚{'═' * width}╝"
+
+
+def box_simple(text, width=24):
+    if len(text) > width - 2:
+        text = text[:width - 2]
+    return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
 
 
 def roll_damage(atk, defender_def=0, defender_defending=0):
@@ -106,46 +85,6 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
     if r < 0.7:
         return "special"
     return "defend"
-
-
-def hp_bar(current, maximum, length=10):
-    if maximum <= 0:
-        return "💔 [" + "░" * length + "] ۰/۰"
-    pct = current / maximum
-    filled = int(pct * length)
-    filled = max(0, min(length, filled))
-    empty = length - filled
-    bar = "█" * filled + "░" * empty
-    if pct > 0.6:
-        icon = "❤️"
-    elif pct > 0.3:
-        icon = "🧡"
-    else:
-        icon = "💔"
-    return f"{icon} [{bar}] {format_num(current)}/{format_num(maximum)}"
-
-
-def format_num(n):
-    try:
-        return f"{int(n):,}"
-    except Exception:
-        return str(n)
-
-
-def box_title(text, width=26):
-    pad = width - len(text)
-    if pad < 0:
-        text = text[:width]
-        pad = 0
-    left = pad // 2
-    right = pad - left
-    return f"╔{'═' * width}╗\n║{' ' * left}{text}{' ' * right}║\n╚{'═' * width}╝"
-
-
-def box_simple(text, width=24):
-    if len(text) > width - 2:
-        text = text[:width - 2]
-    return f"┌{'─' * width}┐\n│ {text.center(width - 2)} │\n└{'─' * width}┘"
 
 
 def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
@@ -282,6 +221,10 @@ def player_attack(battle, char):
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
     dmg, crit = roll_damage(char[6], 0, 0)
+    # 🆕 Arise Bonus
+    if char[2] == "Sung Jin-Woo":
+        shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
+        dmg += shadow_bonus
     atk_boost = battle.get("domain_atk_boost", 0)
     if atk_boost:
         dmg = int(dmg * (1 + atk_boost / 100))
@@ -483,13 +426,16 @@ def player_ability(battle, char, ability_name):
     if not found_ab:
         return "active", "❌ Ability پیدا نشد.", battle
 
-    # 🟣 Ultimate فقط ۱ بار
     if found_key == "ability_3":
         if battle.get("spam_state") == "purple_used":
             return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
 
     mult = found_ab.get("mult", 3)
     dmg = int(char[6] * mult)
+    # 🆕 Arise Bonus
+    if char_name == "Sung Jin-Woo":
+        shadow_bonus = get_shadows_atk_bonus(battle["uid"], char_name)
+        dmg += shadow_bonus
     bhp = max(0, bhp - dmg)
 
     if found_key == "ability_3":
@@ -524,7 +470,6 @@ def player_ability(battle, char, ability_name):
 
 
 def player_ability_v2(battle, char, action):
-    """Alias برای player_ability با action"""
     char_name = char[2]
     if action == "domain":
         return player_ability(battle, char, "DOMAIN")
@@ -538,7 +483,6 @@ def player_ability_v2(battle, char, action):
 
 
 def player_ability_shop(battle, char, ability_name):
-    """استفاده از Ability خریداری‌شده از شاپ"""
     boss = get_boss_data(battle["boss_name"])
     if not boss:
         return "active", "❌ باس پیدا نشد.", battle
@@ -596,7 +540,6 @@ def player_ability_shop(battle, char, ability_name):
 
 
 def player_buff_shop(battle, char, buff_name):
-    """استفاده از باف خریداری‌شده از شاپ"""
     boss = get_boss_data(battle["boss_name"])
     if not boss:
         return "active", "❌ باس پیدا نشد.", battle
@@ -643,6 +586,8 @@ def player_buff_shop(battle, char, buff_name):
     if php <= 0:
         return "lost", text, battle
     return "active", text, battle
+
+
 def player_item(battle, char, item_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -710,6 +655,12 @@ def build_battle_message(battle, char):
     text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n"
     text += f"╰{'─' * 25}╯"
 
+    # 🆕 Arise Bonus Display
+    if char[2] == "Sung Jin-Woo":
+        shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
+        if shadow_bonus > 0:
+            text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
+
     if battle.get("domain_active", 0) == 1:
         text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
     if battle.get("bankai_used", 0) >= 1:
@@ -728,13 +679,20 @@ def finish_battle(uid, boss_name, won):
         boss = get_boss_data(boss_name)
         reward = boss["reward"] if boss else 5000
         add_coins(uid, reward)
-        update_quest_progress(uid, "win_3_bosses")
-        update_quest_progress(uid, "win_5_bosses")
-        if boss_name == "Saitama Phase 1":
-            update_quest_progress(uid, "kill_saitama")
-        if boss_name.startswith("Goku"):
-            update_quest_progress(uid, "kill_goku")
 
+        # Quest progress
+        try:
+            from quests import update_quest_progress
+            update_quest_progress(uid, "win_3_bosses")
+            update_quest_progress(uid, "win_5_bosses")
+            if boss_name == "Saitama Phase 1":
+                update_quest_progress(uid, "kill_saitama")
+            if boss_name.startswith("Goku"):
+                update_quest_progress(uid, "kill_goku")
+        except Exception:
+            pass
+
+        # Guild XP
         try:
             from guild import give_guild_xp
             xp_amount = 5
