@@ -338,7 +338,6 @@ def player_ability(battle, char, ability_name):
     abilities = ABILITIES_3.get(char_name, {})
     extra_text = ""
 
-    # 🆕 اول چک میکنیم که آیا ۱ بار مصرفه و قبلا استفاده شده یا نه
     if ability_name == "DOMAIN":
         if battle.get("domain_used", 0) >= 1:
             return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
@@ -359,102 +358,71 @@ def player_ability(battle, char, ability_name):
         if battle.get("spam_state") == "purple_used":
             return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
 
-    # 🆕 حالا اگه مجاز بود، انرژی رو کم میکنیم (JJK، Bleach، Code Geass، One Piece)
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK or char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH or char_name in ABILITIES_CODEGEASS or char_name in ABILITIES_ONEPIECE:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-
+        
         is_jjk = char_name in DOMAINS_JJK or char_name in ABILITIES_JJK
         is_bleach = char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH
         is_geass = char_name in ABILITIES_CODEGEASS
         is_op = char_name in ABILITIES_ONEPIECE
-
+        
         cost = 0
         if is_jjk:
             c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-
-            if ability_name == "DOMAIN":
-                cost = JJK_CE_COST_DOMAIN
-            elif found_key == "ability_1":
-                cost = JJK_CE_COST_ABILITY_1
-            elif found_key == "ability_2":
-                cost = JJK_CE_COST_ABILITY_2
-            elif found_key == "ability_3":
-                cost = JJK_CE_COST_ABILITY_3
-
+            if ability_name == "DOMAIN": cost = JJK_CE_COST_DOMAIN
+            elif found_key == "ability_1": cost = JJK_CE_COST_ABILITY_1
+            elif found_key == "ability_2": cost = JJK_CE_COST_ABILITY_2
+            elif found_key == "ability_3": cost = JJK_CE_COST_ABILITY_3
         elif is_bleach:
             c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-
-            if ability_name == "BANKAI":
-                cost = BLEACH_REI_COST_BANKAI
-            elif found_key == "ability_1":
-                cost = BLEACH_REI_COST_ABILITY_1
-            elif found_key == "ability_2":
-                cost = BLEACH_REI_COST_ABILITY_2
-            elif found_key == "ability_3":
-                cost = BLEACH_REI_COST_ABILITY_3
-
+            if ability_name == "BANKAI": cost = BLEACH_REI_COST_BANKAI
+            elif found_key == "ability_1": cost = BLEACH_REI_COST_ABILITY_1
+            elif found_key == "ability_2": cost = BLEACH_REI_COST_ABILITY_2
+            elif found_key == "ability_3": cost = BLEACH_REI_COST_ABILITY_3
         elif is_geass:
             c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-
-            if ability_name == "ULTIMATE_GEASS":
-                cost = GEASS_COST_ULTIMATE
-            elif found_key == "ability_1":
-                cost = GEASS_COST_ABILITY_1
-            elif found_key == "ability_2":
-                cost = GEASS_COST_ABILITY_2
-            elif found_key == "ability_3":
-                cost = GEASS_COST_ABILITY_3
-
+            if ability_name == "ULTIMATE_GEASS": cost = GEASS_COST_ULTIMATE
+            elif found_key == "ability_1": cost = GEASS_COST_ABILITY_1
+            elif found_key == "ability_2": cost = GEASS_COST_ABILITY_2
+            elif found_key == "ability_3": cost = GEASS_COST_ABILITY_3
         elif is_op:
             c.execute("SELECT haki, max_haki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-
-            if found_key == "ability_1":
-                cost = HAKI_COST_ABILITY_1
-            elif found_key == "ability_2":
-                cost = HAKI_COST_ABILITY_2
-            elif found_key == "ability_3":
-                cost = HAKI_COST_ABILITY_3
+            if found_key == "ability_1": cost = HAKI_COST_ABILITY_1
+            elif found_key == "ability_2": cost = HAKI_COST_ABILITY_2
+            elif found_key == "ability_3": cost = HAKI_COST_ABILITY_3
 
         char_level = char[4]
         level_penalty = (char_level // 10) * 2
         cost += level_penalty
-
+            
         if energy < cost:
             hp_cost = (cost - energy) * 10
             if php <= hp_cost:
                 conn.close()
                 return "active", f"❌ نه انرژی داری نه HP کافی! (نیاز: {hp_cost} HP)", battle
-
+            
             php -= hp_cost
-            if is_jjk:
-                c.execute("UPDATE characters SET cursed_energy = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
-            elif is_bleach:
-                c.execute("UPDATE characters SET reiatsu = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
-            elif is_geass:
-                c.execute("UPDATE characters SET geass_power = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
-            else:
-                c.execute("UPDATE characters SET haki = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
+            if is_jjk: c.execute("UPDATE characters SET cursed_energy = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
+            elif is_bleach: c.execute("UPDATE characters SET reiatsu = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
+            elif is_geass: c.execute("UPDATE characters SET geass_power = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
+            else: c.execute("UPDATE characters SET haki = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
             conn.commit()
             conn.close()
             extra_text = f"🩸 **از HP خودت انرژی ساختی! (-{format_num(hp_cost)} HP)**\n\n"
         else:
-            if is_jjk:
-                c.execute("UPDATE characters SET cursed_energy = cursed_energy - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
-            elif is_bleach:
-                c.execute("UPDATE characters SET reiatsu = reiatsu - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
-            elif is_geass:
-                c.execute("UPDATE characters SET geass_power = geass_power - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
-            else:
-                c.execute("UPDATE characters SET haki = haki - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+            if is_jjk: c.execute("UPDATE characters SET cursed_energy = cursed_energy - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+            elif is_bleach: c.execute("UPDATE characters SET reiatsu = reiatsu - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+            elif is_geass: c.execute("UPDATE characters SET geass_power = geass_power - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+            else: c.execute("UPDATE characters SET haki = haki - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
             conn.commit()
             conn.close()
             extra_text = ""
@@ -651,7 +619,6 @@ def player_ability(battle, char, ability_name):
         return "lost", text, battle
     return "active", text, battle
 
-
 # 🆕 فرم گوکو
 def goku_transform(battle, char):
     current_form = battle.get("goku_form", 0)
@@ -672,6 +639,31 @@ def goku_transform(battle, char):
     battle["goku_form"] = new_form
     
     text = f"⚡ **گوکو به فرم {boost['name']} رفت!**\n\n"
+    text += f"⚔️ ATK: +{boost['atk']}٪\n"
+    text += f"💨 DODGE: +{boost['dodge']}٪\n"
+    
+    return "active", text, battle
+
+# 🆕 فرم لوفی (One Piece)
+def luffy_transform(battle, char):
+    current_form = battle.get("luffy_form", 0)
+    if current_form >= 4:
+        return "active", "🔥 لوفی به حداکثر قدرت رسیده! (Gear 5)", battle
+    
+    new_form = current_form + 1
+    
+    boosts = {
+        1: {"atk": 15, "dodge": 10, "name": "Gear 2"},
+        2: {"atk": 25, "dodge": 15, "name": "Gear 3"},
+        3: {"atk": 40, "dodge": 20, "name": "Gear 4"},
+        4: {"atk": 60, "dodge": 30, "name": "Gear 5"},
+    }
+    
+    boost = boosts[new_form]
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
+    battle["luffy_form"] = new_form
+    
+    text = f"⚡ **لوفی به فرم {boost['name']} رفت!**\n\n"
     text += f"⚔️ ATK: +{boost['atk']}٪\n"
     text += f"💨 DODGE: +{boost['dodge']}٪\n"
     
@@ -883,7 +875,6 @@ def build_battle_message(battle, char):
         if shadow_bonus > 0:
             text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
 
-    # 🆕 نمایش انرژی‌ها
     if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
         try:
             conn = sqlite3.connect(DB_NAME)
@@ -960,7 +951,6 @@ def finish_battle(uid, boss_name, won):
             
         add_coins(uid, reward)
 
-        # 🆕 برگشت کامل انرژی‌ها بعد از برد
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
@@ -992,7 +982,6 @@ def finish_battle(uid, boss_name, won):
             conn.commit()
             conn.close()
         
-        # 🆕 برگشت کامل انرژی‌ها بعد از باخت
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
