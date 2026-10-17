@@ -182,36 +182,42 @@ def init_db():
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET cursed_energy = 120 WHERE cursed_energy IS NULL")
         print("✅ Column cursed_energy added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET max_cursed_energy = 120 WHERE max_cursed_energy IS NULL")
         print("✅ Column max_cursed_energy added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET reiatsu = 120 WHERE reiatsu IS NULL")
         print("✅ Column reiatsu added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET max_reiatsu = 120 WHERE max_reiatsu IS NULL")
         print("✅ Column max_reiatsu added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET geass_power = 120 WHERE geass_power IS NULL")
         print("✅ Column geass_power added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
+        c.execute("UPDATE characters SET max_geass_power = 120 WHERE max_geass_power IS NULL")
         print("✅ Column max_geass_power added")
     except sqlite3.OperationalError:
         pass
@@ -472,8 +478,6 @@ def get_shadows_atk_bonus(user_id, char_name):
     total = c.fetchone()[0]
     conn.close()
     return total
-
-
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -878,6 +882,7 @@ def get_unlocked_regions(user_id):
 def get_current_region(user_id):
     progress = get_world_progress(user_id)
     return progress[2] or "forest"
+
 
 # ============ GUILD HELPERS ============
 
