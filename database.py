@@ -69,6 +69,7 @@ def init_db():
         domain_name TEXT DEFAULT '',
         domain_atk_boost INTEGER DEFAULT 0,
         spam_state TEXT DEFAULT 'ability_1',
+        goku_form INTEGER DEFAULT 0, # 🆕 فرم گوکو
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
@@ -159,6 +160,13 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # 🆕 ستون فرم گوکو
+    try:
+        c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+        print("✅ Column goku_form added")
+    except sqlite3.OperationalError:
+        pass
+
     # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
@@ -239,8 +247,8 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     c.execute("""INSERT INTO active_battles
         (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp,
          turn, status, domain_used, boss_frozen, domain_active, domain_turns,
-         domain_name, domain_atk_boost, spam_state)
-        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1')""",
+         domain_name, domain_atk_boost, spam_state, goku_form)
+        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1',0)""",
         (user_id, boss_name, player_hp, player_hp, boss_hp, boss_hp))
     bid = c.lastrowid
     conn.commit()
@@ -254,7 +262,7 @@ def get_battle(user_id):
     c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
                         boss_hp, boss_max_hp, player_defending, turn, status,
                         domain_used, boss_frozen, domain_active, domain_turns,
-                        domain_name, domain_atk_boost, spam_state
+                        domain_name, domain_atk_boost, spam_state, goku_form
                  FROM active_battles WHERE user_id=? AND status='active'""", (user_id,))
     row = c.fetchone()
     conn.close()
@@ -267,6 +275,7 @@ def get_battle(user_id):
         "domain_used": row[10], "boss_frozen": row[11], "domain_active": row[12],
         "domain_turns": row[13], "domain_name": row[14], "domain_atk_boost": row[15],
         "spam_state": row[16] if len(row) > 16 and row[16] else "ability_1",
+        "goku_form": row[17] if len(row) > 17 and row[17] else 0,
     }
 
 
@@ -276,13 +285,14 @@ def update_battle(battle, status='active'):
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
-        domain_name=?, domain_atk_boost=?, spam_state=? WHERE id=?""",
+        domain_name=?, domain_atk_boost=?, spam_state=?, goku_form=? WHERE id=?""",
         (battle["php"], battle["bhp"], battle["turn"],
          battle["defending"], status,
          battle["domain_used"], battle["boss_frozen"],
          battle["domain_active"], battle["domain_turns"],
          battle["domain_name"], battle["domain_atk_boost"],
          battle.get("spam_state", "ability_1"),
+         battle.get("goku_form", 0),
          battle["id"]))
     conn.commit()
     conn.close()
