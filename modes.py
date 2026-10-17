@@ -196,7 +196,7 @@ async def tower_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 # ============================================================
-# 🎮 MAIN MENU & BACK
+# 🎮 MAIN MENU
 # ============================================================
 async def modes_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
@@ -205,6 +205,7 @@ async def modes_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🗼 برج", callback_data="modes_tower")],
     ]
     await update.message.reply_text("🎮 **مودهای بقا (Survival):**", reply_markup=InlineKeyboardMarkup(kb))
+
 
 async def join_castle_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # این تابع برای جلوگیری از خطا اضافه شده، ولی چون مودها تک‌نفره شدن استفاده نمیشه
