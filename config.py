@@ -21,7 +21,7 @@ from opm_data import (
 )
 
 # ============================================================
-# IMPORTS — New Animes (5 first)
+# IMPORTS — 7 Animes (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man, Naruto, SDS)
 # ============================================================
 from aot_data import (
     CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
@@ -48,9 +48,6 @@ from chainsawman_data import (
     CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER
 )
 
-# ============================================================
-# IMPORTS — New Animes (Naruto + SDS)
-# ============================================================
 from naruto_data import (
     CHARACTERS_NARUTO, CHAR_PRICES_NARUTO, ABILITIES_NARUTO,
     NARUTO_BOSSES, NARUTO_FODDER
@@ -62,7 +59,50 @@ from sevendeadlysins_data import (
 )
 
 # ============================================================
-# EXTENDED SHOP ABILITIES (5 new animes)
+# IMPORTS — 🆕 8 Animes NEW
+# ============================================================
+from onepiece_data import (
+    CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE, ABILITIES_ONEPIECE,
+    ONEPIECE_BOSSES, ONEPIECE_FODDER
+)
+
+from dragonball_data import (
+    CHARACTERS_DRAGONBALL, CHAR_PRICES_DRAGONBALL, ABILITIES_DRAGONBALL,
+    DRAGONBALL_BOSSES, DRAGONBALL_FODDER
+)
+
+from hxh_data import (
+    CHARACTERS_HXH, CHAR_PRICES_HXH, ABILITIES_HXH,
+    HXH_BOSSES, HXH_FODDER
+)
+
+from sakamoto_data import (
+    CHARACTERS_SAKAMOTO, CHAR_PRICES_SAKAMOTO, ABILITIES_SAKAMOTO,
+    SAKAMOTO_BOSSES, SAKAMOTO_FODDER
+)
+
+from sololeveling_data import (
+    CHARACTERS_SOLOLEVELING, CHAR_PRICES_SOLOLEVELING, ABILITIES_SOLOLEVELING,
+    SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER
+)
+
+from mushoku_data import (
+    CHARACTERS_MUSHOKU, CHAR_PRICES_MUSHOKU, ABILITIES_MUSHOKU,
+    MUSHOKU_BOSSES, MUSHOKU_FODDER
+)
+
+from codegeass_data import (
+    CHARACTERS_CODEGEASS, CHAR_PRICES_CODEGEASS, ABILITIES_CODEGEASS,
+    CODEGEASS_BOSSES, CODEGEASS_FODDER
+)
+
+from tokyoghoul_data import (
+    CHARACTERS_TOKYOGHOUL, CHAR_PRICES_TOKYOGHOUL, ABILITIES_TOKYOGHOUL,
+    TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER
+)
+
+# ============================================================
+# EXTENDED SHOP ABILITIES (5 انیمه اول)
 # ============================================================
 from shop_abilities_extended import (
     AOT_ABILITIES_SHOP,
@@ -216,7 +256,7 @@ BUFF_FA = {
 }
 
 # ============================================================
-# MERGE — CHARACTERS (همه ۱۰ انیمه)
+# MERGE — CHARACTERS (همه ۱۸ انیمه)
 # ============================================================
 CHARACTERS = {}
 
@@ -236,7 +276,7 @@ for rank, chars in CHARACTERS_OPM.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# --- ۵ انیمه اول جدید ---
+# --- ۷ انیمه اول جدید ---
 for rank, chars in CHARACTERS_AOT.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
@@ -262,13 +302,53 @@ for rank, chars in CHARACTERS_CHAINSAWMAN.items():
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
-# --- Naruto + SDS ---
 for rank, chars in CHARACTERS_NARUTO.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
 
 for rank, chars in CHARACTERS_SDS.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+# --- 🆕 ۸ انیمه جدید ---
+for rank, chars in CHARACTERS_ONEPIECE.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_DRAGONBALL.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_HXH.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_SAKAMOTO.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_SOLOLEVELING.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_MUSHOKU.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_CODEGEASS.items():
+    if rank not in CHARACTERS:
+        CHARACTERS[rank] = {}
+    CHARACTERS[rank].update(chars)
+
+for rank, chars in CHARACTERS_TOKYOGHOUL.items():
     if rank not in CHARACTERS:
         CHARACTERS[rank] = {}
     CHARACTERS[rank].update(chars)
@@ -281,7 +361,7 @@ CHAR_PRICES.update(CHAR_PRICES_JJK)
 CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 
 # ============================================================
-# MERGE — BOSSES (همه ۱۰ انیمه)
+# MERGE — BOSSES (همه ۱۸ انیمه)
 # ============================================================
 BOSSES = {}
 
@@ -293,7 +373,7 @@ for key, val in BOSSES_JJK.items():
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
-# --- ۵ انیمه اول جدید ---
+# --- ۷ انیمه اول ---
 for key, val in AOT_BOSSES.items():
     BOSSES[key] = val
 for key, val in BLACKCLOVER_BOSSES.items():
@@ -304,11 +384,27 @@ for key, val in DEMONSLAYER_BOSSES.items():
     BOSSES[key] = val
 for key, val in CHAINSAWMAN_BOSSES.items():
     BOSSES[key] = val
-
-# --- Naruto + SDS ---
 for key, val in NARUTO_BOSSES.items():
     BOSSES[key] = val
 for key, val in SDS_BOSSES.items():
+    BOSSES[key] = val
+
+# --- 🆕 ۸ انیمه جدید ---
+for key, val in ONEPIECE_BOSSES.items():
+    BOSSES[key] = val
+for key, val in DRAGONBALL_BOSSES.items():
+    BOSSES[key] = val
+for key, val in HXH_BOSSES.items():
+    BOSSES[key] = val
+for key, val in SAKAMOTO_BOSSES.items():
+    BOSSES[key] = val
+for key, val in SOLOLEVELING_BOSSES.items():
+    BOSSES[key] = val
+for key, val in MUSHOKU_BOSSES.items():
+    BOSSES[key] = val
+for key, val in CODEGEASS_BOSSES.items():
+    BOSSES[key] = val
+for key, val in TOKYOGHOUL_BOSSES.items():
     BOSSES[key] = val
 
 # ============================================================
@@ -331,9 +427,18 @@ ABILITIES_3.update(ABILITIES_DEMONSLAYER)
 ABILITIES_3.update(ABILITIES_CHAINSAWMAN)
 ABILITIES_3.update(ABILITIES_NARUTO)
 ABILITIES_3.update(ABILITIES_SDS)
+# 🆕 ۸ انیمه جدید
+ABILITIES_3.update(ABILITIES_ONEPIECE)
+ABILITIES_3.update(ABILITIES_DRAGONBALL)
+ABILITIES_3.update(ABILITIES_HXH)
+ABILITIES_3.update(ABILITIES_SAKAMOTO)
+ABILITIES_3.update(ABILITIES_SOLOLEVELING)
+ABILITIES_3.update(ABILITIES_MUSHOKU)
+ABILITIES_3.update(ABILITIES_CODEGEASS)
+ABILITIES_3.update(ABILITIES_TOKYOGHOUL)
 
 # ============================================================
-# MERGE — DOMAINS / BANKAI
+# MERGE — DOMAINS / BANKAI (فقط JJK + Bleach)
 # ============================================================
 DOMAINS = {}
 DOMAINS.update(DOMAINS_JJK)
