@@ -642,11 +642,11 @@ def goku_transform(battle, char):
     new_form = current_form + 1
     
     boosts = {
-        1: {"atk": 10, "dodge": 5, "name": "Super Saiyan 1"},
-        2: {"atk": 20, "dodge": 10, "name": "Super Saiyan 2"},
-        3: {"atk": 35, "dodge": 15, "name": "Super Saiyan God"},
-        4: {"atk": 50, "dodge": 25, "name": "Ultra Instinct"},
-    }
+    1: {"atk": 10, "dodge": 5, "name": "Super Saiyan 2"},
+    2: {"atk": 20, "dodge": 10, "name": "Super Saiyan 3"},
+    3: {"atk": 35, "dodge": 15, "name": "Super Saiyan God"},
+    4: {"atk": 50, "dodge": 25, "name": "Super Saiyan Blue"},
+}
     
     boost = boosts[new_form]
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
