@@ -45,14 +45,9 @@ from admin import (is_admin, is_owner, has_permission, get_user_perms,
                    add_force_channel, remove_force_channel, get_force_channels,
                    set_custom_quest, get_custom_quest, get_all_custom_quests,
                    PERMISSIONS_LIST)
-from gift import send_gift, get_gift_history, get_top_givers
-
 # ============ OLD ANIMES ============
-from jjk_data import (CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK,
-                      DOMAINS_JJK, ABILITIES_JJK)
-from bleach_data import (CHARACTERS_BLEACH, CHAR_PRICES_BLEACH,
-                         BLEACH_ABILITIES_SHOP, BLEACH_BANKAI,
-                         BLEACH_BOSSES, BLEACH_FODDER, ABILITIES_BLEACH)
+from jjk_data import (CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK, DOMAINS_JJK, ABILITIES_JJK)
+from bleach_data import (CHARACTERS_BLEACH, CHAR_PRICES_BLEACH, BLEACH_ABILITIES_SHOP, BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER, ABILITIES_BLEACH)
 from opm_data import (CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM)
 from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
@@ -111,13 +106,11 @@ def get_all_stats(char_name, rank):
             return stats_dict[char_name]
     return RANK_STATS.get(rank, RANK_STATS["C"])
 
-
 def get_char_price(char_name, rank):
     stats = get_all_stats(char_name, rank)
     if "price" in stats:
         return stats["price"]
     return CHAR_PRICES.get(rank, 8000)
-
 
 def get_character_abilities(char_name):
     for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM, ABILITIES_AOT, ABILITIES_BLACKCLOVER,
@@ -128,12 +121,8 @@ def get_character_abilities(char_name):
             return data[char_name]
     return None
 
-
 def get_character_domain_bankai(char_name):
-    has_domain = char_name in DOMAINS_JJK
-    has_bankai = char_name in BLEACH_BANKAI
-    return has_domain, has_bankai
-
+    return char_name in DOMAINS_JJK, char_name in BLEACH_BANKAI
 
 def get_battle_kb(char_name=None, user_id=None):
     kb = []
@@ -146,29 +135,16 @@ def get_battle_kb(char_name=None, user_id=None):
             kb.append([InlineKeyboardButton(f"🔵 {ab1}", callback_data="act_ability_1")])
             kb.append([InlineKeyboardButton(f"🔴 {ab2}", callback_data="act_ability_2")])
             kb.append([InlineKeyboardButton(f"🟣 {ab3} (۱ بار)", callback_data="act_ability_3")])
-    kb.append([
-        InlineKeyboardButton("⚔️ حمله", callback_data="act_attack"),
-        InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")
-    ])
-    kb.append([
-        InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"),
-        InlineKeyboardButton("💊 آیتم", callback_data="act_item")
-    ])
-    kb.append([
-        InlineKeyboardButton("🔥 Ability", callback_data="act_shop_ability"),
-        InlineKeyboardButton("✨ باف", callback_data="act_shop_buff")
-    ])
+    kb.append([InlineKeyboardButton("⚔️ حمله", callback_data="act_attack"), InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")])
+    kb.append([InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"), InlineKeyboardButton("💊 آیتم", callback_data="act_item")])
+    kb.append([InlineKeyboardButton("🔥 Ability", callback_data="act_shop_ability"), InlineKeyboardButton("✨ باف", callback_data="act_shop_buff")])
     if char_name:
         has_domain, has_bankai = get_character_domain_bankai(char_name)
-        if has_domain:
-            kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
-        if has_bankai:
-            kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
-        if char_name == "Sung Jin-Woo":
-            kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
+        if has_domain: kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
+        if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
+        if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
-
 
 def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
     kb = []
@@ -181,33 +157,15 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
             kb.append([InlineKeyboardButton(f"🔵 {ab1}", callback_data=f"mb_ab1_{session_id}")])
             kb.append([InlineKeyboardButton(f"🔴 {ab2}", callback_data=f"mb_ab2_{session_id}")])
             kb.append([InlineKeyboardButton(f"🟣 {ab3} (۱ بار)", callback_data=f"mb_ab3_{session_id}")])
-    kb.append([
-        InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"),
-        InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")
-    ])
-    kb.append([
-        InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}"),
-        InlineKeyboardButton("💊 آیتم", callback_data=f"mb_item_{session_id}")
-    ])
+    kb.append([InlineKeyboardButton("⚔️ حمله", callback_data=f"mb_attack_{session_id}"), InlineKeyboardButton("🛡️ دفاع", callback_data=f"mb_defend_{session_id}")])
+    kb.append([InlineKeyboardButton("💨 جاخالی", callback_data=f"mb_dodge_{session_id}"), InlineKeyboardButton("💊 آیتم", callback_data=f"mb_item_{session_id}")])
     if char_name:
         has_domain, has_bankai = get_character_domain_bankai(char_name)
-        if has_domain:
-            kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
-        if has_bankai:
-            kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
-        if char_name == "Sung Jin-Woo":
-            kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
+        if has_domain: kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
+        if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
+        if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
-
-COMMAND_DESCRIPTIONS = {
-    "start": "شروع بازی", "profile": "پروفایل", "coins": "موجودی سکه",
-    "shop": "شاپ", "upgrade": "ارتقای لول", "battle": "باس‌فایت تکی",
-    "pvp": "نبرد 1v1", "team": "نبرد تیمی", "coop": "نبرد گروهی",
-    "quests": "کوئست روزانه", "leaderboard": "لیدربورد", "guild": "کلن",
-    "gift": "هدیه دادن", "world": "دنیای آزاد", "help": "راهنما",
-    "modes": "مودها", "castle": "قلعه", "zombie": "زامبی", "tower": "برج",
-}
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
@@ -216,26 +174,17 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not chars:
         kb = []
         for c_name, c_title in CHARACTERS["C"].items():
-            kb.append([InlineKeyboardButton(
-                f"{c_name} — {c_title}",
-                callback_data=f"first_{c_name}"
-            )])
-        await update.message.reply_text(
-            "🎮 به BANG BANG RP خوش اومدی!\n\n"
-            "یه کاراکتر رایگان انتخاب کن (C Rank):",
-            reply_markup=InlineKeyboardMarkup(kb)
-        )
+            kb.append([InlineKeyboardButton(f"{c_name} — {c_title}", callback_data=f"first_{c_name}")])
+        await update.message.reply_text("🎮 به BANG BANG RP خوش اومدی!\n\nیه کاراکتر رایگان انتخاب کن (C Rank):", reply_markup=InlineKeyboardMarkup(kb))
     else:
         await update.message.reply_text("Welcome back! /help")
-
 
 async def first_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     char_name = q.data.replace("first_", "")
     user_id = q.from_user.id
-    existing = get_user_characters(user_id)
-    if existing:
+    if get_user_characters(user_id):
         await q.message.reply_text("❌ تو قبلاً یه کاراکتر انتخاب کردی!")
         return
     if char_name not in CHARACTERS["C"]:
@@ -244,11 +193,7 @@ async def first_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     create_character(user_id, char_name, "C")
     chars = get_user_characters(user_id)
     set_active(user_id, chars[0][0])
-    await q.message.reply_text(
-        f"✅ کاراکتر {char_name} (C Rank) انتخاب شد!\n\n"
-        f"/profile\n/shop\n/battle\n/help"
-    )
-
+    await q.message.reply_text(f"✅ کاراکتر {char_name} (C Rank) انتخاب شد!\n\n/profile\n/shop\n/battle\n/help")
 
 async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -258,66 +203,29 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     user = get_user(user_id)
     username = user[1] if user and user[1] else "ناشناس"
-    char_name = char[2]
-    rank = char[3]
-    level = char[4]
-    hp = char[5]
-    atk = char[6]
-    dfn = char[7]
-    dodge = char[8]
-    slots = char[9]
+    char_name, rank, level, hp, atk, dfn, dodge, slots = char[2], char[3], char[4], char[5], char[6], char[7], char[8], char[9]
     has_domain, has_bankai = get_character_domain_bankai(char_name)
-    has_domain_str = "✅" if has_domain else "❌"
-    has_bankai_str = "✅" if has_bankai else "❌"
-    domain_name = ""
-    if has_domain:
-        domain_name = f" - {DOMAINS_JJK[char_name]['name']}"
-    bankai_name = ""
-    if has_bankai:
-        bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}"
+    domain_name = f" - {DOMAINS_JJK[char_name]['name']}" if has_domain else ""
+    bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}" if has_bankai else ""
     abs_data = get_character_abilities(char_name)
-    abs_text = ""
-    if abs_data:
-        a1 = abs_data.get("ability_1", {}).get("name", "—")
-        a2 = abs_data.get("ability_2", {}).get("name", "—")
-        a3 = abs_data.get("ability_3", {}).get("name", "—")
-        abs_text = f"🔵 {a1}\n🔴 {a2}\n🟣 {a3} (۱ بار)\n"
-    else:
-        abs_text = "❌ Ability تعریف نشده\n"
+    abs_text = f"🔵 {abs_data.get('ability_1', {}).get('name', '—')}\n🔴 {abs_data.get('ability_2', {}).get('name', '—')}\n🟣 {abs_data.get('ability_3', {}).get('name', '—')} (۱ بار)\n" if abs_data else "❌ Ability تعریف نشده\n"
+    
     arise_text = ""
     if char_name == "Sung Jin-Woo":
-        shadow_count = get_shadows_count(user_id, char_name)
-        shadow_bonus = get_shadows_atk_bonus(user_id, char_name)
-        arise_text = f"\n💀 **Arise:** {shadow_count}/{MAX_SHADOWS} (+{shadow_bonus} ATK)\n"
+        arise_text = f"\n💀 **Arise:** {get_shadows_count(user_id, char_name)}/{MAX_SHADOWS} (+{get_shadows_atk_bonus(user_id, char_name)} ATK)\n"
+    
     text = (
-        f"╔══════════════════════════╗\n"
-        f"║      👤 @{username[:14].center(14)} ║\n"
-        f"╚══════════════════════════╝\n\n"
-        f"╭───── 🎭 کاراکتر فعال ─────╮\n"
-        f"│ 🦸 {char_name[:18].ljust(18)} │\n"
-        f"│ ⭐ Rank: {rank.ljust(14)} │\n"
-        f"│ 📊 Level: {str(level).ljust(13)} │\n"
-        f"╰────────────────────────────╯\n\n"
-        f"⚔️ آمار کاراکتر:\n"
-        f"├ ❤️ HP: {hp:,}\n"
-        f"├ ⚔️ ATK: {atk:,}\n"
-        f"├ 🛡️ DEF: {dfn:,}\n"
-        f"├ 💨 DODGE: {dodge}%\n"
-        f"└ 🎰 Slots: {slots}\n\n"
+        f"╔══════════════════════════╗\n║      👤 @{username[:14].center(14)} ║\n╚══════════════════════════╝\n\n"
+        f"╭───── 🎭 کاراکتر فعال ─────╮\n│ 🦸 {char_name[:18].ljust(18)} │\n│ ⭐ Rank: {rank.ljust(14)} │\n│ 📊 Level: {str(level).ljust(13)} │\n╰────────────────────────────╯\n\n"
+        f"⚔️ آمار کاراکتر:\n├ ❤️ HP: {hp:,}\n├ ⚔️ ATK: {atk:,}\n├ 🛡️ DEF: {dfn:,}\n├ 💨 DODGE: {dodge}%\n└ 🎰 Slots: {slots}\n\n"
         f"🔥 Ability ها:\n{abs_text}\n"
-        f"🌀 Domain: {has_domain_str}{domain_name}\n"
-        f"⚔️ Bankai: {has_bankai_str}{bankai_name}\n"
-        f"{arise_text}"
-        f"\n💰 سکه: {get_coins(user_id):,}\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━"
+        f"🌀 Domain: {'✅' if has_domain else '❌'}{domain_name}\n⚔️ Bankai: {'✅' if has_bankai else '❌'}{bankai_name}\n"
+        f"{arise_text}\n💰 سکه: {get_coins(user_id):,}\n━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     kb = [
-        [InlineKeyboardButton("🎭 تغییر کاراکتر", callback_data="prof_select"),
-         InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
-        [InlineKeyboardButton("🏆 لیدربورد", callback_data="prof_lb"),
-         InlineKeyboardButton("🎁 هدیه", callback_data="prof_gift")],
-        [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"),
-         InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
+        [InlineKeyboardButton("🎭 تغییر کاراکتر", callback_data="prof_select"), InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
+        [InlineKeyboardButton("🏆 لیدربورد", callback_data="prof_lb"), InlineKeyboardButton("🎁 هدیه", callback_data="prof_gift")],
+        [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"), InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
         [InlineKeyboardButton("🗺️ دنیای آزاد", callback_data="prof_world")],
     ]
     img = get_char_image(char_name)
@@ -328,14 +236,12 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
+    user_id = q.from_user.id
     if data == "prof_select":
-        user_id = q.from_user.id
         chars = get_user_characters(user_id)
         if not chars:
             await q.message.reply_text("❌ کاراکتری نداری.")
@@ -345,94 +251,46 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "prof_quests":
         await q.message.reply_text("📜 برای دیدن کوئست‌ها: /quests")
     elif data == "prof_lb":
-        kb = [
-            [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
-            [InlineKeyboardButton("Top by Level", callback_data="lb_level")],
-            [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")],
-        ]
-        await q.message.reply_text("🏆 لیدربورد:", reply_markup=InlineKeyboardMarkup(kb))
+        await q.message.reply_text("🏆 لیدربورد:", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Top by Coins", callback_data="lb_coins")], [InlineKeyboardButton("Top by Level", callback_data="lb_level")], [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")]]))
     elif data == "prof_gift":
-        await q.message.reply_text(
-            "🎁 برای هدیه دادن:\n\n"
-            "روش ۱: روی پیام کسی ریپلای کن و بنویس:\n  /gift 500\n\n"
-            "روش ۲: با آیدی:\n  /gift 123456789 500"
-        )
+        await q.message.reply_text("🎁 برای هدیه دادن:\n\nروش ۱: روی پیام کسی ریپلای کن و بنویس:\n  /gift 500\n\nروش ۲: با آیدی:\n  /gift 123456789 500")
     elif data == "prof_battle":
         await q.message.reply_text("⚔️ برای نبرد: /battle")
     elif data == "prof_guild":
-        guild = get_user_guild(q.from_user.id)
+        guild = get_user_guild(user_id)
         if not guild:
-            await q.message.reply_text(
-                f"🏰 تو توی هیچ کلنی نیستی!\n\n📝 ساخت: /guild_create <name>\n💰 هزینه: {GUILD_CREATE_COST:,}"
-            )
+            await q.message.reply_text(f"🏰 تو توی هیچ کلنی نیستی!\n\n📝 ساخت: /guild_create <name>\n💰 هزینه: {GUILD_CREATE_COST:,}")
             return
-        text = format_guild(guild)
-        kb = [
-            [InlineKeyboardButton("👥 اعضا", callback_data="guild_members"),
-             InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")],
-            [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"),
-             InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")],
-            [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")],
-        ]
-        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
+        await q.message.reply_text(format_guild(guild), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("👥 اعضا", callback_data="guild_members"), InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")], [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"), InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")], [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")]]))
     elif data == "prof_world":
-        user_id = q.from_user.id
-        text = get_player_region_view(user_id)
-        kb = [
-            [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
-            [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
-            [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
-            [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
-            [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
-            [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
-             InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
-        ]
-        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
+        await q.message.reply_text(get_player_region_view(user_id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]))
 
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    c = get_coins(update.effective_user.id)
-    await update.message.reply_text(f"Coins: {c:,}")
-
+    await update.message.reply_text(f"Coins: {get_coins(update.effective_user.id):,}")
 
 async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    chars = get_user_characters(user_id)
+    chars = get_user_characters(update.effective_user.id)
     if not chars:
         await update.message.reply_text("No characters.")
         return
     kb = [[InlineKeyboardButton(f"{c[2]} ({c[3]}) Lv{c[4]}", callback_data=f"sel_{c[0]}")] for c in chars]
     await update.message.reply_text("Select active:", reply_markup=InlineKeyboardMarkup(kb))
 
-
 async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    char_id = int(q.data.replace("sel_", ""))
-    set_active(q.from_user.id, char_id)
+    set_active(q.from_user.id, int(q.data.replace("sel_", "")))
     await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
+
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = [
-        [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
-        [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")],
-        [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")],
-        [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
-    ]
+    kb = [[InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")], [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")], [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")], [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")]]
     try:
-        await update.message.reply_photo(
-            photo=SHOP_IMAGE, caption="🏪 شاپ:\nیه دسته انتخاب کن:",
-            reply_markup=InlineKeyboardMarkup(kb)
-        )
+        await update.message.reply_photo(photo=SHOP_IMAGE, caption="🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await update.message.reply_text("🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
-
-
 async def edit_shop_msg(q, caption, keyboard):
     try:
-        await q.edit_message_media(
-            media=InputMediaPhoto(media=SHOP_IMAGE, caption=caption),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        await q.edit_message_media(media=InputMediaPhoto(media=SHOP_IMAGE, caption=caption), reply_markup=InlineKeyboardMarkup(keyboard))
     except Exception:
         try:
             await q.edit_message_caption(caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
@@ -440,55 +298,31 @@ async def edit_shop_msg(q, caption, keyboard):
             try:
                 await q.edit_message_text(caption, reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception:
-                await q.message.reply_photo(
-                    photo=SHOP_IMAGE, caption=caption,
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
-
+                await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data
     if data == "shop_ab":
-        kb = []
-        for name, info in ABILITIES.items():
-            fa = ABILITY_FA.get(name, name)
-            kb.append([InlineKeyboardButton(f"{fa} — {info['price']:,} 💰", callback_data=f"buyab_{name}")])
+        kb = [[InlineKeyboardButton(f"{ABILITY_FA.get(n, n)} — {i['price']:,} 💰", callback_data=f"buyab_{n}")] for n, i in ABILITIES.items()]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
         await edit_shop_msg(q, "🛡️ Ability ها:", kb)
     elif data == "shop_item":
-        kb = []
-        for name, info in ITEMS.items():
-            fa = ITEM_FA.get(name, name)
-            kb.append([InlineKeyboardButton(f"{fa} — {info['price']:,} 💰", callback_data=f"buyit_{name}")])
+        kb = [[InlineKeyboardButton(f"{ITEM_FA.get(n, n)} — {i['price']:,} 💰", callback_data=f"buyit_{n}")] for n, i in ITEMS.items()]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
         await edit_shop_msg(q, "💊 آیتم‌ها:", kb)
     elif data == "shop_buff":
-        kb = []
-        for name, info in BUFFS.items():
-            fa = BUFF_FA.get(name, name)
-            kb.append([InlineKeyboardButton(f"{fa} — {info['price']:,} 💰", callback_data=f"buybf_{name}")])
+        kb = [[InlineKeyboardButton(f"{BUFF_FA.get(n, n)} — {i['price']:,} 💰", callback_data=f"buybf_{n}")] for n, i in BUFFS.items()]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
         await edit_shop_msg(q, "🔥 باف‌ها:", kb)
     elif data == "shop_char":
-        kb = []
-        for anime_key, emoji, name, name_fa in get_anime_list():
-            kb.append([InlineKeyboardButton(
-                f"{emoji} {name_fa}",
-                callback_data=f"shchanime_{anime_key}"
-            )])
+        kb = [[InlineKeyboardButton(f"{emoji} {name_fa}", callback_data=f"shchanime_{anime_key}")] for anime_key, emoji, name, name_fa in get_anime_list()]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_main")])
         await edit_shop_msg(q, "🦸 انیمه انتخاب کن:", kb)
     elif data == "shop_main":
-        kb = [
-            [InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")],
-            [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")],
-            [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")],
-            [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")],
-        ]
+        kb = [[InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")], [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")], [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")], [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")]]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)
-
 
 async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -498,20 +332,9 @@ async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not anime:
         await q.answer("❌ انیمه پیدا نشد.", show_alert=True)
         return
-    kb = []
-    for rank in anime["characters"].keys():
-        count = len(anime["characters"][rank])
-        kb.append([InlineKeyboardButton(
-            f"📦 {rank} Rank — {count} کاراکتر",
-            callback_data=f"shchrank_{anime_key}_{rank}"
-        )])
+    kb = [[InlineKeyboardButton(f"📦 {rank} Rank — {len(anime['characters'][rank])} کاراکتر", callback_data=f"shchrank_{anime_key}_{rank}")] for rank in anime["characters"].keys()]
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="shop_char")])
-    await edit_shop_msg(
-        q,
-        f"{anime['emoji']} {anime['name_fa']} — رنک انتخاب کن:",
-        kb
-    )
-
+    await edit_shop_msg(q, f"{anime['emoji']} {anime['name_fa']} — رنک انتخاب کن:", kb)
 
 async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -530,33 +353,18 @@ async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE
     if not chars:
         await q.answer("❌ کاراکتری توی این رنک نیست.", show_alert=True)
         return
-    kb = []
-    for name, title in chars.items():
-        price = get_char_price(name, rank)
-        safe_name = name.replace(" ", "§")
-        kb.append([InlineKeyboardButton(
-            f"🎭 {name} — {price:,} 💰",
-            callback_data=f"buych_{anime_key}_{rank}_{safe_name}"
-        )])
+    kb = [[InlineKeyboardButton(f"🎭 {name} — {get_char_price(name, rank):,} 💰", callback_data=f"buych_{anime_key}_{rank}_{name.replace(' ', '§')}")] for name, title in chars.items()]
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data=f"shchanime_{anime_key}")])
-    await edit_shop_msg(
-        q,
-        f"{anime['emoji']} {anime['name_fa']} — {rank} Rank:",
-        kb
-    )
-
+    await edit_shop_msg(q, f"{anime['emoji']} {anime['name_fa']} — {rank} Rank:", kb)
 
 async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    raw = q.data.replace("buych_", "")
-    parts = raw.split("_", 2)
+    parts = q.data.replace("buych_", "").split("_", 2)
     if len(parts) < 3:
         await q.answer("❌ خطا در اطلاعات.", show_alert=True)
         return
-    anime_key = parts[0]
-    rank = parts[1]
-    char_name = parts[2].replace("§", " ")
+    anime_key, rank, char_name = parts[0], parts[1], parts[2].replace("§", " ")
     anime = get_anime(anime_key)
     if not anime:
         await q.answer("❌ انیمه پیدا نشد.", show_alert=True)
@@ -567,9 +375,7 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(f"❌ {char_name} ({rank})\n💰 پولت کافی نیست!")
     else:
         await q.answer("✅ خریداری شد!")
-        await q.message.reply_text(
-            f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!"
-        )
+        await q.message.reply_text(f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!")
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -588,7 +394,6 @@ async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
-
 async def buy_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -599,7 +404,6 @@ async def buy_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(f"❌ {fa}\n💰 پولت کمه!")
     else:
         await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
-
 
 async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -617,10 +421,8 @@ async def buy_buff_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         await q.message.reply_text(f"✅ {fa}\n🎉 خریدی!")
 
-
 async def buychar(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("از /shop استفاده کن!")
-
 
 async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
@@ -643,7 +445,6 @@ async def buy(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         msg = "Not found."
     await update.message.reply_text(msg)
 
-
 async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -660,175 +461,21 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
-async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    guild = get_user_guild(user_id)
-    if not guild:
-        await update.message.reply_text(
-            "🏰 تو توی هیچ کلنی نیستی!\n\n"
-            "📝 ساخت: /guild_create <name>\n🔍 پیوستن: /guild_join <name>\n"
-            "📋 لیست: /guild_list\n\n"
-            f"💰 هزینه: {GUILD_CREATE_COST:,} سکه\n⭐ حداقل لول: {GUILD_MIN_LEVEL}"
-        )
-        return
-    text = format_guild(guild)
-    kb = [
-        [InlineKeyboardButton("👥 اعضا", callback_data="guild_members"),
-         InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")],
-        [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"),
-         InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")],
-        [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")],
-    ]
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def guild_create(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not ctx.args:
-        await update.message.reply_text("❌ Usage: /guild_create <name>")
-        return
-    name = " ".join(ctx.args)
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری!")
-        return
-    msg = create_new_guild(user_id, name, char[4])
-    await update.message.reply_text(msg)
-
-
-async def guild_join(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("❌ Usage: /guild_join <name>")
-        return
-    msg = join_existing_guild(update.effective_user.id, " ".join(ctx.args))
-    await update.message.reply_text(msg)
-
-
-async def guild_leave(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    msg = leave_current_guild(update.effective_user.id)
-    await update.message.reply_text(msg)
-
-
-async def guild_donate(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("❌ Usage: /guild_donate <amount>")
-        return
-    try:
-        amount = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ عدد معتبر بده!")
-        return
-    msg = donate(update.effective_user.id, amount)
-    await update.message.reply_text(msg)
-
-
-async def guild_upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    msg = try_upgrade_guild(update.effective_user.id)
-    await update.message.reply_text(msg)
-
-
-async def guild_members_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    guild = get_user_guild(update.effective_user.id)
-    if not guild:
-        await update.message.reply_text("❌ تو توی کلنی نیستی!")
-        return
-    await update.message.reply_text(format_members(guild))
-
-
-async def guild_kick(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("❌ Usage: /guild_kick <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده!")
-        return
-    msg = kick_member(update.effective_user.id, target_id)
-    await update.message.reply_text(msg)
-
-
-async def guild_list(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    guilds = get_top_guilds(10)
-    if not guilds:
-        await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
-        return
-    text = "🏰 کلن‌های برتر:\n━━━━━━━━━━━━━━━━━━━\n\n"
-    for i, g in enumerate(guilds, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
-    await update.message.reply_text(text)
-
-
-async def guild_leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    guilds = get_top_guilds(10)
-    if not guilds:
-        await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
-        return
-    text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
-    for i, g in enumerate(guilds, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {g[1]}\n   ⭐ سطح {g[3]} | ⚡ {g[4]:,} XP | 💰 {g[5]:,}\n\n"
-    await update.message.reply_text(text)
-
-
-async def guild_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    data = q.data
-    user_id = q.from_user.id
-    if data == "guild_members":
-        guild = get_user_guild(user_id)
-        if not guild:
-            await q.message.reply_text("❌ تو توی کلنی نیستی!")
-            return
-        await q.message.reply_text(format_members(guild))
-    elif data == "guild_donate_info":
-        await q.message.reply_text(
-            "💰 دونیت به خزانه کلن\n\n"
-            "دستور: /guild_donate <amount>\nمثال: /guild_donate 50000\n\n"
-            "🎁 هر ۵۰,۰۰۰ سکه = ۵ XP به کلن"
-        )
-    elif data == "guild_upgrade":
-        await q.message.reply_text(try_upgrade_guild(user_id))
-    elif data == "guild_leave":
-        await q.message.reply_text(leave_current_guild(user_id))
-    elif data == "guild_top":
-        guilds = get_top_guilds(10)
-        if not guilds:
-            await q.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
-            return
-        text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
-        for i, g in enumerate(guilds, 1):
-            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-            text += f"{medal} {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
-        await q.message.reply_text(text)
 async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
+    if not get_active_character(user_id):
         await update.message.reply_text("No active character.")
         return
-    
     kb = [
-        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")],
-        [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
-        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")],
-        [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
-        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")],
-        [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
-        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")],
-        [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
-        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")],
-        [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
-        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")],
-        [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
-        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")],
-        [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
-        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")],
-        [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
-        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")],
-        [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
+        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
+        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
+        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")], [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
+        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")], [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
+        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")], [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
+        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")], [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
+        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")], [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
+        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")], [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
+        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")], [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
     ]
     await update.message.reply_text("⚔️ **انیمه‌ی مورد نظر رو انتخاب کن:**", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -836,7 +483,6 @@ async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     data = q.data.replace("bosses_", "")
-    
     kb = []
     if data == "jjk":
         for name, d in BOSSES_JJK.items(): kb.append([InlineKeyboardButton(f"👹 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
@@ -898,26 +544,16 @@ async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    
     kb = [
-        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")],
-        [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
-        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")],
-        [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
-        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")],
-        [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
-        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")],
-        [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
-        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")],
-        [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
-        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")],
-        [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
-        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")],
-        [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
-        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")],
-        [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
-        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")],
-        [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
+        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
+        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
+        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")], [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
+        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")], [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
+        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")], [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
+        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")], [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
+        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")], [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
+        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")], [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
+        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")], [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
     ]
     await q.edit_message_text("⚔️ **انیمه‌ی مورد نظر رو انتخاب کن:**", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -933,19 +569,8 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     existing = get_battle(user_id)
     if existing:
         end_battle(existing["id"])
-    
-    # پیدا کردن HP باس از تمام دیکشنری‌ها
     boss_hp = 5000
-    all_bosses = [
-        BLEACH_BOSSES, BLEACH_FODDER, BOSSES_JJK, FODDER_JJK, BOSSES_OPM, BOSSES,
-        AOT_BOSSES, AOT_FODDER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER, BERSERK_BOSSES, BERSERK_FODDER,
-        DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER,
-        NARUTO_BOSSES, NARUTO_FODDER, SDS_BOSSES, SDS_FODDER,
-        ONEPIECE_BOSSES, ONEPIECE_FODDER, DRAGONBALL_BOSSES, DRAGONBALL_FODDER,
-        HXH_BOSSES, HXH_FODDER, SAKAMOTO_BOSSES, SAKAMOTO_FODDER,
-        SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER, MUSHOKU_BOSSES, MUSHOKU_FODDER,
-        CODEGEASS_BOSSES, CODEGEASS_FODDER, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER
-    ]
+    all_bosses = [BLEACH_BOSSES, BLEACH_FODDER, BOSSES_JJK, FODDER_JJK, BOSSES_OPM, BOSSES, AOT_BOSSES, AOT_FODDER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER, BERSERK_BOSSES, BERSERK_FODDER, DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER, NARUTO_BOSSES, NARUTO_FODDER, SDS_BOSSES, SDS_FODDER, ONEPIECE_BOSSES, ONEPIECE_FODDER, DRAGONBALL_BOSSES, DRAGONBALL_FODDER, HXH_BOSSES, HXH_FODDER, SAKAMOTO_BOSSES, SAKAMOTO_FODDER, SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER, MUSHOKU_BOSSES, MUSHOKU_FODDER, CODEGEASS_BOSSES, CODEGEASS_FODDER, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER]
     for bosses_dict in all_bosses:
         if boss_name in bosses_dict:
             boss_hp = bosses_dict[boss_name]["hp"]
@@ -953,13 +578,9 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         await q.message.reply_text("❌ باس پیدا نشد.")
         return
-        
     create_battle(user_id, boss_name, char[5], boss_hp)
     battle_data = get_battle(user_id)
-    text = build_battle_message(battle_data, char)
-    await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(
-        get_battle_kb(char[2], user_id)
-    ))
+    await q.message.reply_text(build_battle_message(battle_data, char), reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -972,10 +593,8 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     if action == "surrender":
         end_battle(battle["id"])
-        try:
-            await q.edit_message_text("🏳️ تسلیم شدی!")
-        except Exception:
-            await q.message.reply_text("🏳️ تسلیم شدی!")
+        try: await q.edit_message_text("🏳️ تسلیم شدی!")
+        except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
     if action in ("ability_1", "ability_2", "ability_3"):
         status, text, battle = player_ability_v2(battle, char, action)
@@ -998,10 +617,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not abilities:
             await q.answer("❌ Ability خریداری‌شده نداری.", show_alert=True)
             return
-        kb = []
-        for a in abilities:
-            fa = ABILITY_FA.get(a, a)
-            kb.append([InlineKeyboardButton(fa, callback_data=f"shopab_{a}")])
+        kb = [[InlineKeyboardButton(ABILITY_FA.get(a, a), callback_data=f"shopab_{a}")] for a in abilities]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
         await q.message.reply_text("🔥 Ability خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
         return
@@ -1010,19 +626,14 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if not buffs:
             await q.answer("❌ باف خریداری‌شده نداری.", show_alert=True)
             return
-        kb = []
-        for b in buffs:
-            fa = BUFF_FA.get(b, b)
-            kb.append([InlineKeyboardButton(fa, callback_data=f"shopbf_{b}")])
+        kb = [[InlineKeyboardButton(BUFF_FA.get(b, b), callback_data=f"shopbf_{b}")] for b in buffs]
         kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
         await q.message.reply_text("✨ باف خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
         return
     elif action == "back":
         text = build_battle_message(battle, char)
-        try:
-            await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-        except Exception:
-            await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+        try: await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+        except Exception: await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
         return
     elif action == "domain":
         if char[2] not in DOMAINS_JJK:
@@ -1045,14 +656,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         shadows_text = "💀 **سایه‌های تو:**\n\n"
         for i, (sname, atk_bonus) in enumerate(shadows, 1):
             shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
-        total_bonus = sum(s[1] for s in shadows)
-        shadows_text += f"\n⚔️ مجموع ATK: +{total_bonus}"
-        try:
-            await q.edit_message_text(shadows_text, reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")]
-            ]))
-        except Exception:
-            await q.message.reply_text(shadows_text)
+        shadows_text += f"\n⚔️ مجموع ATK: +{sum(s[1] for s in shadows)}"
+        try: await q.edit_message_text(shadows_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")]]))
+        except Exception: await q.message.reply_text(shadows_text)
         return
     else:
         return
@@ -1062,33 +668,23 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         arise_text = ""
         try:
             success, msg = try_arise(user_id, char[2], battle["boss_name"])
-            if success:
-                arise_text = msg
-        except Exception as e:
-            print(f"Arise error: {e}")
+            if success: arise_text = msg
+        except Exception: pass
         end_battle(battle["id"])
         final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
-        try:
-            await q.edit_message_text(final_text)
-        except Exception:
-            await q.message.reply_text(final_text)
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
         end_battle(battle["id"])
-        try:
-            await q.edit_message_text(f"{text}\n\n💀 باختی!")
-        except Exception:
-            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
     update_battle(battle)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -1097,44 +693,30 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = q.from_user.id
     char = get_active_character(user_id)
     battle = get_battle(user_id)
-    if not battle:
-        return
-    if not use_item(user_id, item_name):
-        await q.message.reply_text("❌ آیتم نداری.")
-        return
+    if not battle or not use_item(user_id, item_name): return
     status, text, battle = player_item(battle, char, item_name)
     if status == "won":
         reward = finish_battle(user_id, battle["boss_name"], True)
         arise_text = ""
         try:
             success, msg = try_arise(user_id, char[2], battle["boss_name"])
-            if success:
-                arise_text = msg
-        except Exception as e:
-            print(f"Arise error: {e}")
+            if success: arise_text = msg
+        except Exception: pass
         end_battle(battle["id"])
         final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
-        try:
-            await q.edit_message_text(final_text)
-        except Exception:
-            await q.message.reply_text(final_text)
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
         end_battle(battle["id"])
-        try:
-            await q.edit_message_text(f"{text}\n\n💀 باختی!")
-        except Exception:
-            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
     update_battle(battle)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -1143,45 +725,32 @@ async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TY
     user_id = q.from_user.id
     char = get_active_character(user_id)
     battle = get_battle(user_id)
-    if not battle:
-        return
+    if not battle: return
     status, text, battle = player_ability_shop(battle, char, ability_name)
-    try:
-        remove_user_ability(user_id, char[2], ability_name)
-    except Exception as e:
-        print(f"Remove ability error: {e}")
+    try: remove_user_ability(user_id, char[2], ability_name)
+    except Exception: pass
     if status == "won":
         reward = finish_battle(user_id, battle["boss_name"], True)
         arise_text = ""
         try:
             success, msg = try_arise(user_id, char[2], battle["boss_name"])
-            if success:
-                arise_text = msg
-        except Exception as e:
-            print(f"Arise error: {e}")
+            if success: arise_text = msg
+        except Exception: pass
         end_battle(battle["id"])
         final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
-        try:
-            await q.edit_message_text(final_text)
-        except Exception:
-            await q.message.reply_text(final_text)
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
         end_battle(battle["id"])
-        try:
-            await q.edit_message_text(f"{text}\n\n💀 باختی!")
-        except Exception:
-            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
     update_battle(battle)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -1190,8 +759,7 @@ async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     user_id = q.from_user.id
     char = get_active_character(user_id)
     battle = get_battle(user_id)
-    if not battle:
-        return
+    if not battle: return
     status, text, battle = player_buff_shop(battle, char, buff_name)
     remove_user_buff(user_id, char[2], buff_name)
     if status == "won":
@@ -1199,71 +767,45 @@ async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         arise_text = ""
         try:
             success, msg = try_arise(user_id, char[2], battle["boss_name"])
-            if success:
-                arise_text = msg
-        except Exception as e:
-            print(f"Arise error: {e}")
+            if success: arise_text = msg
+        except Exception: pass
         end_battle(battle["id"])
         final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
-        try:
-            await q.edit_message_text(final_text)
-        except Exception:
-            await q.message.reply_text(final_text)
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
         end_battle(battle["id"])
-        try:
-            await q.edit_message_text(f"{text}\n\n💀 باختی!")
-        except Exception:
-            await q.message.reply_text(f"{text}\n\n💀 باختی!")
+        try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
     update_battle(battle)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
+    if not get_active_character(user_id):
         await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
         return
     text = get_player_region_view(user_id)
-    kb = [
-        [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
-        [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
-        [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
-        [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
-        [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
-        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
-         InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
-    ]
+    kb = [[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
 
 async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     region_key = q.data.replace("world_", "")
     user_id = q.from_user.id
-    unlocked = get_unlocked_regions(user_id)
-    if region_key not in unlocked:
+    if region_key not in get_unlocked_regions(user_id):
         can, msg = can_unlock_region(user_id, region_key)
         if not can:
             await q.answer(msg, show_alert=True)
             return
         unlock_world_region(user_id, region_key)
     update_world_region(user_id, region_key)
-    text = get_region_view(user_id, region_key)
-    kb = [
-        [InlineKeyboardButton("🚶 گشتن", callback_data=f"explore_{region_key}")],
-        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-    ]
-    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
+    await q.edit_message_text(get_region_view(user_id, region_key), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🚶 گشتن", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]))
 
 async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -1281,22 +823,10 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         enemy_name = random.choice(region["enemies"])
         char = get_active_character(user_id)
         existing = get_battle(user_id)
-        if existing:
-            end_battle(existing["id"])
-        enemy_hp = 20000
-        if region_key == "forest":
-            enemy_hp = 20000
-        elif region_key == "desert":
-            enemy_hp = 50000
-        elif region_key == "mountain":
-            enemy_hp = 120000
-        elif region_key == "volcano":
-            enemy_hp = 250000
-        elif region_key == "dungeon":
-            enemy_hp = 500000
+        if existing: end_battle(existing["id"])
+        enemy_hp = 20000 if region_key == "forest" else (50000 if region_key == "desert" else (120000 if region_key == "mountain" else (250000 if region_key == "volcano" else 500000)))
         create_battle(user_id, enemy_name, char[5], enemy_hp)
-        battle_data = get_battle(user_id)
-        text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
+        text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(get_battle(user_id), char)
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     elif event == "treasure":
         t_key, t_data = random_treasure()
@@ -1306,22 +836,17 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
                 add_coins(user_id, amount)
                 reward_text = f"💰 +{amount:,} سکه"
             elif t_data["type"] == "item":
-                try:
-                    item_names = ["Health Potion", "Mega Potion", "Damage Boost", "Bomb"]
-                    chosen_item = random.choice(item_names)
-                    conn = sqlite3.connect(DB_NAME)
-                    c = conn.cursor()
-                    c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?", (user_id, chosen_item))
-                    row = c.fetchone()
-                    if row:
-                        c.execute("UPDATE items SET quantity = quantity + 1 WHERE id=?", (row[0],))
-                    else:
-                        c.execute("INSERT INTO items (user_id, item_name, quantity) VALUES (?,?,1)", (user_id, chosen_item))
-                    conn.commit()
-                    conn.close()
-                    reward_text = f"🎁 آیتم: {chosen_item}"
-                except Exception as e:
-                    reward_text = f"❌ خطا در دادن آیتم: {e}"
+                item_names = ["Health Potion", "Mega Potion", "Damage Boost", "Bomb"]
+                chosen_item = random.choice(item_names)
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?", (user_id, chosen_item))
+                row = c.fetchone()
+                if row: c.execute("UPDATE items SET quantity = quantity + 1 WHERE id=?", (row[0],))
+                else: c.execute("INSERT INTO items (user_id, item_name, quantity) VALUES (?,?,1)", (user_id, chosen_item))
+                conn.commit()
+                conn.close()
+                reward_text = f"🎁 آیتم: {chosen_item}"
             else:
                 reward_text = f"✨ {t_data['effect']}"
             add_world_treasure(user_id, t_data["name"])
@@ -1329,19 +854,13 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             text = f"🎁 یه صندوق پیدا کردی!\n\n{format_treasure(t_key, t_data)}\n\n🎉 جایزه: {reward_text}"
         else:
             text = "🎁 صندوق خالی بود..."
-        kb = [
-            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-        ]
+        kb = [[InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
     elif event == "mine":
         amount = random_reward(region_key) // 4
         add_coins(user_id, amount)
         text = f"💎 یه معدن پیدا کردی!\n\n💰 +{amount:,} سکه"
-        kb = [
-            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-        ]
+        kb = [[InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
     elif event == "gate":
         all_regions = list(REGIONS.keys())
@@ -1349,49 +868,25 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         if current_idx + 1 < len(all_regions):
             next_region = all_regions[current_idx + 1]
             unlocked_new = unlock_world_region(user_id, next_region)
-            if unlocked_new:
-                text = f"🚪 دروازه باز شد!\n\n🎉 منطقه جدید باز شد: {get_region_name(next_region)}"
-            else:
-                text = f"🚪 دروازه به {get_region_name(next_region)}"
+            text = f"🚪 دروازه باز شد!\n\n🎉 منطقه جدید باز شد: {get_region_name(next_region)}" if unlocked_new else f"🚪 دروازه به {get_region_name(next_region)}"
         else:
             text = "🚪 دروازه به جایی نمی‌ره..."
-        kb = [
-            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-        ]
+        kb = [[InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
     elif event == "riddle":
-        riddle_rewards = [500, 2000, 5000, 10000]
-        reward = random.choice(riddle_rewards)
+        reward = random.choice([500, 2000, 5000, 10000])
         add_coins(user_id, reward)
         text = f"❓ یه معما حل کردی!\n\n💰 +{reward:,} سکه"
-        kb = [
-            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-        ]
+        kb = [[InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
     elif event == "rare_boss":
         boss_name = region["boss"]
         char = get_active_character(user_id)
         existing = get_battle(user_id)
-        if existing:
-            end_battle(existing["id"])
-        boss_hp = 50000
-        if boss_name == "Saitama Phase 1":
-            boss_hp = 160000
-        elif region_key == "forest":
-            boss_hp = 50000
-        elif region_key == "desert":
-            boss_hp = 120000
-        elif region_key == "mountain":
-            boss_hp = 300000
-        elif region_key == "volcano":
-            boss_hp = 600000
-        elif region_key == "dungeon":
-            boss_hp = 150000
+        if existing: end_battle(existing["id"])
+        boss_hp = 50000 if region_key == "forest" else (120000 if region_key == "desert" else (300000 if region_key == "mountain" else (600000 if region_key == "volcano" else 150000)))
         create_battle(user_id, boss_name, char[5], boss_hp)
-        battle_data = get_battle(user_id)
-        text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
+        text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(get_battle(user_id), char)
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     elif event == "trap":
         loss = random_reward(region_key) // 4
@@ -1401,51 +896,24 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             text = f"💀 توی تله افتادی!\n\n💸 -{loss:,} سکه"
         else:
             text = "💀 توی تله افتادی! ولی پولی نداشتی..."
-        kb = [
-            [InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-        ]
+        kb = [[InlineKeyboardButton("🚶 گشتن دوباره", callback_data=f"explore_{region_key}")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
 
 async def world_progress_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = format_world_progress(q.from_user.id)
-    kb = [
-        [InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
-        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-    ]
-    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
+    await q.edit_message_text(format_world_progress(q.from_user.id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]))
 
 async def world_treasures_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = format_treasures_list(q.from_user.id)
-    kb = [
-        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress")],
-        [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
-    ]
-    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
+    await q.edit_message_text(format_treasures_list(q.from_user.id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]))
 
 async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    text = get_player_region_view(q.from_user.id)
-    kb = [
-        [InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")],
-        [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")],
-        [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")],
-        [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")],
-        [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")],
-        [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"),
-         InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
-    ]
-    await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
-
+    kb = [[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]
+    await q.edit_message_text(get_player_region_view(q.from_user.id), reply_markup=InlineKeyboardMarkup(kb))
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -1458,9 +926,7 @@ async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         q = QUESTS[key]
         status = "CLAIMED" if claimed else ("READY" if completed else f"{prog}/{q['target']}")
         text += f"- {q['desc']} [{status}] (+{q['reward']})\n"
-    text += "\nClaim: /claim <quest_key>"
     await update.message.reply_text(text)
-
 
 async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not ctx.args:
@@ -1470,221 +936,198 @@ async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if key not in QUESTS:
         await update.message.reply_text("Invalid quest key.")
         return
-    msg = claim_quest(update.effective_user.id, key)
-    await update.message.reply_text(msg)
-
+    await update.message.reply_text(claim_quest(update.effective_user.id, key))
 
 async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    kb = [
-        [InlineKeyboardButton("Top by Coins", callback_data="lb_coins")],
-        [InlineKeyboardButton("Top by Level", callback_data="lb_level")],
-        [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")],
-    ]
+    kb = [[InlineKeyboardButton("Top by Coins", callback_data="lb_coins")], [InlineKeyboardButton("Top by Level", callback_data="lb_level")], [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")]]
     await update.message.reply_text("Leaderboard:", reply_markup=InlineKeyboardMarkup(kb))
-
 
 async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    data = q.data
-    if data == "lb_coins":
-        rows = get_top_by_coins(10)
-        text = "Top 10 by Coins:\n\n"
-        for i, (name, coins) in enumerate(rows, 1):
-            text += f"{i}. {name or 'Unknown'} - {coins:,}\n"
+    if q.data == "lb_coins":
+        text = "Top 10 by Coins:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {coins:,}\n" for i, (name, coins) in enumerate(get_top_by_coins(10), 1)])
         await q.message.reply_text(text)
-    elif data == "lb_level":
-        rows = get_top_by_level(10)
-        text = "Top 10 by Level:\n\n"
-        for i, (name, char, rank, level) in enumerate(rows, 1):
-            text += f"{i}. {name or 'Unknown'} - {char} ({rank}) Lv{level}\n"
+    elif q.data == "lb_level":
+        text = "Top 10 by Level:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank}) Lv{level}\n" for i, (name, char, rank, level) in enumerate(get_top_by_level(10), 1)])
         await q.message.reply_text(text)
-    elif data == "lb_rank":
-        rows = get_top_by_rank(10)
-        text = "Top 10 by Rank:\n\n"
-        for i, (name, char, rank) in enumerate(rows, 1):
-            text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
+    elif q.data == "lb_rank":
+        text = "Top 10 by Rank:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank})\n" for i, (name, char, rank) in enumerate(get_top_by_rank(10), 1)])
         await q.message.reply_text(text)
-async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
+
+async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guild = get_user_guild(update.effective_user.id)
+    if not guild:
+        await update.message.reply_text(f"🏰 تو توی هیچ کلنی نیستی!\n\n📝 ساخت: /guild_create <name>\n🔍 پیوستن: /guild_join <name>\n📋 لیست: /guild_list\n\n💰 هزینه: {GUILD_CREATE_COST:,} سکه\n⭐ حداقل لول: {GUILD_MIN_LEVEL}")
         return
-    kb = [
-        [InlineKeyboardButton("🌀 JJK Bosses", callback_data="coop_jjk")],
-        [InlineKeyboardButton("🏴‍☠️ One Piece Bosses", callback_data="coop_op")],
-        [InlineKeyboardButton("🗡️ Solo Leveling Bosses", callback_data="coop_solo")],
-    ]
+    kb = [[InlineKeyboardButton("👥 اعضا", callback_data="guild_members"), InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")], [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"), InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")], [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")]]
+    await update.message.reply_text(format_guild(guild), reply_markup=InlineKeyboardMarkup(kb))
+
+async def guild_create(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args: return await update.message.reply_text("❌ Usage: /guild_create <name>")
+    char = get_active_character(update.effective_user.id)
+    if not char: return await update.message.reply_text("❌ کاراکتر فعال نداری!")
+    await update.message.reply_text(create_new_guild(update.effective_user.id, " ".join(ctx.args), char[4]))
+
+async def guild_join(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args: return await update.message.reply_text("❌ Usage: /guild_join <name>")
+    await update.message.reply_text(join_existing_guild(update.effective_user.id, " ".join(ctx.args)))
+
+async def guild_leave(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(leave_current_guild(update.effective_user.id))
+
+async def guild_donate(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args: return await update.message.reply_text("❌ Usage: /guild_donate <amount>")
+    try: amount = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ عدد معتبر بده!")
+    await update.message.reply_text(donate(update.effective_user.id, amount))
+
+async def guild_upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(try_upgrade_guild(update.effective_user.id))
+
+async def guild_members_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guild = get_user_guild(update.effective_user.id)
+    if not guild: return await update.message.reply_text("❌ تو توی کلنی نیستی!")
+    await update.message.reply_text(format_members(guild))
+
+async def guild_kick(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args: return await update.message.reply_text("❌ Usage: /guild_kick <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده!")
+    await update.message.reply_text(kick_member(update.effective_user.id, target_id))
+
+async def guild_list(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guilds = get_top_guilds(10)
+    if not guilds: return await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+    text = "🏰 کلن‌های برتر:\n━━━━━━━━━━━━━━━━━━━\n\n"
+    for i, g in enumerate(guilds, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        text += f"{medal} {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
+    await update.message.reply_text(text)
+
+async def guild_leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    guilds = get_top_guilds(10)
+    if not guilds: return await update.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+    text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
+    for i, g in enumerate(guilds, 1):
+        text += f"{i}. {g[1]}\n   ⭐ سطح {g[3]} | ⚡ {g[4]:,} XP | 💰 {g[5]:,}\n\n"
+    await update.message.reply_text(text)
+
+async def guild_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data
+    user_id = q.from_user.id
+    if data == "guild_members":
+        guild = get_user_guild(user_id)
+        await q.message.reply_text(format_members(guild) if guild else "❌ تو توی کلنی نیستی!")
+    elif data == "guild_donate_info":
+        await q.message.reply_text("💰 دونیت به خزانه کلن\n\nدستور: /guild_donate <amount>\nمثال: /guild_donate 50000\n\n🎁 هر ۵۰,۰۰۰ سکه = ۵ XP به کلن")
+    elif data == "guild_upgrade":
+        await q.message.reply_text(try_upgrade_guild(user_id))
+    elif data == "guild_leave":
+        await q.message.reply_text(leave_current_guild(user_id))
+    elif data == "guild_top":
+        guilds = get_top_guilds(10)
+        if not guilds: return await q.message.reply_text("📭 هنوز هیچ کلنی ساخته نشده!")
+        text = "🏆 برترین کلن‌ها:\n━━━━━━━━━━━━━━━━━━━\n\n"
+        for i, g in enumerate(guilds, 1):
+            text += f"{i}. {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
+        await q.message.reply_text(text)
+
+# ============ PVP & COOP ============
+
+async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not get_active_character(user_id): return await update.message.reply_text("No active character.")
+    session_id = f"pvp_{user_id}"
+    PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
+    await update.message.reply_text(f"⚔️ PvP session: {session_id}\nOpponent: /joinpvp {session_id}")
+
+async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args: return await update.message.reply_text("Usage: /joinpvp <session_id>")
+    session_id = ctx.args[0]
+    if session_id not in PVP_SESSIONS: return await update.message.reply_text("Not found.")
+    s = PVP_SESSIONS[session_id]
+    user_id = update.effective_user.id
+    if user_id == s["host"]: return await update.message.reply_text("Can't fight yourself.")
+    char = get_active_character(user_id)
+    if not char: return await update.message.reply_text("No active character.")
+    char_host = get_active_character(s["host"])
+    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]), "hp": char_host[5], "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7], "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
+    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id), "hp": char[5], "max_hp": char[5], "atk": char[6], "def": char[7], "dodge": char[8], "defending": 0, "dodged_next": 0}]
+    create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"], players=[s["host"], user_id], team1=team1, team2=team2)
+    battle = get_multi_battle(session_id)
+    next_player, _ = get_player(battle, battle["current_turn"])
+    next_char = next_player["name"] if next_player else char_host[2]
+    await update.message.reply_text(build_battle_view(battle), reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id, next_char, battle["current_turn"], battle["current_turn"])))
+
+async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not get_active_character(update.effective_user.id): return await update.message.reply_text("No active character.")
+    kb = [[InlineKeyboardButton("🌀 JJK Bosses", callback_data="coop_jjk")], [InlineKeyboardButton("🏴‍☠️ One Piece Bosses", callback_data="coop_op")], [InlineKeyboardButton("🗡️ Solo Leveling Bosses", callback_data="coop_solo")]]
     await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
 
 async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     boss_name = q.data.replace("coopboss_", "")
-    host_id = q.from_user.id
-    safe_boss = boss_name.replace(" ", "_").replace("+", "plus")
-    session_id = f"coop_{host_id}_{safe_boss}"
-    COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
-    await q.message.reply_text(
-        f"👥 Co-op: {boss_name}\nSession: {session_id}\n"
-        f"Others: /join {session_id}\nHost: /startcoop {session_id}"
-    )
+    session_id = f"coop_{q.from_user.id}_{boss_name.replace(' ', '_')}"
+    COOP_SESSIONS[session_id] = {"host": q.from_user.id, "boss": boss_name, "players": [q.from_user.id]}
+    await q.message.reply_text(f"👥 Co-op: {boss_name}\nSession: {session_id}\nOthers: /join {session_id}\nHost: /startcoop {session_id}")
 
 async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /join <session_id>")
-        return
+    if not ctx.args: return await update.message.reply_text("Usage: /join <session_id>")
     session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
+    if session_id not in COOP_SESSIONS: return await update.message.reply_text("Session not found.")
     user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("Need active character.")
-        return
+    if not get_active_character(user_id): return await update.message.reply_text("Need active character.")
     s = COOP_SESSIONS[session_id]
-    if user_id in s["players"]:
-        await update.message.reply_text("Already joined!")
-        return
-    if len(s["players"]) >= 2:
-        await update.message.reply_text("Session full.")
-        return
+    if user_id in s["players"]: return await update.message.reply_text("Already joined!")
+    if len(s["players"]) >= 2: return await update.message.reply_text("Session full.")
     s["players"].append(user_id)
     await update.message.reply_text("✅ Joined!")
 
 async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startcoop <session_id>")
-        return
+    if not ctx.args: return await update.message.reply_text("Usage: /startcoop <session_id>")
     session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
+    if session_id not in COOP_SESSIONS: return await update.message.reply_text("Session not found.")
     s = COOP_SESSIONS[session_id]
-    if update.effective_user.id != s["host"]:
-        await update.message.reply_text("Only host can start.")
-        return
-    if len(s["players"]) < 2:
-        await update.message.reply_text("Need 2 players.")
-        return
+    if update.effective_user.id != s["host"]: return await update.message.reply_text("Only host can start.")
+    if len(s["players"]) < 2: return await update.message.reply_text("Need 2 players.")
     p1_id, p2_id = s["players"][0], s["players"][1]
-    char1 = get_active_character(p1_id)
-    char2 = get_active_character(p2_id)
+    char1, char2 = get_active_character(p1_id), get_active_character(p2_id)
     boss_hp = 5000
-    if s["boss"] in BLEACH_BOSSES:
-        boss_hp = BLEACH_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES_JJK:
-        boss_hp = BOSSES_JJK[s["boss"]]["hp"]
-    team1 = [
-        {"uid": p1_id, "name": char1[2], "display": get_username(p1_id), "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7], "dodge": char1[8], "defending": 0, "dodged_next": 0},
-        {"uid": p2_id, "name": char2[2], "display": get_username(p2_id), "hp": char2[5], "max_hp": char2[5], "atk": char2[6], "def": char2[7], "dodge": char2[8], "defending": 0, "dodged_next": 0},
-    ]
+    if s["boss"] in BLEACH_BOSSES: boss_hp = BLEACH_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in BOSSES_JJK: boss_hp = BOSSES_JJK[s["boss"]]["hp"]
+    team1 = [{"uid": p1_id, "name": char1[2], "display": get_username(p1_id), "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7], "dodge": char1[8], "defending": 0, "dodged_next": 0}, {"uid": p2_id, "name": char2[2], "display": get_username(p2_id), "hp": char2[5], "max_hp": char2[5], "atk": char2[6], "def": char2[7], "dodge": char2[8], "defending": 0, "dodged_next": 0}]
     create_multi_battle(session_id=session_id, battle_type="coop", host_id=s["host"], players=[p1_id, p2_id], team1=team1, team2=[], boss_name=s["boss"], boss_hp=boss_hp)
     battle = get_multi_battle(session_id)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id, char1[2], battle["current_turn"], p1_id))
-    )
-
-async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("No active character.")
-        return
-    session_id = f"pvp_{user_id}"
-    PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
-    await update.message.reply_text(f"⚔️ PvP session: {session_id}\nOpponent: /joinpvp {session_id}")
-
-async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /joinpvp <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in PVP_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = PVP_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    if user_id == s["host"]:
-        await update.message.reply_text("Can't fight yourself.")
-        return
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    char_host = get_active_character(s["host"])
-    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]), "hp": char_host[5], "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7], "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
-    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id), "hp": char[5], "max_hp": char[5], "atk": char[6], "def": char[7], "dodge": char[8], "defending": 0, "dodged_next": 0}]
-    create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"], players=[s["host"], user_id], team1=team1, team2=team2)
-    battle = get_multi_battle(session_id)
-    current_turn = battle["current_turn"]
-    next_player, _ = get_player(battle, current_turn)
-    next_char = next_player["name"] if next_player else char_host[2]
-    kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
-    await update.message.reply_text(build_battle_view(battle), reply_markup=InlineKeyboardMarkup(kb))
+    await update.message.reply_text(build_battle_view(battle), reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id, char1[2], battle["current_turn"], p1_id)))
 
 async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
-    data = q.data
-    parts = data.split("_", 2)
-    action = parts[1]
-    session_id = parts[2]
+    session_id = q.data.split("_", 2)[2]
+    action = q.data.split("_")[1]
     user_id = q.from_user.id
     battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد فعال نیست!", show_alert=True)
-        return
-    if str(battle["current_turn"]) != str(user_id):
-        await q.answer("⏳ نوبت تو نیست! صبر کن...", show_alert=True)
-        return
-    player, _ = get_player(battle, user_id)
-    if not player:
-        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
-        return
-    if player["hp"] <= 0:
-        await q.answer("💀 تو مرده‌ای!", show_alert=True)
+    if not battle or str(battle["current_turn"]) != str(user_id):
+        await q.answer("⏳ نوبت تو نیست یا نبرد فعال نیست!", show_alert=True)
         return
     await q.answer()
-
-    if action in ("ab1", "ab2", "ab3"):
-        action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
-        status, log = player_action(session_id, user_id, action_map[action])
-    else:
-        status, log = player_action(session_id, user_id, action)
-    if status is None:
-        await q.answer(log, show_alert=True)
-        return
+    action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
+    status, log = player_action(session_id, user_id, action_map.get(action, action))
+    if status is None: return await q.answer(log, show_alert=True)
     if status in ("won", "team1_won", "team2_won", "draw"):
         result = finish_multi_battle(session_id)
         if result:
-            text = "🏆 بردی!\n\n"
-            text += f"{log}\n\n💰 جوایز:\n"
-            for uid, amount in result["rewards"].items():
-                text += f"👤 {get_username(uid)}: +{amount:,} coin\n"
-            try:
-                await q.edit_message_text(text)
-            except Exception:
-                await q.message.reply_text(text)
+            text = "🏆 بردی!\n\n" + log + "\n\n💰 جوایز:\n" + "".join([f"👤 {get_username(uid)}: +{amount:,} coin\n" for uid, amount in result["rewards"].items()])
+            return await q.edit_message_text(text)
         return
     battle = get_multi_battle(session_id)
-    if not battle:
-        return
     view = build_battle_view(battle)
-    log_lines = log.split("\n")
-    if len(log_lines) > 5:
-        log = "\n".join(log_lines[-5:])
-    full_text = f"{log}\n\n{view}"
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
     next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
+    kb = get_multi_kb(session_id, next_player["name"] if next_player else None, battle["current_turn"], battle["current_turn"])
+    await q.edit_message_text(f"{log}\n\n{view}"[:3500], reply_markup=InlineKeyboardMarkup(kb))
 async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id):
         await update.message.reply_text("❌ تو ادمین نیستی!")
@@ -1812,46 +1255,51 @@ def main():
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
+    
+    # Shop
     app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
+    app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
+    app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
+    app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
     app.add_handler(CallbackQueryHandler(buy_ability_callback, pattern="^buyab_"))
     app.add_handler(CallbackQueryHandler(buy_item_callback, pattern="^buyit_"))
     app.add_handler(CallbackQueryHandler(buy_buff_callback, pattern="^buybf_"))
     
-    # 🆕 Battle Handlers
-    app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
+    # Battle
+    app.add_handler(CallbackQueryHandler(battle, pattern="^battle$"))
     app.add_handler(CallbackQueryHandler(bosses_anime_callback, pattern="^bosses_"))
     app.add_handler(CallbackQueryHandler(battle_back_callback, pattern="^battle_back$"))
+    app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(action_callback, pattern="^act_"))
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
     app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
     app.add_handler(CallbackQueryHandler(shop_buff_use_callback, pattern="^shopbf_"))
     
+    # Coop & Multi
     app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
     app.add_handler(CallbackQueryHandler(multi_action_callback, pattern="^mb_(attack|defend|dodge|ab1|ab2|ab3)_"))
     
+    # World
     app.add_handler(CallbackQueryHandler(world_region_callback, pattern="^world_(forest|desert|mountain|volcano|dungeon)$"))
     app.add_handler(CallbackQueryHandler(world_explore_callback, pattern="^explore_"))
     app.add_handler(CallbackQueryHandler(world_progress_callback, pattern="^world_progress$"))
     app.add_handler(CallbackQueryHandler(world_treasures_callback, pattern="^world_treasures$"))
     app.add_handler(CallbackQueryHandler(world_back_callback, pattern="^world_back$"))
     
+    # Guild & Leaderboard
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # 🆕 Modes Menu Callbacks
+    # Modes
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
-
-    # Modes Game Callbacks
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
-
-    # Modes Back
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
 
-    # 🆕 Arise
+    # Arise
     app.add_handler(CallbackQueryHandler(arise_callback, pattern="^arise_show$"))
     app.add_handler(CallbackQueryHandler(shadows_back_callback, pattern="^shadows_back$"))
 
