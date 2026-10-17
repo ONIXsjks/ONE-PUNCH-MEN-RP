@@ -16,9 +16,10 @@ SDS_STATS = {
         "hp": 2450, "atk": 490, "def": 195, "dodge": 40,
         "price": 4500000,
     },
-    "King": {
-        "hp": 2300, "atk": 480, "def": 190, "dodge": 38,
-        "price": 4000000,
+    "Harley Quinn": {
+    "hp": 2500, "atk": 540, "def": 220, "dodge": 42,
+    "price": 5000000,
+},
     },
     "Merlin": {
         "hp": 2200, "atk": 500, "def": 185, "dodge": 35,
