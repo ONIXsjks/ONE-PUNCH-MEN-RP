@@ -91,7 +91,7 @@ from tokyoghoul_stats import TOKYOGHOUL_STATS
 
 from world import (REGIONS, TREASURES, get_region, get_region_name, random_explore_event, random_treasure, random_reward, can_unlock_region, get_player_region_view, get_region_view, format_treasure, format_world_progress, format_treasures_list)
 from anime_registry import (ANIME_REGISTRY, get_anime, get_anime_list, get_characters_by_anime, get_char_price_by_anime, find_char_anime, get_anime_bosses, get_anime_shop_abilities)
-from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
+from modes import (modes_cmd, castle_cmd, castle_callback, zombie_cmd, zombie_callback, tower_cmd, tower_callback), castle_callback, join_castle_cmd, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
 from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 from gift import send_gift, get_gift_history, get_top_givers
 
@@ -1289,7 +1289,6 @@ def main():
     # 🆕 MODES Commands
     app.add_handler(CommandHandler("modes", modes_cmd))
     app.add_handler(CommandHandler("castle", castle_cmd))
-    app.add_handler(CommandHandler("joincastle", join_castle_cmd))
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
 
