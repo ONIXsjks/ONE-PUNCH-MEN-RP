@@ -169,7 +169,7 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
 
-# 🆕 قفل منوها (ذخیره و چک کردن)
+# 🆕 قفل منوها
 def save_menu_owner(ctx, menu_name, user_id):
     ctx.user_data[f"owner_{menu_name}"] = user_id
 
@@ -227,15 +227,41 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if char_name == "Sung Jin-Woo":
         arise_text = f"\n💀 **Arise:** {get_shadows_count(user_id, char_name)}/{MAX_SHADOWS} (+{get_shadows_atk_bonus(user_id, char_name)} ATK)\n"
     
-    ce_text = ""
+    # 🆕 نمایش انرژی‌ها
+    energy_text = ""
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
-        c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-        row = c.fetchone()
-        conn.close()
-        if row:
-            ce_text = f"\n🔮 **انرژی نفرینی:** {row[0]}/{row[1]}\n"
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+            row = c.fetchone()
+            conn.close()
+            if row:
+                energy_text = f"\n🔮 **انرژی نفرینی:** {row[0]}/{row[1]}\n"
+        except Exception:
+            pass
+    elif char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH:
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+            row = c.fetchone()
+            conn.close()
+            if row:
+                energy_text = f"\n👻 **ریستو:** {row[0]}/{row[1]}\n"
+        except Exception:
+            pass
+    elif char_name in ABILITIES_CODEGEASS:
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+            row = c.fetchone()
+            conn.close()
+            if row:
+                energy_text = f"\n👁️ **گیاس:** {row[0]}/{row[1]}\n"
+        except Exception:
+            pass
     
     text = (
         f"╔══════════════════════════╗\n║      👤 @{username[:14].center(14)} ║\n╚══════════════════════════╝\n\n"
@@ -243,7 +269,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         f"⚔️ آمار کاراکتر:\n├ ❤️ HP: {hp:,}\n├ ⚔️ ATK: {atk:,}\n├ 🛡️ DEF: {dfn:,}\n├ 💨 DODGE: {dodge}%\n└ 🎰 Slots: {slots}\n\n"
         f"🔥 Ability ها:\n{abs_text}\n"
         f"🌀 Domain: {'✅' if has_domain else '❌'}{domain_name}\n⚔️ Bankai: {'✅' if has_bankai else '❌'}{bankai_name}\n"
-        f"{arise_text}{ce_text}\n💰 سکه: {get_coins(user_id):,}\n━━━━━━━━━━━━━━━━━━━━━━━━"
+        f"{arise_text}{energy_text}\n💰 سکه: {get_coins(user_id):,}\n━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     kb = [
         [InlineKeyboardButton("🎭 تغییر کاراکتر", callback_data="prof_select"), InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
@@ -326,7 +352,7 @@ async def edit_shop_msg(q, caption, keyboard):
             except Exception:
                 await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
 
-# 🆕 دستور ارتقای انرژی نفرینی
+# 🆕 دستور ارتقای انرژی نفرینی (JJK)
 async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -365,6 +391,86 @@ async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     conn.close()
     
     await update.message.reply_text(f"✅ انرژی نفرینی +۱۰ (حداکثر جدید: {min(max_ce + 10, 500)})")
+
+# 🆕 دستور ارتقای ریستو (Bleach)
+async def upgrade_rei(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+        
+    if char[2] not in BLEACH_BANKAI and char[2] not in ABILITIES_BLEACH:
+        await update.message.reply_text("❌ این کاراکتر ریستو نداره!")
+        return
+        
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+        
+    rei, max_rei = row[0], row[1]
+    
+    if max_rei >= 500:
+        conn.close()
+        await update.message.reply_text("❌ ریستو به حداکثر (۵۰۰) رسیده!")
+        return
+        
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+        
+    c.execute("UPDATE characters SET max_reiatsu = max_reiatsu + 10, reiatsu = reiatsu + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    
+    await update.message.reply_text(f"✅ ریستو +۱۰ (حداکثر جدید: {min(max_rei + 10, 500)})")
+
+# 🆕 دستور ارتقای گیاس (Code Geass)
+async def upgrade_geass(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+        
+    if char[2] not in ABILITIES_CODEGEASS:
+        await update.message.reply_text("❌ این کاراکتر گیاس نداره!")
+        return
+        
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+        
+    geass, max_geass = row[0], row[1]
+    
+    if max_geass >= 500:
+        conn.close()
+        await update.message.reply_text("❌ گیاس به حداکثر (۵۰۰) رسیده!")
+        return
+        
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+        
+    c.execute("UPDATE characters SET max_geass_power = max_geass_power + 10, geass_power = geass_power + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    
+    await update.message.reply_text(f"✅ گیاس +۱۰ (حداکثر جدید: {min(max_geass + 10, 500)})")
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1233,6 +1339,7 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_name = " ".join(caption.split()[1:])
     
+    # 🆕 ذخیره آیدی دائمی عکس (file_id) به جای لینک موقت
     photo_file_id = update.message.photo[-1].file_id
     from database import set_char_image_db
     set_char_image_db(char_name, photo_file_id)
@@ -1277,7 +1384,9 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🗺️ /world - دنیای آزاد\n"
         "🏆 /leaderboard - لیدربورد\n"
         "🎁 /gift - هدیه دادن\n"
-        "🔮 /upgradece - ارتقای انرژی نفرینی\n\n"
+        "🔮 /upgradece - ارتقای انرژی نفرینی (JJK)\n"
+        "👻 /upgraderei - ارتقای ریستو (Bleach)\n"
+        "👁️ /upgradegeass - ارتقای گیاس (Code Geass)\n\n"
         "🔧 /admin - پنل ادمین"
     )
     await update.message.reply_text(text)
@@ -1291,7 +1400,10 @@ async def post_init(app):
         BotCommand("world", "دنیای آزاد"), BotCommand("quests", "کوئست روزانه"),
         BotCommand("leaderboard", "لیدربورد"), BotCommand("guild", "کلن"),
         BotCommand("gift", "هدیه دادن"), BotCommand("modes", "مودها"),
-        BotCommand("upgradece", "ارتقای انرژی نفرینی"), BotCommand("help", "راهنما"),
+        BotCommand("upgradece", "ارتقای انرژی نفرینی"),
+        BotCommand("upgraderei", "ارتقای ریستو"),
+        BotCommand("upgradegeass", "ارتقای گیاس"),
+        BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
 def main():
@@ -1342,8 +1454,10 @@ def main():
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
 
-    # 🆕 Energy Upgrade Command
+    # 🆕 Energy Upgrade Commands
     app.add_handler(CommandHandler("upgradece", upgrade_ce))
+    app.add_handler(CommandHandler("upgraderei", upgrade_rei))
+    app.add_handler(CommandHandler("upgradegeass", upgrade_geass))
 
     # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
@@ -1390,11 +1504,9 @@ def main():
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
-    
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_start_"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_start_"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_start_"))
-    
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
 
     # Arise
