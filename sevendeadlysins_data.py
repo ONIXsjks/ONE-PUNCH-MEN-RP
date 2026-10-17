@@ -7,7 +7,7 @@ CHARACTERS_SDS = {
         "Meliodas": "Dragon's Sin of Wrath",
         "Escanor": "Lion's Sin of Pride",
         "Ban": "Fox's Sin of Greed",
-        "King": "Grizzly's Sin of Sloth",
+        "Harley Quinn": "Queen of Chaos",
         "Merlin": "Boar's Sin of Gluttony",
         "Diane": "Serpent's Sin of Envy",
         "Gowther": "Goat's Sin of Lust",
@@ -60,11 +60,11 @@ ABILITIES_SDS = {
         "ability_2": {"name": "Fox Hunt", "mult": 5},
         "ability_3": {"name": "Hunter Fest", "mult": 10, "once": True},
     },
-    "King": {
-        "ability_1": {"name": "Chastiefol", "mult": 3},
-        "ability_2": {"name": "True Spirit Spear", "mult": 5},
-        "ability_3": {"name": "Sunflower Form", "mult": 10, "once": True},
-    },
+    "Harley Quinn": {
+    "ability_1": {"name": "Mallet Smash", "mult": 3},
+    "ability_2": {"name": "Gotham Mayhem", "mult": 5},
+    "ability_3": {"name": "Chaos Incarnate", "mult": 10, "once": True},
+},
     "Merlin": {
         "ability_1": {"name": "Infinity", "mult": 3},
         "ability_2": {"name": "Exterminate Ray", "mult": 5},
