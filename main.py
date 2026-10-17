@@ -207,6 +207,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     has_domain, has_bankai = get_character_domain_bankai(char_name)
     domain_name = f" - {DOMAINS_JJK[char_name]['name']}" if has_domain else ""
     bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}" if has_bankai else ""
+    
     abs_data = get_character_abilities(char_name)
     abs_text = f"🔵 {abs_data.get('ability_1', {}).get('name', '—')}\n🔴 {abs_data.get('ability_2', {}).get('name', '—')}\n🟣 {abs_data.get('ability_3', {}).get('name', '—')} (۱ بار)\n" if abs_data else "❌ Ability تعریف نشده\n"
     
@@ -228,6 +229,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"), InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
         [InlineKeyboardButton("🗺️ دنیای آزاد", callback_data="prof_world")],
     ]
+    
     img = get_char_image(char_name)
     if img:
         try:
@@ -288,6 +290,7 @@ async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_photo(photo=SHOP_IMAGE, caption="🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await update.message.reply_text("🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+
 async def edit_shop_msg(q, caption, keyboard):
     try:
         await q.edit_message_media(media=InputMediaPhoto(media=SHOP_IMAGE, caption=caption), reply_markup=InlineKeyboardMarkup(keyboard))
@@ -299,7 +302,6 @@ async def edit_shop_msg(q, caption, keyboard):
                 await q.edit_message_text(caption, reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception:
                 await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
-
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -376,6 +378,7 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     else:
         await q.answer("✅ خریداری شد!")
         await q.message.reply_text(f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!")
+
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -914,6 +917,7 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     kb = [[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]
     await q.edit_message_text(get_player_region_view(q.from_user.id), reply_markup=InlineKeyboardMarkup(kb))
+
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -954,7 +958,6 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif q.data == "lb_rank":
         text = "Top 10 by Rank:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank})\n" for i, (name, char, rank) in enumerate(get_top_by_rank(10), 1)])
         await q.message.reply_text(text)
-
 async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     guild = get_user_guild(update.effective_user.id)
     if not guild:
@@ -1137,11 +1140,12 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: عکس رو با کپشن /setcharimage <char_name> بفرست")
         return
     char_name = " ".join(caption.split()[1:])
-    photo_file = await update.message.photo[-1].get_file()
-    image_url = photo_file.file_path 
+    
+    # 🆕 ذخیره آیدی دائمی عکس (file_id) به جای لینک موقت
+    photo_file_id = update.message.photo[-1].file_id
     from database import set_char_image_db
-    set_char_image_db(char_name, image_url)
-    await update.message.reply_text(f"✅ عکس برای {char_name} ثبت شد!")
+    set_char_image_db(char_name, photo_file_id)
+    await update.message.reply_text(f"✅ عکس برای {char_name} با موفقیت ثبت شد!")
 
 async def send_gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     sender_id = update.effective_user.id
@@ -1191,14 +1195,13 @@ async def post_init(app):
         BotCommand("start", "شروع بازی"), BotCommand("profile", "پروفایل"),
         BotCommand("coins", "موجودی سکه"), BotCommand("shop", "شاپ"),
         BotCommand("upgrade", "ارتقای لول"), BotCommand("battle", "باس‌فایت تکی"),
-        BotCommand("pvp", "نبرد 1v1"), BotCommand("team", "نبرد تیمی"),
-        BotCommand("coop", "نبرد گروهی"), BotCommand("world", "دنیای آزاد"),
-        BotCommand("quests", "کوئست روزانه"), BotCommand("leaderboard", "لیدربورد"),
-        BotCommand("guild", "کلن"), BotCommand("gift", "هدیه دادن"),
-        BotCommand("modes", "مودها (قلعه/زامبی/برج)"), BotCommand("help", "راهنما"),
+        BotCommand("pvp", "نبرد 1v1"), BotCommand("coop", "نبرد گروهی"),
+        BotCommand("world", "دنیای آزاد"), BotCommand("quests", "کوئست روزانه"),
+        BotCommand("leaderboard", "لیدربورد"), BotCommand("guild", "کلن"),
+        BotCommand("gift", "هدیه دادن"), BotCommand("modes", "مودها"),
+        BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
-
 def main():
     init_db()
     init_multi_table()
@@ -1266,10 +1269,9 @@ def main():
     app.add_handler(CallbackQueryHandler(buy_buff_callback, pattern="^buybf_"))
     
     # Battle
-    app.add_handler(CallbackQueryHandler(battle, pattern="^battle$"))
+    app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(bosses_anime_callback, pattern="^bosses_"))
     app.add_handler(CallbackQueryHandler(battle_back_callback, pattern="^battle_back$"))
-    app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(action_callback, pattern="^act_"))
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
     app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
