@@ -213,6 +213,8 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
 
     return php, bhp, text
+
+
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -309,8 +311,6 @@ def player_dodge(battle, char):
     if php <= 0:
         return "lost", text, battle
     return "active", text, battle
-
-
 def player_ability(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -586,8 +586,6 @@ def player_buff_shop(battle, char, buff_name):
     if php <= 0:
         return "lost", text, battle
     return "active", text, battle
-
-
 def player_item(battle, char, item_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -601,6 +599,8 @@ def player_item(battle, char, item_name):
     text = box_simple(f"💊 {item_name}!")
     new_php = php
     new_bhp = bhp
+
+    # ============ ITEMS قدیمی ============
     if item_name == "Health Potion":
         new_php = min(pmax, php + 500)
         text += "\n\n💚 HP +۵۰۰"
@@ -614,6 +614,66 @@ def player_item(battle, char, item_name):
     elif item_name == "Bomb":
         new_bhp = max(0, bhp - 500)
         text += "\n\n💥 ۵۰۰ آسیب"
+
+    # ============ 🆕 7 ANIMES NEW ITEMS ============
+    # ---- Solo Leveling ----
+    elif item_name == "Jinwoo Sword":
+        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 50
+        text += "\n\n🗡️ شمشیر جین‌وو! ATK +۵۰٪ (۳ راند)"
+    elif item_name == "Shadow Stone":
+        try:
+            from arise import try_arise
+            success, msg = try_arise(battle["uid"], char[2], battle["boss_name"])
+            if success:
+                text += f"\n\n💎 {msg}"
+            else:
+                text += "\n\n💎 سنگ سایه استفاده شد (بدون اثر)"
+        except Exception:
+            text += "\n\n💎 سنگ سایه استفاده شد"
+    # ---- Dragon Ball ----
+    elif item_name == "Magic Bean":
+        new_php = pmax
+        text += "\n\n🫘 لوبیای جادویی! HP کامل پر شد"
+    elif item_name == "Saiyan Crystal":
+        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 100
+        text += "\n\n💠 کریستال سایان! ATK +۱۰۰٪ (۲ راند)"
+    # ---- Code Geass ----
+    elif item_name == "Lelouch Geass":
+        battle["boss_frozen"] = battle.get("boss_frozen", 0) + 1
+        text += "\n\n👁️ گِیاس لولوش! دشمن ۱ نوبت محروم شد"
+    elif item_name == "Zero Mask":
+        text += "\n\n🎭 ماسک زیرو! DEF +۵۰٪ (۳ راند)"
+    # ---- Sakamoto Days ----
+    elif item_name == "Sakamoto Chopsticks":
+        dmg, _ = roll_damage(char[6] * 2)
+        new_bhp = max(0, bhp - dmg)
+        text += f"\n\n🥢 چاپ‌استیک ساکاموتو! دابل حمله → {format_num(dmg)}"
+    elif item_name == "Secret Candy":
+        heal = int(pmax * 0.5)
+        new_php = min(pmax, php + heal)
+        text += f"\n\n🍬 آب‌نبات مخفی! +{format_num(heal)} HP"
+    # ---- Hunter x Hunter ----
+    elif item_name == "Kurapika Chain":
+        battle["boss_frozen"] = battle.get("boss_frozen", 0) + 1
+        text += "\n\n⛓️ زنجیر کوراپیکا! دشمن فریز شد (۱ نوبت)"
+    elif item_name == "Hisoka Card":
+        dmg, _ = roll_damage(char[6] * 2)
+        new_bhp = max(0, bhp - dmg)
+        text += f"\n\n🃏 کارت هیسوکا! دابل ATK → {format_num(dmg)}"
+    # ---- One Piece ----
+    elif item_name == "Sea Meat":
+        heal = int(pmax * 0.7)
+        new_php = min(pmax, php + heal)
+        text += f"\n\n🍖 گوشت دریایی! +{format_num(heal)} HP"
+    elif item_name == "One Piece Fragment":
+        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 75
+        text += "\n\n🧭 قطعه‌ی وان‌پیس! ATK +۷۵٪ + DEF +۵۰٪ (۲ راند)"
+    # ---- Tokyo Ghoul ----
+    elif item_name == "Kaneki Mask":
+        text += "\n\n🎭 ماسک کانکی! DEF +۷۵٪ (۲ راند)"
+    elif item_name == "Kaneki Kagune":
+        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 80
+        text += "\n\n🩸 کاگونِه کانکی! ATK +۸۰٪ (۳ راند)"
     else:
         text += f"\n\n{info.get('effect_fa', info.get('effect', ''))}"
 
