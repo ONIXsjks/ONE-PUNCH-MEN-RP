@@ -167,7 +167,6 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
         if has_domain: kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
         if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
-        if char_name == "Son Goku": kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data=f"mb_goku_form_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
 
@@ -229,7 +228,6 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if char_name == "Sung Jin-Woo":
         arise_text = f"\n💀 **Arise:** {get_shadows_count(user_id, char_name)}/{MAX_SHADOWS} (+{get_shadows_atk_bonus(user_id, char_name)} ATK)\n"
     
-    # 🆕 نمایش انرژی‌ها
     energy_text = ""
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
         try:
@@ -353,126 +351,6 @@ async def edit_shop_msg(q, caption, keyboard):
                 await q.edit_message_text(caption, reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception:
                 await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
-
-# 🆕 دستور ارتقای انرژی نفرینی (JJK)
-async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in DOMAINS_JJK and char[2] not in ABILITIES_JJK:
-        await update.message.reply_text("❌ این کاراکتر انرژی نفرینی نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    ce, max_ce = row[0], row[1]
-    
-    if max_ce >= 500:
-        conn.close()
-        await update.message.reply_text("❌ انرژی نفرینی به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_cursed_energy = max_cursed_energy + 10, cursed_energy = cursed_energy + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ انرژی نفرینی +۱۰ (حداکثر جدید: {min(max_ce + 10, 500)})")
-
-# 🆕 دستور ارتقای ریستو (Bleach)
-async def upgrade_rei(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in BLEACH_BANKAI and char[2] not in ABILITIES_BLEACH:
-        await update.message.reply_text("❌ این کاراکتر ریستو نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    rei, max_rei = row[0], row[1]
-    
-    if max_rei >= 500:
-        conn.close()
-        await update.message.reply_text("❌ ریستو به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_reiatsu = max_reiatsu + 10, reiatsu = reiatsu + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ ریستو +۱۰ (حداکثر جدید: {min(max_rei + 10, 500)})")
-
-# 🆕 دستور ارتقای گیاس (Code Geass)
-async def upgrade_geass(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in ABILITIES_CODEGEASS:
-        await update.message.reply_text("❌ این کاراکتر گیاس نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    geass, max_geass = row[0], row[1]
-    
-    if max_geass >= 500:
-        conn.close()
-        await update.message.reply_text("❌ گیاس به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_geass_power = max_geass_power + 10, geass_power = geass_power + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ گیاس +۱۰ (حداکثر جدید: {min(max_geass + 10, 500)})")
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1163,6 +1041,103 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif q.data == "lb_rank":
         text = "Top 10 by Rank:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank})\n" for i, (name, char, rank) in enumerate(get_top_by_rank(10), 1)])
         await q.message.reply_text(text)
+
+# 🆕 دستور ارتقای انرژی‌ها
+async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+    if char[2] not in DOMAINS_JJK and char[2] not in ABILITIES_JJK:
+        await update.message.reply_text("❌ این کاراکتر انرژی نفرینی نداره!")
+        return
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+    ce, max_ce = row[0], row[1]
+    if max_ce >= 500:
+        conn.close()
+        await update.message.reply_text("❌ انرژی نفرینی به حداکثر (۵۰۰) رسیده!")
+        return
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+    c.execute("UPDATE characters SET max_cursed_energy = max_cursed_energy + 10, cursed_energy = cursed_energy + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    await update.message.reply_text(f"✅ انرژی نفرینی +۱۰ (حداکثر جدید: {min(max_ce + 10, 500)})")
+
+async def upgrade_rei(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+    if char[2] not in BLEACH_BANKAI and char[2] not in ABILITIES_BLEACH:
+        await update.message.reply_text("❌ این کاراکتر ریستو نداره!")
+        return
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+    rei, max_rei = row[0], row[1]
+    if max_rei >= 500:
+        conn.close()
+        await update.message.reply_text("❌ ریستو به حداکثر (۵۰۰) رسیده!")
+        return
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+    c.execute("UPDATE characters SET max_reiatsu = max_reiatsu + 10, reiatsu = reiatsu + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    await update.message.reply_text(f"✅ ریستو +۱۰ (حداکثر جدید: {min(max_rei + 10, 500)})")
+
+async def upgrade_geass(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+    if char[2] not in ABILITIES_CODEGEASS:
+        await update.message.reply_text("❌ این کاراکتر گیاس نداره!")
+        return
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+    geass, max_geass = row[0], row[1]
+    if max_geass >= 500:
+        conn.close()
+        await update.message.reply_text("❌ گیاس به حداکثر (۵۰۰) رسیده!")
+        return
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+    c.execute("UPDATE characters SET max_geass_power = max_geass_power + 10, geass_power = geass_power + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    await update.message.reply_text(f"✅ گیاس +۱۰ (حداکثر جدید: {min(max_geass + 10, 500)})")
 async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     save_menu_owner(ctx, "guild", update.effective_user.id)
     guild = get_user_guild(update.effective_user.id)
@@ -1347,7 +1322,6 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: عکس رو با کپشن /setcharimage <char_name> بفرست")
         return
     char_name = " ".join(caption.split()[1:])
-    
     photo_file_id = update.message.photo[-1].file_id
     from database import set_char_image_db
     set_char_image_db(char_name, photo_file_id)
@@ -1398,6 +1372,148 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🔧 /admin - پنل ادمین"
     )
     await update.message.reply_text(text)
+
+# ============ ADMIN PANEL ============
+async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text("❌ تو ادمین نیستی!")
+        return
+    text = "👑 پنل ادمین\n━━━━━━━━━━━━━━━━━━━\n\n"
+    if is_owner(user_id):
+        text += "🔑 مالک اصلی\n\n"
+    text += "💰 /give /take\n"
+    text += "👤 /userinfo /allusers /resetuser /ban /unban\n"
+    text += "🎭 /givechar /resetchar\n"
+    if is_owner(user_id):
+        text += "\n👑 /addadmin /removeadmin /listadmins\n"
+        text += "📜 /sethelp /viewhelp\n"
+        text += "🖼️ عکس + کپشن /setcharimage <name>\n"
+        text += "📢 /addchannel /removechannel /listchannels\n"
+        text += "\n👑 /ownerpanel\n"
+    await update.message.reply_text(text)
+
+async def give_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_coins"): return
+    if len(ctx.args) < 2: return await update.message.reply_text("Usage: /give <user_id> <amount>")
+    try: target_id = int(ctx.args[0]); amount = int(ctx.args[1])
+    except ValueError: return await update.message.reply_text("❌ اعداد معتبر بده.")
+    give_coins(target_id, amount)
+    await update.message.reply_text(f"✅ {amount:,} coin به {target_id} دادی.")
+
+async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_coins"): return
+    if len(ctx.args) < 2: return await update.message.reply_text("Usage: /take <user_id> <amount>")
+    try: target_id = int(ctx.args[0]); amount = int(ctx.args[1])
+    except ValueError: return await update.message.reply_text("❌ اعداد معتبر بده.")
+    if take_coins(target_id, amount):
+        await update.message.reply_text(f"✅ {amount:,} coin از {target_id} گرفتی.")
+    else:
+        await update.message.reply_text("❌ کاربر Coin کافی نداره.")
+
+async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id): return
+    if not ctx.args: return await update.message.reply_text("Usage: /userinfo <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    user, chars = get_user_stats(target_id)
+    if not user: return await update.message.reply_text("❌ کاربر پیدا نشد.")
+    text = f"👤 کاربر: {user[0] or 'Unknown'}\n🆔 ID: {target_id}\n💰 Coins: {user[1]:,}\n\n🦸 کاراکترها:\n"
+    if not chars: text += "  ❌ هیچ کاراکتری نداره\n"
+    else:
+        for c in chars: text += f"  • {c[0]} ({c[1]}) Lv{c[2]}\n"
+    await update.message.reply_text(text)
+
+async def allusers_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id): return
+    rows = get_all_users()
+    text = f"📋 کل کاربران: {len(rows)}\n\n"
+    for i, (uid, name, coins) in enumerate(rows[:30], 1):
+        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins:,}\n"
+    if len(rows) > 30: text += f"\n... و {len(rows) - 30} نفر دیگه"
+    await update.message.reply_text(text)
+
+async def resetuser_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_chars"): return
+    if not ctx.args: return await update.message.reply_text("Usage: /resetuser <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    reset_user(target_id)
+    await update.message.reply_text(f"♻️ کاربر {target_id} ریست شد.")
+
+async def ban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "ban_users"): return
+    if not ctx.args: return await update.message.reply_text("Usage: /ban <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    ban_user(target_id)
+    await update.message.reply_text(f"🚫 کاربر {target_id} بن شد.")
+
+async def unban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "ban_users"): return
+    if not ctx.args: return await update.message.reply_text("Usage: /unban <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    unban_user(target_id)
+    await update.message.reply_text(f"✅ کاربر {target_id} آنبن شد.")
+
+async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return await update.message.reply_text("❌ فقط مالک!")
+    if not ctx.args: return await update.message.reply_text("Usage: /addadmin <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    add_admin(target_id, "all", update.effective_user.id)
+    await update.message.reply_text(f"✅ {target_id} ادمین شد!")
+
+async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return await update.message.reply_text("❌ فقط مالک!")
+    if not ctx.args: return await update.message.reply_text("Usage: /removeadmin <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    ok, msg = remove_admin(target_id)
+    await update.message.reply_text(msg)
+
+async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return
+    admins = list_admins()
+    text = "👑 ادمین‌ها:\n\n"
+    for uid, role, perms in admins:
+        text += f"👤 {uid} — {role} | {perms}\n"
+    if not admins: text = "📭 هیچ ادمینی اضافه نشده."
+    await update.message.reply_text(text)
+
+async def givechar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_chars"): return
+    if len(ctx.args) < 3: return await update.message.reply_text("Usage: /givechar <user_id> <char_name> <rank>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    rank = ctx.args[-1]
+    char_name = " ".join(ctx.args[1:-1])
+    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
+        return await update.message.reply_text("❌ کاراکتر پیدا نشد.")
+    stats = get_all_stats(char_name, rank)
+    ok, msg = give_character(target_id, char_name, rank, stats.get("hp", 400), stats.get("atk", 60), stats.get("def", 20), stats.get("dodge", 10))
+    await update.message.reply_text(msg)
+
+async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not has_permission(update.effective_user.id, "manage_chars"): return
+    if not ctx.args: return await update.message.reply_text("Usage: /resetchar <user_id>")
+    try: target_id = int(ctx.args[0])
+    except ValueError: return await update.message.reply_text("❌ آیدی معتبر بده.")
+    ok, msg = reset_character(target_id)
+    await update.message.reply_text(msg)
+
+async def owner_panel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return await update.message.reply_text("❌ فقط مالک!")
+    text = "👑 **پنل مالک**\n━━━━━━━━━━━━━━━━━━━\n\n"
+    text += "👥 /allusers - لیست همه کاربران\n"
+    text += "🔄 /resetall - ریست کل پلیرها\n"
+    await update.message.reply_text(text)
+
+async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return await update.message.reply_text("❌ فقط مالک!")
+    total = reset_all_players()
+    await update.message.reply_text(f"♻️ همه پلیرها ریست شدن! ({total} کاربر)")
 
 async def post_init(app):
     commands_list = [
@@ -1467,6 +1583,23 @@ def main():
     app.add_handler(CommandHandler("upgraderei", upgrade_rei))
     app.add_handler(CommandHandler("upgradegeass", upgrade_geass))
 
+    # 🆕 Admin & Owner Commands
+    app.add_handler(CommandHandler("admin", admin))
+    app.add_handler(CommandHandler("give", give_cmd))
+    app.add_handler(CommandHandler("take", take_cmd))
+    app.add_handler(CommandHandler("userinfo", userinfo_cmd))
+    app.add_handler(CommandHandler("allusers", allusers_cmd))
+    app.add_handler(CommandHandler("resetuser", resetuser_cmd))
+    app.add_handler(CommandHandler("ban", ban_cmd))
+    app.add_handler(CommandHandler("unban", unban_cmd))
+    app.add_handler(CommandHandler("addadmin", addadmin_cmd))
+    app.add_handler(CommandHandler("removeadmin", removeadmin_cmd))
+    app.add_handler(CommandHandler("listadmins", listadmins_cmd))
+    app.add_handler(CommandHandler("givechar", givechar_cmd))
+    app.add_handler(CommandHandler("resetchar", resetchar_cmd))
+    app.add_handler(CommandHandler("ownerpanel", owner_panel))
+    app.add_handler(CommandHandler("resetall", resetall_cmd))
+
     # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
 
@@ -1474,8 +1607,6 @@ def main():
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
-    
-    # Shop
     app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
     app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
     app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
