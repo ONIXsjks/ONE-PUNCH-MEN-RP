@@ -1333,13 +1333,15 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # Modes
+    # 🆕 Modes Handlers (این بخش اصلاح شد)
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
-    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
-    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
+    
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_start_"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_start_"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_start_"))
+    
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
 
     # Arise
