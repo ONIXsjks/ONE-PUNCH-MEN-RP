@@ -47,7 +47,7 @@ REGIONS = {
         "level_range": "200-300",
         "min_level": 200,
         "rewards": {"min": 1000000, "max": 2000000},
-        "enemies": ["Goku Lv2", "Menos Grande", "Tiger Beast"],
+        "enemies": ["Menos Grande", "Tiger Beast", "Volcanic Titan"], # 🆕 Goku Lv2 حذف شد و به جاش Volcanic Titan اضافه شد
         "boss": "Sukuna Heian",
         "unlock": "mountain",
         "emoji": "🌋",
@@ -58,7 +58,7 @@ REGIONS = {
         "level_range": "300+",
         "min_level": 300,
         "rewards": {"min": 2000000, "max": 4000000},
-        "enemies": ["Goku Lv3", "Yhwach (Soul King)", "Aizen (Final Form)"],
+        "enemies": ["Yhwach (Soul King)", "Aizen (Final Form)", "Shadow God"], # 🆕 Goku Lv3 حذف شد و به جاش Shadow God اضافه شد
         "boss": "Saitama Phase 1",
         "unlock": "volcano",
         "emoji": "🏰",
