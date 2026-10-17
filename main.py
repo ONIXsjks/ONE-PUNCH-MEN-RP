@@ -93,6 +93,7 @@ from world import (REGIONS, TREASURES, get_region, get_region_name, random_explo
 from anime_registry import (ANIME_REGISTRY, get_anime, get_anime_list, get_characters_by_anime, get_char_price_by_anime, find_char_anime, get_anime_bosses, get_anime_shop_abilities)
 from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
 from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
+from gift import send_gift, get_gift_history, get_top_givers
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
@@ -166,6 +167,16 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
+
+# 🆕 قفل منوها (ذخیره و چک کردن)
+def save_menu_owner(ctx, menu_name, user_id):
+    ctx.user_data[f"owner_{menu_name}"] = user_id
+
+async def check_menu_owner(q, ctx, menu_name):
+    if ctx.user_data.get(f"owner_{menu_name}") != q.from_user.id:
+        await q.answer("❌ این منو برای شما نیست! لطفاً خودتان دستور مربوطه را بزنید.", show_alert=True)
+        return False
+    return True
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
@@ -285,6 +296,9 @@ async def select_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await q.message.reply_text("✅ کاراکتر فعال عوض شد!")
 
 async def shop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    # 🆕 ذخیره آیدی صاحب منو
+    save_menu_owner(ctx, "shop", update.effective_user.id)
+    
     kb = [[InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")], [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")], [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")], [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")]]
     try:
         await update.message.reply_photo(photo=SHOP_IMAGE, caption="🏪 شاپ:\nیه دسته انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
@@ -305,6 +319,11 @@ async def edit_shop_msg(q, caption, keyboard):
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "shop"):
+        return
+        
     data = q.data
     if data == "shop_ab":
         kb = [[InlineKeyboardButton(f"{ABILITY_FA.get(n, n)} — {i['price']:,} 💰", callback_data=f"buyab_{n}")] for n, i in ABILITIES.items()]
@@ -329,6 +348,11 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "shop"):
+        return
+        
     anime_key = q.data.replace("shchanime_", "")
     anime = get_anime(anime_key)
     if not anime:
@@ -341,6 +365,11 @@ async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def shop_char_rank_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "shop"):
+        return
+        
     raw = q.data.replace("shchrank_", "")
     parts = raw.rsplit("_", 1)
     if len(parts) != 2:
@@ -469,6 +498,10 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not get_active_character(user_id):
         await update.message.reply_text("No active character.")
         return
+        
+    # 🆕 ذخیره آیدی صاحب منو
+    save_menu_owner(ctx, "battle", user_id)
+    
     kb = [
         [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
         [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
@@ -485,6 +518,11 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "battle"):
+        return
+        
     data = q.data.replace("bosses_", "")
     kb = []
     if data == "jjk":
@@ -547,6 +585,11 @@ async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "battle"):
+        return
+        
     kb = [
         [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
         [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
@@ -563,6 +606,11 @@ async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "battle"):
+        return
+        
     boss_name = q.data.replace("solo_", "")
     user_id = q.from_user.id
     char = get_active_character(user_id)
@@ -792,6 +840,10 @@ async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not get_active_character(user_id):
         await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
         return
+        
+    # 🆕 ذخیره آیدی صاحب منو
+    save_menu_owner(ctx, "world", user_id)
+    
     text = get_player_region_view(user_id)
     kb = [[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
@@ -799,6 +851,11 @@ async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "world"):
+        return
+        
     region_key = q.data.replace("world_", "")
     user_id = q.from_user.id
     if region_key not in get_unlocked_regions(user_id):
@@ -813,6 +870,11 @@ async def world_region_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "world"):
+        return
+        
     region_key = q.data.replace("explore_", "")
     user_id = q.from_user.id
     region = get_region(region_key)
@@ -905,16 +967,31 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
 async def world_progress_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "world"):
+        return
+        
     await q.edit_message_text(format_world_progress(q.from_user.id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]))
 
 async def world_treasures_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "world"):
+        return
+        
     await q.edit_message_text(format_treasures_list(q.from_user.id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress")], [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")]]))
 
 async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "world"):
+        return
+        
     kb = [[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]
     await q.edit_message_text(get_player_region_view(q.from_user.id), reply_markup=InlineKeyboardMarkup(kb))
 
@@ -943,12 +1020,20 @@ async def claim(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(claim_quest(update.effective_user.id, key))
 
 async def leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    # 🆕 ذخیره آیدی صاحب منو
+    save_menu_owner(ctx, "lb", update.effective_user.id)
+    
     kb = [[InlineKeyboardButton("Top by Coins", callback_data="lb_coins")], [InlineKeyboardButton("Top by Level", callback_data="lb_level")], [InlineKeyboardButton("Top by Rank", callback_data="lb_rank")]]
     await update.message.reply_text("Leaderboard:", reply_markup=InlineKeyboardMarkup(kb))
 
 async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "lb"):
+        return
+        
     if q.data == "lb_coins":
         text = "Top 10 by Coins:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {coins:,}\n" for i, (name, coins) in enumerate(get_top_by_coins(10), 1)])
         await q.message.reply_text(text)
@@ -959,6 +1044,9 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text = "Top 10 by Rank:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank})\n" for i, (name, char, rank) in enumerate(get_top_by_rank(10), 1)])
         await q.message.reply_text(text)
 async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    # 🆕 ذخیره آیدی صاحب منو
+    save_menu_owner(ctx, "guild", update.effective_user.id)
+    
     guild = get_user_guild(update.effective_user.id)
     if not guild:
         await update.message.reply_text(f"🏰 تو توی هیچ کلنی نیستی!\n\n📝 ساخت: /guild_create <name>\n🔍 پیوستن: /guild_join <name>\n📋 لیست: /guild_list\n\n💰 هزینه: {GUILD_CREATE_COST:,} سکه\n⭐ حداقل لول: {GUILD_MIN_LEVEL}")
@@ -1019,6 +1107,11 @@ async def guild_leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def guild_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+    
+    # 🆕 چک کردن صاحب منو
+    if not await check_menu_owner(q, ctx, "guild"):
+        return
+        
     data = q.data
     user_id = q.from_user.id
     if data == "guild_members":
