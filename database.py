@@ -29,7 +29,11 @@ def init_db():
         is_active INTEGER DEFAULT 0,
         survival_wave INTEGER DEFAULT 1,
         cursed_energy INTEGER DEFAULT 120,
-        max_cursed_energy INTEGER DEFAULT 120
+        max_cursed_energy INTEGER DEFAULT 120,
+        reiatsu INTEGER DEFAULT 120,
+        max_reiatsu INTEGER DEFAULT 120,
+        geass_power INTEGER DEFAULT 120,
+        max_geass_power INTEGER DEFAULT 120
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS abilities_owned (
@@ -185,6 +189,30 @@ def init_db():
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
         print("✅ Column max_cursed_energy added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+        print("✅ Column reiatsu added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+        print("✅ Column max_reiatsu added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
+        print("✅ Column geass_power added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
+        print("✅ Column max_geass_power added")
     except sqlite3.OperationalError:
         pass
 
@@ -444,6 +472,8 @@ def get_shadows_atk_bonus(user_id, char_name):
     total = c.fetchone()[0]
     conn.close()
     return total
+
+
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -848,7 +878,6 @@ def get_unlocked_regions(user_id):
 def get_current_region(user_id):
     progress = get_world_progress(user_id)
     return progress[2] or "forest"
-
 
 # ============ GUILD HELPERS ============
 
