@@ -213,8 +213,6 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
 
     return php, bhp, text
-
-
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -311,6 +309,8 @@ def player_dodge(battle, char):
     if php <= 0:
         return "lost", text, battle
     return "active", text, battle
+
+
 def player_ability(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -468,7 +468,32 @@ def player_ability(battle, char, ability_name):
         return "lost", text, battle
     return "active", text, battle
 
-
+# 🆕 تابع فرم گوکو (فقط مخصوص سان گوکو)
+def goku_transform(battle, char):
+    current_form = battle.get("goku_form", 0)
+    if current_form >= 4:
+        return "active", "🔥 گوکو به حداکثر قدرت رسیده! (Ultra Instinct)", battle
+    
+    new_form = current_form + 1
+    
+    boosts = {
+        1: {"atk": 10, "dodge": 5, "name": "Super Saiyan 1"},
+        2: {"atk": 20, "dodge": 10, "name": "Super Saiyan 2"},
+        3: {"atk": 35, "dodge": 15, "name": "Super Saiyan God"},
+        4: {"atk": 50, "dodge": 25, "name": "Ultra Instinct"},
+    }
+    
+    boost = boosts[new_form]
+    
+    # اعمال تغییرات توی نبرد
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
+    battle["goku_form"] = new_form
+    
+    text = f"⚡ **گوکو به فرم {boost['name']} رفت!**\n\n"
+    text += f"⚔️ ATK: +{boost['atk']}٪\n"
+    text += f"💨 DODGE: +{boost['dodge']}٪\n"
+    
+    return "active", text, battle
 def player_ability_v2(battle, char, action):
     char_name = char[2]
     if action == "domain":
@@ -586,6 +611,8 @@ def player_buff_shop(battle, char, buff_name):
     if php <= 0:
         return "lost", text, battle
     return "active", text, battle
+
+
 def player_item(battle, char, item_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
