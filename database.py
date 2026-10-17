@@ -69,7 +69,7 @@ def init_db():
         domain_name TEXT DEFAULT '',
         domain_atk_boost INTEGER DEFAULT 0,
         spam_state TEXT DEFAULT 'ability_1',
-        goku_form INTEGER DEFAULT 0, # 🆕 فرم گوکو
+        goku_form INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
@@ -156,24 +156,22 @@ def init_db():
 
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
-        print("✅ Column spam_state added")
+        print("Column spam_state added")
     except sqlite3.OperationalError:
         pass
 
-    # 🆕 ستون فرم گوکو
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
-        print("✅ Column goku_form added")
+        print("Column goku_form added")
     except sqlite3.OperationalError:
         pass
 
-    # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-        print("✅ King renamed to Harley Quinn in DB")
+        print("King renamed to Harley Quinn in DB")
     except Exception as e:
         print(f"Rename DB error: {e}")
 
