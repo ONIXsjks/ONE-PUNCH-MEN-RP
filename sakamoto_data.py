@@ -7,7 +7,7 @@ CHARACTERS_SAKAMOTO = {
         "Taro Sakamoto": "Legendary Hitman",
         "Shin Asakura": "Psychic Assassin",
         "Lu Shaotang": "Mafia Heiress",
-        "Nagumo": "Order Member",
+        "Yoichi Nagumo": "Order Member", # 🆕 از A به S منتقل شد
         "Slur": "Slur's Leader",
         "Gaku": "Slur's Right Hand",
         "Order Leader": "Head of Order",
@@ -16,7 +16,6 @@ CHARACTERS_SAKAMOTO = {
         "Akao": "Slur's Member",
     },
     "A": {
-        "Yoichi Nagumo": "Sakamoto's Ally",
         "Piisuke": "Sakamoto's Ally",
         "Boiled": "Assassin",
         "Obayashi": "Hitman",
@@ -26,18 +25,20 @@ CHARACTERS_SAKAMOTO = {
         "Shishiba": "Order Member",
         "Kanaguri": "Order Member",
         "Kaji": "Order Member",
+        "Kashima": "Assassin", # 🆕 از B به A منتقل شد
+        "Satoru Yotsumura": "Hitman", # 🆕 از B به A منتقل شد
     },
     "B": {
         "Hana Sakamoto": "Sakamoto's Daughter",
         "Aoi Sakamoto": "Sakamoto's Wife",
         "Akira Akao": "Hitman",
-        "Satoru Yotsumura": "Hitman",
         "Amane": "Assassin",
-        "Kashima": "Assassin",
         "Tatsu": "Hitman",
         "Shinaya": "Assassin",
         "Mad Horiguchi": "Hitman",
         "Tanaka": "Store Owner",
+        "Nagumo's Shadow": "Shadow Assassin", # 🆕 کاراکتر جدید
+        "Silent Blade": "Silent Assassin", # 🆕 کاراکتر جدید
     },
 }
 
@@ -60,10 +61,10 @@ ABILITIES_SAKAMOTO = {
         "ability_2": {"name": "Shaotang Style", "mult": 5},
         "ability_3": {"name": "Heiress Awakening", "mult": 10, "once": True},
     },
-    "Nagumo": {
-        "ability_1": {"name": "Knife Throw", "mult": 3},
-        "ability_2": {"name": "Shadow Step", "mult": 5},
-        "ability_3": {"name": "Order Assassination", "mult": 10, "once": True},
+    "Yoichi Nagumo": { # 🆕 از A به S منتقل شد
+        "ability_1": {"name": "Ally Strike", "mult": 3},
+        "ability_2": {"name": "Team Combo", "mult": 5},
+        "ability_3": {"name": "Nagumo's Resolve", "mult": 10, "once": True},
     },
     "Slur": {
         "ability_1": {"name": "Slur Strike", "mult": 3},
@@ -97,11 +98,6 @@ ABILITIES_SAKAMOTO = {
     },
 
     # ============ A RANK ============
-    "Yoichi Nagumo": {
-        "ability_1": {"name": "Ally Strike", "mult": 3},
-        "ability_2": {"name": "Team Combo", "mult": 5},
-        "ability_3": {"name": "Nagumo's Resolve", "mult": 10, "once": True},
-    },
     "Piisuke": {
         "ability_1": {"name": "Quick Draw", "mult": 3},
         "ability_2": {"name": "Rapid Fire", "mult": 5},
@@ -147,6 +143,16 @@ ABILITIES_SAKAMOTO = {
         "ability_2": {"name": "Flame Burst", "mult": 5},
         "ability_3": {"name": "Inferno Blast", "mult": 10, "once": True},
     },
+    "Kashima": { # 🆕 از B به A منتقل شد
+        "ability_1": {"name": "Dagger Slash", "mult": 3},
+        "ability_2": {"name": "Shadow Strike", "mult": 5},
+        "ability_3": {"name": "Phantom Kill", "mult": 10, "once": True},
+    },
+    "Satoru Yotsumura": { # 🆕 از B به A منتقل شد
+        "ability_1": {"name": "Hitman Punch", "mult": 3},
+        "ability_2": {"name": "Deadly Grip", "mult": 5},
+        "ability_3": {"name": "Berserk Strike", "mult": 10, "once": True},
+    },
 
     # ============ B RANK ============
     "Hana Sakamoto": {
@@ -164,20 +170,10 @@ ABILITIES_SAKAMOTO = {
         "ability_2": {"name": "Rapid Shot", "mult": 5},
         "ability_3": {"name": "Ace Shooter", "mult": 10, "once": True},
     },
-    "Satoru Yotsumura": {
-        "ability_1": {"name": "Hitman Punch", "mult": 3},
-        "ability_2": {"name": "Deadly Grip", "mult": 5},
-        "ability_3": {"name": "Berserk Strike", "mult": 10, "once": True},
-    },
     "Amane": {
         "ability_1": {"name": "Poison Dart", "mult": 3},
         "ability_2": {"name": "Venom Touch", "mult": 5},
         "ability_3": {"name": "Toxic Rush", "mult": 10, "once": True},
-    },
-    "Kashima": {
-        "ability_1": {"name": "Dagger Slash", "mult": 3},
-        "ability_2": {"name": "Shadow Strike", "mult": 5},
-        "ability_3": {"name": "Phantom Kill", "mult": 10, "once": True},
     },
     "Tatsu": {
         "ability_1": {"name": "Knife Slash", "mult": 3},
@@ -199,9 +195,20 @@ ABILITIES_SAKAMOTO = {
         "ability_2": {"name": "Shopkeeper Fury", "mult": 5},
         "ability_3": {"name": "Hidden Strength", "mult": 10, "once": True},
     },
+    "Nagumo's Shadow": { # 🆕 کاراکتر جدید
+        "ability_1": {"name": "Shadow Strike", "mult": 3},
+        "ability_2": {"name": "Dark Slash", "mult": 5},
+        "ability_3": {"name": "Shadow Execution", "mult": 10, "once": True},
+    },
+    "Silent Blade": { # 🆕 کاراکتر جدید
+        "ability_1": {"name": "Silent Cut", "mult": 3},
+        "ability_2": {"name": "Assassin Rush", "mult": 5},
+        "ability_3": {"name": "Death's Whisper", "mult": 10, "once": True},
+    },
 }
+
 # ============================================================
-# BOSSES
+# BOSSES (دسته‌بندی جدید)
 # ============================================================
 SAKAMOTO_BOSSES = {
     # 🟢 ضعیف — Reward: 50,000
@@ -213,7 +220,7 @@ SAKAMOTO_BOSSES = {
 
     # 🟠 قوی — Reward: 200,000
     "Gaku": {"display_name": "گاکو", "hp": 90000, "atk": 4400, "reward": 200000},
-    "Nagumo": {"display_name": "ناگومو", "hp": 100000, "atk": 4800, "reward": 200000},
+    "Nagumo's Shadow": {"display_name": "سایه ناگومو", "hp": 100000, "atk": 4800, "reward": 200000},
 
     # 🔴 افسانه‌ای — Reward: 500,000
     "Slur": {"display_name": "اسلر", "hp": 200000, "atk": 5600, "reward": 500000},
