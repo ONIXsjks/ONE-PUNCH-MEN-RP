@@ -2641,6 +2641,26 @@ async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     ok, msg = reset_character(target_id)
     await update.message.reply_text(msg)
+
+async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🤖 **راهنمای ربات**\n"
+        "━━━━━━━━━━━━━━━━━━━\n\n"
+        "🎮 /start - شروع بازی\n"
+        "👤 /profile - پروفایل\n"
+        "💰 /coins - موجودی سکه\n"
+        "🏪 /shop - فروشگاه\n"
+        "⚔️ /battle - نبرد با باس\n"
+        "🏰 /guild - کلن\n"
+        "📜 /quests - کوئست روزانه\n"
+        "🗺️ /world - دنیای آزاد\n"
+        "🏆 /leaderboard - لیدربورد\n"
+        "🎁 /gift - هدیه دادن\n\n"
+        "🔧 /admin - پنل ادمین"
+    )
+    await update.message.reply_text(text)
+
+
 async def post_init(app):
     commands_list = [
         BotCommand("start", "شروع بازی"),
