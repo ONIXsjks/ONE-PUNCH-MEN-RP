@@ -39,6 +39,16 @@ def get_survival_wave(user_id):
     return row[0] if row else 1
 
 
+def get_modes_battle_kb(char_name=None, user_id=None):
+    """ساخت دکمه‌های نبرد برای مودها (جلوگیری از Circular Import)"""
+    kb = [
+        [InlineKeyboardButton("⚔️ حمله", callback_data="act_attack"), InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")],
+        [InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"), InlineKeyboardButton("💊 آیتم", callback_data="act_item")],
+        [InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")],
+    ]
+    return kb
+
+
 # ============================================================
 # 🏰 CASTLE
 # ============================================================
@@ -86,8 +96,8 @@ async def castle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle_data = get_battle(user_id)
         text = f"🏰 **قلعه - موج {wave}**\n\n" + build_battle_message(battle_data, char)
         
-        from main import get_battle_kb
-        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+        kb = get_modes_battle_kb(char[2], user_id)
+        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
         return
 
 
@@ -138,8 +148,8 @@ async def zombie_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle_data = get_battle(user_id)
         text = f"🧟 **زامبی - موج {wave}**\n\n" + build_battle_message(battle_data, char)
         
-        from main import get_battle_kb
-        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+        kb = get_modes_battle_kb(char[2], user_id)
+        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
         return
 
 
@@ -190,8 +200,8 @@ async def tower_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle_data = get_battle(user_id)
         text = f"🗼 **برج - طبقه {wave}**\n\n" + build_battle_message(battle_data, char)
         
-        from main import get_battle_kb
-        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
+        kb = get_modes_battle_kb(char[2], user_id)
+        await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
         return
 
 
