@@ -26,7 +26,7 @@ from guild import (create_new_guild, join_existing_guild, leave_current_guild,
 from battle import (player_attack, player_defend, player_dodge,
                     player_ability, player_item, build_battle_message,
                     finish_battle, player_ability_v2,
-                    player_ability_shop, player_buff_shop, goku_transform) # 🆕 فرم گوکو
+                    player_ability_shop, player_buff_shop, goku_transform)
 from multi_battle import (init_multi_table, create_multi_battle, get_multi_battle,
                           update_multi_battle, end_multi_battle, player_action,
                           finish_multi_battle, build_battle_view, get_player,
@@ -144,7 +144,7 @@ def get_battle_kb(char_name=None, user_id=None):
         if has_domain: kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
         if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
-        if char_name == "Son Goku": kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")]) # 🆕
+        if char_name == "Son Goku": kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
 
@@ -318,10 +318,7 @@ async def edit_shop_msg(q, caption, keyboard):
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    
-    if not await check_menu_owner(q, ctx, "shop"):
-        return
-        
+    if not await check_menu_owner(q, ctx, "shop"): return
     data = q.data
     if data == "shop_ab":
         kb = [[InlineKeyboardButton(f"{ABILITY_FA.get(n, n)} — {i['price']:,} 💰", callback_data=f"buyab_{n}")] for n, i in ABILITIES.items()]
@@ -488,9 +485,7 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not get_active_character(user_id):
         await update.message.reply_text("No active character.")
         return
-        
     save_menu_owner(ctx, "battle", user_id)
-    
     kb = [
         [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
         [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
@@ -507,10 +502,7 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    
-    if not await check_menu_owner(q, ctx, "battle"):
-        return
-        
+    if not await check_menu_owner(q, ctx, "battle"): return
     data = q.data.replace("bosses_", "")
     kb = []
     if data == "jjk":
@@ -573,10 +565,7 @@ async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    
-    if not await check_menu_owner(q, ctx, "battle"):
-        return
-        
+    if not await check_menu_owner(q, ctx, "battle"): return
     kb = [
         [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")], [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
         [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")], [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
@@ -593,10 +582,7 @@ async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    
-    if not await check_menu_owner(q, ctx, "battle"):
-        return
-        
+    if not await check_menu_owner(q, ctx, "battle"): return
     boss_name = q.data.replace("solo_", "")
     user_id = q.from_user.id
     char = get_active_character(user_id)
@@ -604,8 +590,7 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("No active character.")
         return
     existing = get_battle(user_id)
-    if existing:
-        end_battle(existing["id"])
+    if existing: end_battle(existing["id"])
     boss_hp = 5000
     all_bosses = [BLEACH_BOSSES, BLEACH_FODDER, BOSSES_JJK, FODDER_JJK, BOSSES_OPM, BOSSES, AOT_BOSSES, AOT_FODDER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER, BERSERK_BOSSES, BERSERK_FODDER, DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER, NARUTO_BOSSES, NARUTO_FODDER, SDS_BOSSES, SDS_FODDER, ONEPIECE_BOSSES, ONEPIECE_FODDER, DRAGONBALL_BOSSES, DRAGONBALL_FODDER, HXH_BOSSES, HXH_FODDER, SAKAMOTO_BOSSES, SAKAMOTO_FODDER, SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER, MUSHOKU_BOSSES, MUSHOKU_FODDER, CODEGEASS_BOSSES, CODEGEASS_FODDER, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER]
     for bosses_dict in all_bosses:
@@ -641,7 +626,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         status, text, battle = player_defend(battle, char)
     elif action == "dodge":
         status, text, battle = player_dodge(battle, char)
-    elif action == "goku_form": # 🆕 دکمه تغییر فرم گوکو
+    elif action == "goku_form":
         if char[2] != "Son Goku":
             await q.answer("❌ فقط گوکو می‌تونه تغییر فرم بده!", show_alert=True)
             return
@@ -723,7 +708,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
     
-    # 🆕 ذخیره فرم گوکو توی دیتابیس
     if char[2] == "Son Goku":
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
