@@ -334,7 +334,25 @@ def player_ability(battle, char, ability_name):
     abilities = ABILITIES_3.get(char_name, {})
     extra_text = ""
 
-    # 🆕 چک کردن انرژی (نفرینی برای JJK، ریستو برای Bleach، گیاس برای Code Geass)
+    # 🆕 اول چک میکنیم که آیا ۱ بار مصرفه و قبلا استفاده شده یا نه
+    if ability_name == "DOMAIN":
+        if battle.get("domain_used", 0) >= 1:
+            return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
+    if ability_name == "BANKAI":
+        if battle.get("bankai_used", 0) >= 1:
+            return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle
+
+    found_key = None
+    for key in ["ability_1", "ability_2", "ability_3"]:
+        if key in abilities and abilities[key]["name"] == ability_name:
+            found_key = key
+            break
+
+    if found_key == "ability_3":
+        if battle.get("spam_state") == "purple_used":
+            return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
+
+    # 🆕 حالا اگه مجاز بود، انرژی رو کم میکنیم
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK or char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH or char_name in ABILITIES_CODEGEASS:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
@@ -348,54 +366,49 @@ def player_ability(battle, char, ability_name):
             c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-            max_energy = row[1] if row else 120
             
             if ability_name == "DOMAIN":
                 cost = JJK_CE_COST_DOMAIN
-            elif abilities and abilities.get("ability_1", {}).get("name") == ability_name:
+            elif found_key == "ability_1":
                 cost = JJK_CE_COST_ABILITY_1
-            elif abilities and abilities.get("ability_2", {}).get("name") == ability_name:
+            elif found_key == "ability_2":
                 cost = JJK_CE_COST_ABILITY_2
-            elif abilities and abilities.get("ability_3", {}).get("name") == ability_name:
+            elif found_key == "ability_3":
                 cost = JJK_CE_COST_ABILITY_3
                 
         elif is_bleach:
             c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-            max_energy = row[1] if row else 120
             
             if ability_name == "BANKAI":
                 cost = BLEACH_REI_COST_BANKAI
-            elif abilities and abilities.get("ability_1", {}).get("name") == ability_name:
+            elif found_key == "ability_1":
                 cost = BLEACH_REI_COST_ABILITY_1
-            elif abilities and abilities.get("ability_2", {}).get("name") == ability_name:
+            elif found_key == "ability_2":
                 cost = BLEACH_REI_COST_ABILITY_2
-            elif abilities and abilities.get("ability_3", {}).get("name") == ability_name:
+            elif found_key == "ability_3":
                 cost = BLEACH_REI_COST_ABILITY_3
 
         elif is_geass:
             c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
             row = c.fetchone()
             energy = row[0] if row else 0
-            max_energy = row[1] if row else 120
             
-            if ability_name == "ULTIMATE_GEASS":
-                cost = GEASS_COST_ULTIMATE
-            elif abilities and abilities.get("ability_1", {}).get("name") == ability_name:
+            if found_key == "ability_1":
                 cost = GEASS_COST_ABILITY_1
-            elif abilities and abilities.get("ability_2", {}).get("name") == ability_name:
+            elif found_key == "ability_2":
                 cost = GEASS_COST_ABILITY_2
-            elif abilities and abilities.get("ability_3", {}).get("name") == ability_name:
+            elif found_key == "ability_3":
                 cost = GEASS_COST_ABILITY_3
+            elif ability_name == "ULTIMATE_GEASS":
+                cost = GEASS_COST_ULTIMATE
 
-        # 🆕 اضافه شدن هزینه بر اساس لول (هر ۱۰ لول = ۲ انرژی بیشتر)
         char_level = char[4]
         level_penalty = (char_level // 10) * 2
         cost += level_penalty
             
         if energy < cost:
-            # 🆕 اگه انرژی کم بود، از HP کم میشه (هر ۱ انرژی = ۱۰ HP)
             hp_cost = (cost - energy) * 10
             if php <= hp_cost:
                 conn.close()
@@ -424,10 +437,8 @@ def player_ability(battle, char, ability_name):
 
         battle["php"] = php
 
-    # ========== DOMAIN (×۲.۵ + فریز) ==========
+    # ========== DOMAIN ==========
     if ability_name == "DOMAIN":
-        if battle.get("domain_used", 0) >= 1:
-            return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
         domain = DOMAINS.get(char_name) or DOMAINS_JJK.get(char_name)
         if not domain:
             return "active", "❌ این کاراکتر Domain نداره!", battle
@@ -474,10 +485,8 @@ def player_ability(battle, char, ability_name):
             return "lost", text, battle
         return "active", text, battle
 
-    # ========== BANKAI (×۶) ==========
+    # ========== BANKAI ==========
     if ability_name == "BANKAI":
-        if battle.get("bankai_used", 0) >= 1:
-            return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle
         bankai = BANKAI.get(char_name) or BLEACH_BANKAI.get(char_name)
         if not bankai:
             return "active", "❌ این کاراکتر Bankai نداره!", battle
@@ -519,20 +528,14 @@ def player_ability(battle, char, ability_name):
     if not abilities:
         return "active", "❌ Ability پیدا نشد.", battle
 
-    found_key = None
     found_ab = None
     for key in ["ability_1", "ability_2", "ability_3"]:
         if key in abilities and abilities[key]["name"] == ability_name:
-            found_key = key
             found_ab = abilities[key]
             break
 
     if not found_ab:
         return "active", "❌ Ability پیدا نشد.", battle
-
-    if found_key == "ability_3":
-        if battle.get("spam_state") == "purple_used":
-            return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
 
     mult = found_ab.get("mult", 3)
     dmg = int(char[6] * mult)
