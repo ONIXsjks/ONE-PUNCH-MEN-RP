@@ -13,7 +13,8 @@ from database import (init_db, get_user, add_coins, get_coins,
                       get_unlocked_regions, get_current_region,
                       get_char_image, get_custom_quest_db,
                       get_user_buffs, remove_user_buff,
-                      reset_all_players, get_total_users_count)
+                      reset_all_players, get_total_users_count,
+                      remove_user_ability)
 from characters import (create_character, get_user_characters,
                         get_active_character, set_active, buy_character)
 from shop import buy_ability, buy_item, buy_buff, buy_slot, upgrade_character
@@ -144,12 +145,14 @@ def get_battle_kb(char_name=None, user_id=None):
             kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
         if has_bankai:
             kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
+        # 🆕 Arise (فقط Jin-Woo)
+        if char_name == "Sung Jin-Woo":
+            kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
 
 
 def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
-    # ✅ چک نوبت حذف شد — دکمه‌ها برای همه باز هستن
     kb = []
     if char_name:
         abs_data = get_character_abilities(char_name)
@@ -174,6 +177,9 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
             kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
         if has_bankai:
             kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
+        # 🆕 Arise (فقط Jin-Woo)
+        if char_name == "Sung Jin-Woo":
+            kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
 
@@ -634,6 +640,8 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
+
+
 async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     guild = get_user_guild(user_id)
@@ -949,6 +957,27 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.answer("❌ این کاراکتر Bankai نداره!", show_alert=True)
             return
         status, text, battle = player_ability_v2(battle, char, "bankai")
+    elif action == "arise":
+        # 🆕 Arise
+        if char[2] != "Sung Jin-Woo":
+            await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
+            return
+        shadows = get_user_shadows(user_id, char[2])
+        if not shadows:
+            await q.answer("❌ هیچ سایه‌ای نداری! اول باس بکش.", show_alert=True)
+            return
+        shadows_text = "💀 **سایه‌های تو:**\n\n"
+        for i, (sname, atk_bonus) in enumerate(shadows, 1):
+            shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
+        total_bonus = sum(s[1] for s in shadows)
+        shadows_text += f"\n⚔️ مجموع ATK: +{total_bonus}"
+        try:
+            await q.edit_message_text(shadows_text, reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")]
+            ]))
+        except Exception:
+            await q.message.reply_text(shadows_text)
+        return
     else:
         return
     if status == "won":
@@ -1032,6 +1061,11 @@ async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TY
     if not battle:
         return
     status, text, battle = player_ability_shop(battle, char, ability_name)
+    # 🆕 حذف Ability بعد از مصرف (۱ بار مصرف)
+    try:
+        remove_user_ability(user_id, char[2], ability_name)
+    except Exception as e:
+        print(f"Remove ability error: {e}")
     if status == "won":
         reward = finish_battle(user_id, battle["boss_name"], True)
         end_battle(battle["id"])
@@ -1531,6 +1565,38 @@ async def multi_bankai_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
     except Exception:
         await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
+
+
+async def multi_arise_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    # 🆕 Arise در Multi Battle
+    q = update.callback_query
+    session_id = q.data.replace("mb_arise_", "")
+    user_id = q.from_user.id
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.answer("نبرد نیست!", show_alert=True)
+        return
+    player, _ = get_player(battle, user_id)
+    if not player:
+        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
+        return
+    if player["name"] != "Sung Jin-Woo":
+        await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
+        return
+    shadows = get_user_shadows(user_id, "Sung Jin-Woo")
+    if not shadows:
+        await q.answer("❌ هیچ سایه‌ای نداری!", show_alert=True)
+        return
+    shadows_text = "💀 **سایه‌های تو:**\n\n"
+    for i, (sname, atk_bonus) in enumerate(shadows, 1):
+        shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
+    total_bonus = sum(s[1] for s in shadows)
+    shadows_text += f"\n⚔️ مجموع ATK: +{total_bonus}"
+    await q.answer(f"💀 {len(shadows)} سایه (+{total_bonus} ATK)", show_alert=True)
+    try:
+        await q.message.reply_text(shadows_text)
+    except Exception:
+        pass
 
 
 async def multi_wait_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -2546,6 +2612,7 @@ def main():
     app.add_handler(CallbackQueryHandler(multi_skip_callback, pattern="^mb_skip_"))
     app.add_handler(CallbackQueryHandler(multi_domain_callback, pattern="^mb_domain_"))
     app.add_handler(CallbackQueryHandler(multi_bankai_callback, pattern="^mb_bankai_"))
+    app.add_handler(CallbackQueryHandler(multi_arise_callback, pattern="^mb_arise_"))
     app.add_handler(CallbackQueryHandler(multi_item_callback, pattern="^mb_item_"))
     app.add_handler(CallbackQueryHandler(multi_wait_callback, pattern="^mb_wait_"))
     app.add_handler(CallbackQueryHandler(multi_back_callback, pattern="^mb_back_"))
