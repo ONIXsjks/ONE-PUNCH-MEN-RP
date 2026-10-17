@@ -58,24 +58,14 @@ from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
 from opm_stats import OPM_STATS
 
-# ============ 7 ANIMES (AOT, BC, Berserk, DS, CSM, Naruto, SDS) ============
-from aot_data import (CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
-                      AOT_BOSSES, AOT_FODDER)
-from blackclover_data import (CHARACTERS_BLACKCLOVER, CHAR_PRICES_BLACKCLOVER,
-                              ABILITIES_BLACKCLOVER, BLACKCLOVER_BOSSES,
-                              BLACKCLOVER_FODDER)
-from berserk_data import (CHARACTERS_BERSERK, CHAR_PRICES_BERSERK,
-                          ABILITIES_BERSERK, BERSERK_BOSSES, BERSERK_FODDER)
-from demonslayer_data import (CHARACTERS_DEMONSLAYER, CHAR_PRICES_DEMONSLAYER,
-                              ABILITIES_DEMONSLAYER, DEMONSLAYER_BOSSES,
-                              DEMONSLAYER_FODDER)
-from chainsawman_data import (CHARACTERS_CHAINSAWMAN, CHAR_PRICES_CHAINSAWMAN,
-                              ABILITIES_CHAINSAWMAN, CHAINSAWMAN_BOSSES,
-                              CHAINSAWMAN_FODDER)
-from naruto_data import (CHARACTERS_NARUTO, CHAR_PRICES_NARUTO,
-                         ABILITIES_NARUTO, NARUTO_BOSSES, NARUTO_FODDER)
-from sevendeadlysins_data import (CHARACTERS_SDS, CHAR_PRICES_SDS,
-                                   ABILITIES_SDS, SDS_BOSSES, SDS_FODDER)
+# ============ 7 ANIMES ============
+from aot_data import (CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT, AOT_BOSSES, AOT_FODDER)
+from blackclover_data import (CHARACTERS_BLACKCLOVER, CHAR_PRICES_BLACKCLOVER, ABILITIES_BLACKCLOVER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER)
+from berserk_data import (CHARACTERS_BERSERK, CHAR_PRICES_BERSERK, ABILITIES_BERSERK, BERSERK_BOSSES, BERSERK_FODDER)
+from demonslayer_data import (CHARACTERS_DEMONSLAYER, CHAR_PRICES_DEMONSLAYER, ABILITIES_DEMONSLAYER, DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER)
+from chainsawman_data import (CHARACTERS_CHAINSAWMAN, CHAR_PRICES_CHAINSAWMAN, ABILITIES_CHAINSAWMAN, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER)
+from naruto_data import (CHARACTERS_NARUTO, CHAR_PRICES_NARUTO, ABILITIES_NARUTO, NARUTO_BOSSES, NARUTO_FODDER)
+from sevendeadlysins_data import (CHARACTERS_SDS, CHAR_PRICES_SDS, ABILITIES_SDS, SDS_BOSSES, SDS_FODDER)
 
 from aot_stats import AOT_STATS
 from blackclover_stats import BLACKCLOVER_STATS
@@ -85,27 +75,15 @@ from chainsawman_stats import CHAINSAWMAN_STATS
 from naruto_stats import NARUTO_STATS
 from sevendeadlysins_stats import SDS_STATS
 
-# ============ 🆕 8 ANIMES NEW (One Piece, DB, HxH, Sakamoto, Solo, Mushoku, CG, TG) ============
-from onepiece_data import (CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE,
-                           ABILITIES_ONEPIECE, ONEPIECE_BOSSES, ONEPIECE_FODDER)
-from dragonball_data import (CHARACTERS_DRAGONBALL, CHAR_PRICES_DRAGONBALL,
-                             ABILITIES_DRAGONBALL, DRAGONBALL_BOSSES,
-                             DRAGONBALL_FODDER)
-from hxh_data import (CHARACTERS_HXH, CHAR_PRICES_HXH, ABILITIES_HXH,
-                      HXH_BOSSES, HXH_FODDER)
-from sakamoto_data import (CHARACTERS_SAKAMOTO, CHAR_PRICES_SAKAMOTO,
-                           ABILITIES_SAKAMOTO, SAKAMOTO_BOSSES, SAKAMOTO_FODDER)
-from sololeveling_data import (CHARACTERS_SOLOLEVELING, CHAR_PRICES_SOLOLEVELING,
-                               ABILITIES_SOLOLEVELING, SOLOLEVELING_BOSSES,
-                               SOLOLEVELING_FODDER)
-from mushoku_data import (CHARACTERS_MUSHOKU, CHAR_PRICES_MUSHOKU,
-                          ABILITIES_MUSHOKU, MUSHOKU_BOSSES, MUSHOKU_FODDER)
-from codegeass_data import (CHARACTERS_CODEGEASS, CHAR_PRICES_CODEGEASS,
-                            ABILITIES_CODEGEASS, CODEGEASS_BOSSES,
-                            CODEGEASS_FODDER)
-from tokyoghoul_data import (CHARACTERS_TOKYOGHOUL, CHAR_PRICES_TOKYOGHOUL,
-                             ABILITIES_TOKYOGHOUL, TOKYOGHOUL_BOSSES,
-                             TOKYOGHOUL_FODDER)
+# ============ 8 ANIMES NEW ============
+from onepiece_data import (CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE, ABILITIES_ONEPIECE, ONEPIECE_BOSSES, ONEPIECE_FODDER)
+from dragonball_data import (CHARACTERS_DRAGONBALL, CHAR_PRICES_DRAGONBALL, ABILITIES_DRAGONBALL, DRAGONBALL_BOSSES, DRAGONBALL_FODDER)
+from hxh_data import (CHARACTERS_HXH, CHAR_PRICES_HXH, ABILITIES_HXH, HXH_BOSSES, HXH_FODDER)
+from sakamoto_data import (CHARACTERS_SAKAMOTO, CHAR_PRICES_SAKAMOTO, ABILITIES_SAKAMOTO, SAKAMOTO_BOSSES, SAKAMOTO_FODDER)
+from sololeveling_data import (CHARACTERS_SOLOLEVELING, CHAR_PRICES_SOLOLEVELING, ABILITIES_SOLOLEVELING, SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER)
+from mushoku_data import (CHARACTERS_MUSHOKU, CHAR_PRICES_MUSHOKU, ABILITIES_MUSHOKU, MUSHOKU_BOSSES, MUSHOKU_FODDER)
+from codegeass_data import (CHARACTERS_CODEGEASS, CHAR_PRICES_CODEGEASS, ABILITIES_CODEGEASS, CODEGEASS_BOSSES, CODEGEASS_FODDER)
+from tokyoghoul_data import (CHARACTERS_TOKYOGHOUL, CHAR_PRICES_TOKYOGHOUL, ABILITIES_TOKYOGHOUL, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER)
 
 from onepiece_stats import ONEPIECE_STATS
 from dragonball_stats import DRAGONBALL_STATS
@@ -116,38 +94,18 @@ from mushoku_stats import MUSHOKU_STATS
 from codegeass_stats import CODEGEASS_STATS
 from tokyoghoul_stats import TOKYOGHOUL_STATS
 
-# ============ WORLD ============
-from world import (REGIONS, TREASURES, get_region, get_region_name,
-                   random_explore_event, random_treasure, random_reward,
-                   can_unlock_region, get_player_region_view, get_region_view,
-                   format_treasure, format_world_progress, format_treasures_list)
-
-# ============ 🆕 ANIME REGISTRY ============
-from anime_registry import (
-    ANIME_REGISTRY, get_anime, get_anime_list,
-    get_characters_by_anime, get_char_price_by_anime,
-    find_char_anime, get_anime_bosses, get_anime_shop_abilities
-)
-
-# ============ 🆕 MODES ============
-from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd,
-                   zombie_cmd, zombie_callback, tower_cmd, tower_callback)
-
-# ============ 🆕 ARISE ============
-from arise import (try_arise, show_shadows, arise_callback,
-                   shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
-
+from world import (REGIONS, TREASURES, get_region, get_region_name, random_explore_event, random_treasure, random_reward, can_unlock_region, get_player_region_view, get_region_view, format_treasure, format_world_progress, format_treasures_list)
+from anime_registry import (ANIME_REGISTRY, get_anime, get_anime_list, get_characters_by_anime, get_char_price_by_anime, find_char_anime, get_anime_bosses, get_anime_shop_abilities)
+from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
+from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
 def get_all_stats(char_name, rank):
-    for stats_dict in [JJK_STATS, BLEACH_STATS, OPM_STATS,
-                       AOT_STATS, BLACKCLOVER_STATS, BERSERK_STATS,
-                       DEMONSLAYER_STATS, CHAINSAWMAN_STATS,
-                       NARUTO_STATS, SDS_STATS,
-                       ONEPIECE_STATS, DRAGONBALL_STATS, HXH_STATS,
-                       SAKAMOTO_STATS, SOLOLEVELING_STATS, MUSHOKU_STATS,
+    for stats_dict in [JJK_STATS, BLEACH_STATS, OPM_STATS, AOT_STATS, BLACKCLOVER_STATS, BERSERK_STATS,
+                       DEMONSLAYER_STATS, CHAINSAWMAN_STATS, NARUTO_STATS, SDS_STATS, ONEPIECE_STATS,
+                       DRAGONBALL_STATS, HXH_STATS, SAKAMOTO_STATS, SOLOLEVELING_STATS, MUSHOKU_STATS,
                        CODEGEASS_STATS, TOKYOGHOUL_STATS]:
         if char_name in stats_dict:
             return stats_dict[char_name]
@@ -162,13 +120,10 @@ def get_char_price(char_name, rank):
 
 
 def get_character_abilities(char_name):
-    for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM,
-                 ABILITIES_AOT, ABILITIES_BLACKCLOVER, ABILITIES_BERSERK,
-                 ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN,
-                 ABILITIES_NARUTO, ABILITIES_SDS,
-                 ABILITIES_ONEPIECE, ABILITIES_DRAGONBALL, ABILITIES_HXH,
-                 ABILITIES_SAKAMOTO, ABILITIES_SOLOLEVELING, ABILITIES_MUSHOKU,
-                 ABILITIES_CODEGEASS, ABILITIES_TOKYOGHOUL]:
+    for data in [ABILITIES_JJK, ABILITIES_BLEACH, ABILITIES_OPM, ABILITIES_AOT, ABILITIES_BLACKCLOVER,
+                 ABILITIES_BERSERK, ABILITIES_DEMONSLAYER, ABILITIES_CHAINSAWMAN, ABILITIES_NARUTO,
+                 ABILITIES_SDS, ABILITIES_ONEPIECE, ABILITIES_DRAGONBALL, ABILITIES_HXH, ABILITIES_SAKAMOTO,
+                 ABILITIES_SOLOLEVELING, ABILITIES_MUSHOKU, ABILITIES_CODEGEASS, ABILITIES_TOKYOGHOUL]:
         if char_name in data:
             return data[char_name]
     return None
@@ -209,7 +164,6 @@ def get_battle_kb(char_name=None, user_id=None):
             kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
         if has_bankai:
             kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
-        # 🆕 Arise (فقط Jin-Woo)
         if char_name == "Sung Jin-Woo":
             kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
@@ -241,12 +195,10 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
             kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
         if has_bankai:
             kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
-        # 🆕 Arise (فقط Jin-Woo)
         if char_name == "Sung Jin-Woo":
             kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
-
 
 COMMAND_DESCRIPTIONS = {
     "start": "شروع بازی", "profile": "پروفایل", "coins": "موجودی سکه",
@@ -332,7 +284,6 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         abs_text = f"🔵 {a1}\n🔴 {a2}\n🟣 {a3} (۱ بار)\n"
     else:
         abs_text = "❌ Ability تعریف نشده\n"
-    # 🆕 Arise Info
     arise_text = ""
     if char_name == "Sung Jin-Woo":
         shadow_count = get_shadows_count(user_id, char_name)
@@ -619,8 +570,6 @@ async def buy_char_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(
             f"✅ {anime['emoji']} {char_name} ({rank})\n🎉 خریدی!"
         )
-
-
 async def buy_ability_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -711,8 +660,6 @@ async def upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = upgrade_character(user_id, char[0], target_level)
     update_quest_progress(user_id, "level_up_1")
     await update.message.reply_text(msg)
-
-
 async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     guild = get_user_guild(user_id)
@@ -862,48 +809,117 @@ async def battle(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not char:
         await update.message.reply_text("No active character.")
         return
-    kb = []
-    for name in BOSSES:
-        kb.append([InlineKeyboardButton(name, callback_data=f"solo_{name}")])
-    for name, data in BOSSES_JJK.items():
-        kb.append([InlineKeyboardButton(f"👹 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in BLEACH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in BOSSES_OPM.items():
-        kb.append([InlineKeyboardButton(f"💪 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in AOT_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in BLACKCLOVER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍀 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in BERSERK_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🩸 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in DEMONSLAYER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in CHAINSAWMAN_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in NARUTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍥 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in SDS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    # 🆕 8 انیمه جدید
-    for name, data in ONEPIECE_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🏴‍☠️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in DRAGONBALL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🐉 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in HXH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🎯 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in SAKAMOTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍡 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in SOLOLEVELING_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in MUSHOKU_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌀 {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in CODEGEASS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"♟️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    for name, data in TOKYOGHOUL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"👁️ {data.get('display_name', name)}", callback_data=f"solo_{name}")])
-    await update.message.reply_text("⚔️ باس انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+    
+    kb = [
+        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")],
+        [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
+        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")],
+        [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
+        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")],
+        [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
+        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")],
+        [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
+        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")],
+        [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
+        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")],
+        [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
+        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")],
+        [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
+        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")],
+        [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
+        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")],
+        [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
+    ]
+    await update.message.reply_text("⚔️ **انیمه‌ی مورد نظر رو انتخاب کن:**", reply_markup=InlineKeyboardMarkup(kb))
 
+async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    data = q.data.replace("bosses_", "")
+    
+    kb = []
+    if data == "jjk":
+        for name, d in BOSSES_JJK.items(): kb.append([InlineKeyboardButton(f"👹 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in FODDER_JJK.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "bleach":
+        for name, d in BLEACH_BOSSES.items(): kb.append([InlineKeyboardButton(f"⚔️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in BLEACH_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "opm":
+        for name, d in BOSSES_OPM.items(): kb.append([InlineKeyboardButton(f"💪 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "aot":
+        for name, d in AOT_BOSSES.items(): kb.append([InlineKeyboardButton(f"🗡️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in AOT_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "bc":
+        for name, d in BLACKCLOVER_BOSSES.items(): kb.append([InlineKeyboardButton(f"🍀 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in BLACKCLOVER_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "berserk":
+        for name, d in BERSERK_BOSSES.items(): kb.append([InlineKeyboardButton(f"🩸 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in BERSERK_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "ds":
+        for name, d in DEMONSLAYER_BOSSES.items(): kb.append([InlineKeyboardButton(f"🌸 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in DEMONSLAYER_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "csm":
+        for name, d in CHAINSAWMAN_BOSSES.items(): kb.append([InlineKeyboardButton(f"🪚 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in CHAINSAWMAN_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "naruto":
+        for name, d in NARUTO_BOSSES.items(): kb.append([InlineKeyboardButton(f"🍥 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in NARUTO_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "sds":
+        for name, d in SDS_BOSSES.items(): kb.append([InlineKeyboardButton(f"⚔️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in SDS_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "op":
+        for name, d in ONEPIECE_BOSSES.items(): kb.append([InlineKeyboardButton(f"🏴‍☠️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in ONEPIECE_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "db":
+        for name, d in DRAGONBALL_BOSSES.items(): kb.append([InlineKeyboardButton(f"🐉 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in DRAGONBALL_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "hxh":
+        for name, d in HXH_BOSSES.items(): kb.append([InlineKeyboardButton(f"🎯 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in HXH_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "sakamoto":
+        for name, d in SAKAMOTO_BOSSES.items(): kb.append([InlineKeyboardButton(f"🍡 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in SAKAMOTO_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "solo":
+        for name, d in SOLOLEVELING_BOSSES.items(): kb.append([InlineKeyboardButton(f"🗡️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in SOLOLEVELING_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "mushoku":
+        for name, d in MUSHOKU_BOSSES.items(): kb.append([InlineKeyboardButton(f"🌀 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in MUSHOKU_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "cg":
+        for name, d in CODEGEASS_BOSSES.items(): kb.append([InlineKeyboardButton(f"♟️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in CODEGEASS_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    elif data == "tg":
+        for name, d in TOKYOGHOUL_BOSSES.items(): kb.append([InlineKeyboardButton(f"👁️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+        for name, d in TOKYOGHOUL_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
+    
+    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="battle_back")])
+    await q.edit_message_text(f"⚔️ **لیست باس‌ها:**", reply_markup=InlineKeyboardMarkup(kb))
+
+async def battle_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    
+    kb = [
+        [InlineKeyboardButton("🌀 Jujutsu Kaisen", callback_data="bosses_jjk")],
+        [InlineKeyboardButton("⚔️ Bleach", callback_data="bosses_bleach")],
+        [InlineKeyboardButton("💪 One Punch Man", callback_data="bosses_opm")],
+        [InlineKeyboardButton("🗡️ Attack on Titan", callback_data="bosses_aot")],
+        [InlineKeyboardButton("🍀 Black Clover", callback_data="bosses_bc")],
+        [InlineKeyboardButton("🩸 Berserk", callback_data="bosses_berserk")],
+        [InlineKeyboardButton("🌸 Demon Slayer", callback_data="bosses_ds")],
+        [InlineKeyboardButton("🪚 Chainsaw Man", callback_data="bosses_csm")],
+        [InlineKeyboardButton("🍥 Naruto", callback_data="bosses_naruto")],
+        [InlineKeyboardButton("⚔️ Seven Deadly Sins", callback_data="bosses_sds")],
+        [InlineKeyboardButton("🏴‍☠️ One Piece", callback_data="bosses_op")],
+        [InlineKeyboardButton("🐉 Dragon Ball", callback_data="bosses_db")],
+        [InlineKeyboardButton("🎯 Hunter x Hunter", callback_data="bosses_hxh")],
+        [InlineKeyboardButton("🍡 Sakamoto Days", callback_data="bosses_sakamoto")],
+        [InlineKeyboardButton("🗡️ Solo Leveling", callback_data="bosses_solo")],
+        [InlineKeyboardButton("🌀 Mushoku Tensei", callback_data="bosses_mushoku")],
+        [InlineKeyboardButton("♟️ Code Geass", callback_data="bosses_cg")],
+        [InlineKeyboardButton("👁️ Tokyo Ghoul", callback_data="bosses_tg")],
+    ]
+    await q.edit_message_text("⚔️ **انیمه‌ی مورد نظر رو انتخاب کن:**", reply_markup=InlineKeyboardMarkup(kb))
 
 async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -917,89 +933,33 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     existing = get_battle(user_id)
     if existing:
         end_battle(existing["id"])
-    if boss_name in BLEACH_BOSSES:
-        create_battle(user_id, boss_name, char[5], BLEACH_BOSSES[boss_name]["hp"])
-    elif boss_name in BLEACH_FODDER:
-        create_battle(user_id, boss_name, char[5], BLEACH_FODDER[boss_name]["hp"])
-    elif boss_name in BOSSES_JJK:
-        create_battle(user_id, boss_name, char[5], BOSSES_JJK[boss_name]["hp"])
-    elif boss_name in FODDER_JJK:
-        create_battle(user_id, boss_name, char[5], FODDER_JJK[boss_name]["hp"])
-    elif boss_name in BOSSES_OPM:
-        create_battle(user_id, boss_name, char[5], BOSSES_OPM[boss_name]["hp"])
-    elif boss_name in BOSSES:
-        create_battle(user_id, boss_name, char[5], BOSSES[boss_name]["hp"])
-    elif boss_name in AOT_BOSSES:
-        create_battle(user_id, boss_name, char[5], AOT_BOSSES[boss_name]["hp"])
-    elif boss_name in AOT_FODDER:
-        create_battle(user_id, boss_name, char[5], AOT_FODDER[boss_name]["hp"])
-    elif boss_name in BLACKCLOVER_BOSSES:
-        create_battle(user_id, boss_name, char[5], BLACKCLOVER_BOSSES[boss_name]["hp"])
-    elif boss_name in BLACKCLOVER_FODDER:
-        create_battle(user_id, boss_name, char[5], BLACKCLOVER_FODDER[boss_name]["hp"])
-    elif boss_name in BERSERK_BOSSES:
-        create_battle(user_id, boss_name, char[5], BERSERK_BOSSES[boss_name]["hp"])
-    elif boss_name in BERSERK_FODDER:
-        create_battle(user_id, boss_name, char[5], BERSERK_FODDER[boss_name]["hp"])
-    elif boss_name in DEMONSLAYER_BOSSES:
-        create_battle(user_id, boss_name, char[5], DEMONSLAYER_BOSSES[boss_name]["hp"])
-    elif boss_name in DEMONSLAYER_FODDER:
-        create_battle(user_id, boss_name, char[5], DEMONSLAYER_FODDER[boss_name]["hp"])
-    elif boss_name in CHAINSAWMAN_BOSSES:
-        create_battle(user_id, boss_name, char[5], CHAINSAWMAN_BOSSES[boss_name]["hp"])
-    elif boss_name in CHAINSAWMAN_FODDER:
-        create_battle(user_id, boss_name, char[5], CHAINSAWMAN_FODDER[boss_name]["hp"])
-    elif boss_name in NARUTO_BOSSES:
-        create_battle(user_id, boss_name, char[5], NARUTO_BOSSES[boss_name]["hp"])
-    elif boss_name in NARUTO_FODDER:
-        create_battle(user_id, boss_name, char[5], NARUTO_FODDER[boss_name]["hp"])
-    elif boss_name in SDS_BOSSES:
-        create_battle(user_id, boss_name, char[5], SDS_BOSSES[boss_name]["hp"])
-    elif boss_name in SDS_FODDER:
-        create_battle(user_id, boss_name, char[5], SDS_FODDER[boss_name]["hp"])
-    # 🆕 8 انیمه جدید
-    elif boss_name in ONEPIECE_BOSSES:
-        create_battle(user_id, boss_name, char[5], ONEPIECE_BOSSES[boss_name]["hp"])
-    elif boss_name in ONEPIECE_FODDER:
-        create_battle(user_id, boss_name, char[5], ONEPIECE_FODDER[boss_name]["hp"])
-    elif boss_name in DRAGONBALL_BOSSES:
-        create_battle(user_id, boss_name, char[5], DRAGONBALL_BOSSES[boss_name]["hp"])
-    elif boss_name in DRAGONBALL_FODDER:
-        create_battle(user_id, boss_name, char[5], DRAGONBALL_FODDER[boss_name]["hp"])
-    elif boss_name in HXH_BOSSES:
-        create_battle(user_id, boss_name, char[5], HXH_BOSSES[boss_name]["hp"])
-    elif boss_name in HXH_FODDER:
-        create_battle(user_id, boss_name, char[5], HXH_FODDER[boss_name]["hp"])
-    elif boss_name in SAKAMOTO_BOSSES:
-        create_battle(user_id, boss_name, char[5], SAKAMOTO_BOSSES[boss_name]["hp"])
-    elif boss_name in SAKAMOTO_FODDER:
-        create_battle(user_id, boss_name, char[5], SAKAMOTO_FODDER[boss_name]["hp"])
-    elif boss_name in SOLOLEVELING_BOSSES:
-        create_battle(user_id, boss_name, char[5], SOLOLEVELING_BOSSES[boss_name]["hp"])
-    elif boss_name in SOLOLEVELING_FODDER:
-        create_battle(user_id, boss_name, char[5], SOLOLEVELING_FODDER[boss_name]["hp"])
-    elif boss_name in MUSHOKU_BOSSES:
-        create_battle(user_id, boss_name, char[5], MUSHOKU_BOSSES[boss_name]["hp"])
-    elif boss_name in MUSHOKU_FODDER:
-        create_battle(user_id, boss_name, char[5], MUSHOKU_FODDER[boss_name]["hp"])
-    elif boss_name in CODEGEASS_BOSSES:
-        create_battle(user_id, boss_name, char[5], CODEGEASS_BOSSES[boss_name]["hp"])
-    elif boss_name in CODEGEASS_FODDER:
-        create_battle(user_id, boss_name, char[5], CODEGEASS_FODDER[boss_name]["hp"])
-    elif boss_name in TOKYOGHOUL_BOSSES:
-        create_battle(user_id, boss_name, char[5], TOKYOGHOUL_BOSSES[boss_name]["hp"])
-    elif boss_name in TOKYOGHOUL_FODDER:
-        create_battle(user_id, boss_name, char[5], TOKYOGHOUL_FODDER[boss_name]["hp"])
+    
+    # پیدا کردن HP باس از تمام دیکشنری‌ها
+    boss_hp = 5000
+    all_bosses = [
+        BLEACH_BOSSES, BLEACH_FODDER, BOSSES_JJK, FODDER_JJK, BOSSES_OPM, BOSSES,
+        AOT_BOSSES, AOT_FODDER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER, BERSERK_BOSSES, BERSERK_FODDER,
+        DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER,
+        NARUTO_BOSSES, NARUTO_FODDER, SDS_BOSSES, SDS_FODDER,
+        ONEPIECE_BOSSES, ONEPIECE_FODDER, DRAGONBALL_BOSSES, DRAGONBALL_FODDER,
+        HXH_BOSSES, HXH_FODDER, SAKAMOTO_BOSSES, SAKAMOTO_FODDER,
+        SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER, MUSHOKU_BOSSES, MUSHOKU_FODDER,
+        CODEGEASS_BOSSES, CODEGEASS_FODDER, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER
+    ]
+    for bosses_dict in all_bosses:
+        if boss_name in bosses_dict:
+            boss_hp = bosses_dict[boss_name]["hp"]
+            break
     else:
         await q.message.reply_text("❌ باس پیدا نشد.")
         return
+        
+    create_battle(user_id, boss_name, char[5], boss_hp)
     battle_data = get_battle(user_id)
     text = build_battle_message(battle_data, char)
     await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(
         get_battle_kb(char[2], user_id)
     ))
-
-
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1060,13 +1020,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif action == "back":
         text = build_battle_message(battle, char)
         try:
-            await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
-                get_battle_kb(char[2], user_id)
-            ))
+            await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
         except Exception:
-            await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(
-                get_battle_kb(char[2], user_id)
-            ))
+            await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
         return
     elif action == "domain":
         if char[2] not in DOMAINS_JJK:
@@ -1079,7 +1035,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return
         status, text, battle = player_ability_v2(battle, char, "bankai")
     elif action == "arise":
-        # 🆕 Arise
         if char[2] != "Sung Jin-Woo":
             await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
             return
@@ -1101,9 +1056,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     else:
         return
+    
     if status == "won":
         reward = finish_battle(user_id, battle["boss_name"], True)
-        # 🆕 Arise
         arise_text = ""
         try:
             success, msg = try_arise(user_id, char[2], battle["boss_name"])
@@ -1130,13 +1085,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
     try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 
 async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1180,13 +1131,9 @@ async def item_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
     try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 
 async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1199,7 +1146,6 @@ async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TY
     if not battle:
         return
     status, text, battle = player_ability_shop(battle, char, ability_name)
-    # 🆕 حذف Ability بعد از مصرف (۱ بار مصرف)
     try:
         remove_user_ability(user_id, char[2], ability_name)
     except Exception as e:
@@ -1232,13 +1178,9 @@ async def shop_ability_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TY
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
     try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 
 
 async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -1280,861 +1222,9 @@ async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     if len(full_text) > 3500:
         full_text = full_text[:3500] + "..."
     try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
-async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    kb = []
-    for name in BOSSES:
-        kb.append([InlineKeyboardButton(name, callback_data=f"coopboss_{name}")])
-    for name, data in BOSSES_JJK.items():
-        kb.append([InlineKeyboardButton(f"👹 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BLEACH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BOSSES_OPM.items():
-        kb.append([InlineKeyboardButton(f"💪 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in AOT_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BLACKCLOVER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍀 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BERSERK_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🩸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in DEMONSLAYER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in CHAINSAWMAN_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in NARUTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍥 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SDS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    # 🆕 8 انیمه جدید
-    for name, data in ONEPIECE_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🏴‍☠️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in DRAGONBALL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🐉 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in HXH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🎯 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SAKAMOTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍡 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SOLOLEVELING_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in MUSHOKU_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌀 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in CODEGEASS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"♟️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in TOKYOGHOUL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"👁️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    boss_name = q.data.replace("coopboss_", "")
-    host_id = q.from_user.id
-    safe_boss = boss_name.replace(" ", "_").replace("+", "plus")
-    session_id = f"coop_{host_id}_{safe_boss}"
-    COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
-    await q.message.reply_text(
-        f"👥 Co-op: {boss_name}\nSession: {session_id}\n"
-        f"Others: /join {session_id}\nHost: /startcoop {session_id}"
-    )
-
-
-async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /join <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
-    user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("Need active character.")
-        return
-    s = COOP_SESSIONS[session_id]
-    if user_id in s["players"]:
-        await update.message.reply_text("Already joined!")
-        return
-    if len(s["players"]) >= 2:
-        await update.message.reply_text("Session full.")
-        return
-    s["players"].append(user_id)
-    await update.message.reply_text("✅ Joined!")
-
-
-async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startcoop <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
-    s = COOP_SESSIONS[session_id]
-    if update.effective_user.id != s["host"]:
-        await update.message.reply_text("Only host can start.")
-        return
-    if len(s["players"]) < 2:
-        await update.message.reply_text("Need 2 players.")
-        return
-    p1_id, p2_id = s["players"][0], s["players"][1]
-    char1 = get_active_character(p1_id)
-    char2 = get_active_character(p2_id)
-    boss_hp = 5000
-    if s["boss"] in BLEACH_BOSSES:
-        boss_hp = BLEACH_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES_JJK:
-        boss_hp = BOSSES_JJK[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES_OPM:
-        boss_hp = BOSSES_OPM[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES:
-        boss_hp = BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in AOT_BOSSES:
-        boss_hp = AOT_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BLACKCLOVER_BOSSES:
-        boss_hp = BLACKCLOVER_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BERSERK_BOSSES:
-        boss_hp = BERSERK_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in DEMONSLAYER_BOSSES:
-        boss_hp = DEMONSLAYER_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in CHAINSAWMAN_BOSSES:
-        boss_hp = CHAINSAWMAN_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in NARUTO_BOSSES:
-        boss_hp = NARUTO_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SDS_BOSSES:
-        boss_hp = SDS_BOSSES[s["boss"]]["hp"]
-    # 🆕 8 انیمه جدید
-    elif s["boss"] in ONEPIECE_BOSSES:
-        boss_hp = ONEPIECE_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in DRAGONBALL_BOSSES:
-        boss_hp = DRAGONBALL_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in HXH_BOSSES:
-        boss_hp = HXH_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SAKAMOTO_BOSSES:
-        boss_hp = SAKAMOTO_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SOLOLEVELING_BOSSES:
-        boss_hp = SOLOLEVELING_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in MUSHOKU_BOSSES:
-        boss_hp = MUSHOKU_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in CODEGEASS_BOSSES:
-        boss_hp = CODEGEASS_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in TOKYOGHOUL_BOSSES:
-        boss_hp = TOKYOGHOUL_BOSSES[s["boss"]]["hp"]
-    team1 = [
-        {"uid": p1_id, "name": char1[2], "display": get_username(p1_id),
-         "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7],
-         "dodge": char1[8], "defending": 0, "dodged_next": 0},
-        {"uid": p2_id, "name": char2[2], "display": get_username(p2_id),
-         "hp": char2[5], "max_hp": char2[5], "atk": char2[6], "def": char2[7],
-         "dodge": char2[8], "defending": 0, "dodged_next": 0},
-    ]
-    create_multi_battle(session_id=session_id, battle_type="coop",
-                        host_id=s["host"], players=[p1_id, p2_id],
-                        team1=team1, team2=[], boss_name=s["boss"], boss_hp=boss_hp)
-    battle = get_multi_battle(session_id)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(
-            session_id, char1[2], battle["current_turn"], p1_id
-        ))
-    )
-
-
-async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("No active character.")
-        return
-    session_id = f"pvp_{user_id}"
-    PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
-    await update.message.reply_text(
-        f"⚔️ PvP session: {session_id}\nOpponent: /joinpvp {session_id}"
-    )
-
-
-async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /joinpvp <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in PVP_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = PVP_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    if user_id == s["host"]:
-        await update.message.reply_text("Can't fight yourself.")
-        return
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    char_host = get_active_character(s["host"])
-    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]),
-              "hp": char_host[5], "max_hp": char_host[5], "atk": char_host[6],
-              "def": char_host[7], "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
-    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id),
-              "hp": char[5], "max_hp": char[5], "atk": char[6], "def": char[7],
-              "dodge": char[8], "defending": 0, "dodged_next": 0}]
-    create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"],
-                        players=[s["host"], user_id], team1=team1, team2=team2)
-    battle = get_multi_battle(session_id)
-    current_turn = battle["current_turn"]
-    next_player, _ = get_player(battle, current_turn)
-    next_char = next_player["name"] if next_player else char_host[2]
-    kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(kb)
-    )
-
-
-async def team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /team <size 2-4>")
-        return
-    try:
-        size = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("Size must be number.")
-        return
-    if size < 2 or size > 4:
-        await update.message.reply_text("Size must be 2-4.")
-        return
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    session_id = f"team_{user_id}_{size}"
-    TEAM_SESSIONS[session_id] = {"host": user_id, "size": size,
-                                 "team1": [(user_id, char)], "team2": []}
-    await update.message.reply_text(
-        f"👥 Team Battle ({size}v{size})\nSession: {session_id}\n"
-        f"T1: /jointeam {session_id} 1\nT2: /jointeam {session_id} 2\nStart: /startteam {session_id}"
-    )
-
-
-async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /jointeam <session_id> <1|2>")
-        return
-    session_id = ctx.args[0]
-    try:
-        team_num = int(ctx.args[1])
-    except ValueError:
-        await update.message.reply_text("Team must be 1 or 2.")
-        return
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    all_players = [p[0] for p in s["team1"]] + [p[0] for p in s["team2"]]
-    if user_id in all_players:
-        await update.message.reply_text("Already joined.")
-        return
-    if team_num == 1:
-        if len(s["team1"]) >= s["size"]:
-            await update.message.reply_text("Team 1 full.")
-            return
-        s["team1"].append((user_id, char))
-        await update.message.reply_text(f"Joined T1 ({len(s['team1'])}/{s['size']})")
-    elif team_num == 2:
-        if len(s["team2"]) >= s["size"]:
-            await update.message.reply_text("Team 2 full.")
-            return
-        s["team2"].append((user_id, char))
-        await update.message.reply_text(f"Joined T2 ({len(s['team2'])}/{s['size']})")
-
-
-async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startteam <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    if update.effective_user.id != s["host"]:
-        await update.message.reply_text("Only host can start.")
-        return
-    if len(s["team1"]) != s["size"] or len(s["team2"]) != s["size"]:
-        await update.message.reply_text(f"Need {s['size']} each.")
-        return
-    team1 = [{"uid": u, "name": c[2], "display": get_username(u),
-              "hp": c[5], "max_hp": c[5], "atk": c[6], "def": c[7], "dodge": c[8],
-              "defending": 0, "dodged_next": 0} for u, c in s["team1"]]
-    team2 = [{"uid": u, "name": c[2], "display": get_username(u),
-              "hp": c[5], "max_hp": c[5], "atk": c[6], "def": c[7], "dodge": c[8],
-              "defending": 0, "dodged_next": 0} for u, c in s["team2"]]
-    all_ids = [p["uid"] for p in team1 + team2]
-    create_multi_battle(session_id=session_id, battle_type="team", host_id=s["host"],
-                        players=all_ids, team1=team1, team2=team2)
-    battle = get_multi_battle(session_id)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(
-            session_id, s["team1"][0][1][2], battle["current_turn"], s["host"]
-        ))
-    )
-async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    kb = []
-    for name in BOSSES:
-        kb.append([InlineKeyboardButton(name, callback_data=f"coopboss_{name}")])
-    for name, data in BOSSES_JJK.items():
-        kb.append([InlineKeyboardButton(f"👹 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BLEACH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BOSSES_OPM.items():
-        kb.append([InlineKeyboardButton(f"💪 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in AOT_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BLACKCLOVER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍀 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in BERSERK_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🩸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in DEMONSLAYER_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌸 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in CHAINSAWMAN_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🪚 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in NARUTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍥 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SDS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"⚔️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    # 🆕 8 انیمه جدید
-    for name, data in ONEPIECE_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🏴‍☠️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in DRAGONBALL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🐉 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in HXH_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🎯 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SAKAMOTO_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🍡 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in SOLOLEVELING_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🗡️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in MUSHOKU_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"🌀 {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in CODEGEASS_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"♟️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    for name, data in TOKYOGHOUL_BOSSES.items():
-        kb.append([InlineKeyboardButton(f"👁️ {data.get('display_name', name)}", callback_data=f"coopboss_{name}")])
-    await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    boss_name = q.data.replace("coopboss_", "")
-    host_id = q.from_user.id
-    safe_boss = boss_name.replace(" ", "_").replace("+", "plus")
-    session_id = f"coop_{host_id}_{safe_boss}"
-    COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
-    await q.message.reply_text(
-        f"👥 Co-op: {boss_name}\nSession: {session_id}\n"
-        f"Others: /join {session_id}\nHost: /startcoop {session_id}"
-    )
-
-
-async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /join <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
-    user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("Need active character.")
-        return
-    s = COOP_SESSIONS[session_id]
-    if user_id in s["players"]:
-        await update.message.reply_text("Already joined!")
-        return
-    if len(s["players"]) >= 2:
-        await update.message.reply_text("Session full.")
-        return
-    s["players"].append(user_id)
-    await update.message.reply_text("✅ Joined!")
-
-
-async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startcoop <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in COOP_SESSIONS:
-        await update.message.reply_text("Session not found.")
-        return
-    s = COOP_SESSIONS[session_id]
-    if update.effective_user.id != s["host"]:
-        await update.message.reply_text("Only host can start.")
-        return
-    if len(s["players"]) < 2:
-        await update.message.reply_text("Need 2 players.")
-        return
-    p1_id, p2_id = s["players"][0], s["players"][1]
-    char1 = get_active_character(p1_id)
-    char2 = get_active_character(p2_id)
-    boss_hp = 5000
-    if s["boss"] in BLEACH_BOSSES:
-        boss_hp = BLEACH_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES_JJK:
-        boss_hp = BOSSES_JJK[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES_OPM:
-        boss_hp = BOSSES_OPM[s["boss"]]["hp"]
-    elif s["boss"] in BOSSES:
-        boss_hp = BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in AOT_BOSSES:
-        boss_hp = AOT_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BLACKCLOVER_BOSSES:
-        boss_hp = BLACKCLOVER_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in BERSERK_BOSSES:
-        boss_hp = BERSERK_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in DEMONSLAYER_BOSSES:
-        boss_hp = DEMONSLAYER_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in CHAINSAWMAN_BOSSES:
-        boss_hp = CHAINSAWMAN_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in NARUTO_BOSSES:
-        boss_hp = NARUTO_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SDS_BOSSES:
-        boss_hp = SDS_BOSSES[s["boss"]]["hp"]
-    # 🆕 8 انیمه جدید
-    elif s["boss"] in ONEPIECE_BOSSES:
-        boss_hp = ONEPIECE_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in DRAGONBALL_BOSSES:
-        boss_hp = DRAGONBALL_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in HXH_BOSSES:
-        boss_hp = HXH_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SAKAMOTO_BOSSES:
-        boss_hp = SAKAMOTO_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in SOLOLEVELING_BOSSES:
-        boss_hp = SOLOLEVELING_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in MUSHOKU_BOSSES:
-        boss_hp = MUSHOKU_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in CODEGEASS_BOSSES:
-        boss_hp = CODEGEASS_BOSSES[s["boss"]]["hp"]
-    elif s["boss"] in TOKYOGHOUL_BOSSES:
-        boss_hp = TOKYOGHOUL_BOSSES[s["boss"]]["hp"]
-    team1 = [
-        {"uid": p1_id, "name": char1[2], "display": get_username(p1_id),
-         "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7],
-         "dodge": char1[8], "defending": 0, "dodged_next": 0},
-        {"uid": p2_id, "name": char2[2], "display": get_username(p2_id),
-         "hp": char2[5], "max_hp": char2[5], "atk": char2[6], "def": char2[7],
-         "dodge": char2[8], "defending": 0, "dodged_next": 0},
-    ]
-    create_multi_battle(session_id=session_id, battle_type="coop",
-                        host_id=s["host"], players=[p1_id, p2_id],
-                        team1=team1, team2=[], boss_name=s["boss"], boss_hp=boss_hp)
-    battle = get_multi_battle(session_id)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(
-            session_id, char1[2], battle["current_turn"], p1_id
-        ))
-    )
-
-
-async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not get_active_character(user_id):
-        await update.message.reply_text("No active character.")
-        return
-    session_id = f"pvp_{user_id}"
-    PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
-    await update.message.reply_text(
-        f"⚔️ PvP session: {session_id}\nOpponent: /joinpvp {session_id}"
-    )
-
-
-async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /joinpvp <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in PVP_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = PVP_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    if user_id == s["host"]:
-        await update.message.reply_text("Can't fight yourself.")
-        return
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    char_host = get_active_character(s["host"])
-    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]),
-              "hp": char_host[5], "max_hp": char_host[5], "atk": char_host[6],
-              "def": char_host[7], "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
-    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id),
-              "hp": char[5], "max_hp": char[5], "atk": char[6], "def": char[7],
-              "dodge": char[8], "defending": 0, "dodged_next": 0}]
-    create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"],
-                        players=[s["host"], user_id], team1=team1, team2=team2)
-    battle = get_multi_battle(session_id)
-    current_turn = battle["current_turn"]
-    next_player, _ = get_player(battle, current_turn)
-    next_char = next_player["name"] if next_player else char_host[2]
-    kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(kb)
-    )
-
-
-async def team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /team <size 2-4>")
-        return
-    try:
-        size = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("Size must be number.")
-        return
-    if size < 2 or size > 4:
-        await update.message.reply_text("Size must be 2-4.")
-        return
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    session_id = f"team_{user_id}_{size}"
-    TEAM_SESSIONS[session_id] = {"host": user_id, "size": size,
-                                 "team1": [(user_id, char)], "team2": []}
-    await update.message.reply_text(
-        f"👥 Team Battle ({size}v{size})\nSession: {session_id}\n"
-        f"T1: /jointeam {session_id} 1\nT2: /jointeam {session_id} 2\nStart: /startteam {session_id}"
-    )
-
-
-async def join_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /jointeam <session_id> <1|2>")
-        return
-    session_id = ctx.args[0]
-    try:
-        team_num = int(ctx.args[1])
-    except ValueError:
-        await update.message.reply_text("Team must be 1 or 2.")
-        return
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("No active character.")
-        return
-    all_players = [p[0] for p in s["team1"]] + [p[0] for p in s["team2"]]
-    if user_id in all_players:
-        await update.message.reply_text("Already joined.")
-        return
-    if team_num == 1:
-        if len(s["team1"]) >= s["size"]:
-            await update.message.reply_text("Team 1 full.")
-            return
-        s["team1"].append((user_id, char))
-        await update.message.reply_text(f"Joined T1 ({len(s['team1'])}/{s['size']})")
-    elif team_num == 2:
-        if len(s["team2"]) >= s["size"]:
-            await update.message.reply_text("Team 2 full.")
-            return
-        s["team2"].append((user_id, char))
-        await update.message.reply_text(f"Joined T2 ({len(s['team2'])}/{s['size']})")
-
-
-async def start_team(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not ctx.args:
-        await update.message.reply_text("Usage: /startteam <session_id>")
-        return
-    session_id = ctx.args[0]
-    if session_id not in TEAM_SESSIONS:
-        await update.message.reply_text("Not found.")
-        return
-    s = TEAM_SESSIONS[session_id]
-    if update.effective_user.id != s["host"]:
-        await update.message.reply_text("Only host can start.")
-        return
-    if len(s["team1"]) != s["size"] or len(s["team2"]) != s["size"]:
-        await update.message.reply_text(f"Need {s['size']} each.")
-        return
-    team1 = [{"uid": u, "name": c[2], "display": get_username(u),
-              "hp": c[5], "max_hp": c[5], "atk": c[6], "def": c[7], "dodge": c[8],
-              "defending": 0, "dodged_next": 0} for u, c in s["team1"]]
-    team2 = [{"uid": u, "name": c[2], "display": get_username(u),
-              "hp": c[5], "max_hp": c[5], "atk": c[6], "def": c[7], "dodge": c[8],
-              "defending": 0, "dodged_next": 0} for u, c in s["team2"]]
-    all_ids = [p["uid"] for p in team1 + team2]
-    create_multi_battle(session_id=session_id, battle_type="team", host_id=s["host"],
-                        players=all_ids, team1=team1, team2=team2)
-    battle = get_multi_battle(session_id)
-    await update.message.reply_text(
-        build_battle_view(battle),
-        reply_markup=InlineKeyboardMarkup(get_multi_kb(
-            session_id, s["team1"][0][1][2], battle["current_turn"], s["host"]
-        ))
-    )
-async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    data = q.data
-    parts = data.split("_", 2)
-    action = parts[1]
-    session_id = parts[2]
-    user_id = q.from_user.id
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد فعال نیست!", show_alert=True)
-        return
-
-    if str(battle["current_turn"]) != str(user_id):
-        await q.answer("⏳ نوبت تو نیست! صبر کن...", show_alert=True)
-        return
-
-    player, _ = get_player(battle, user_id)
-    if not player:
-        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
-        return
-    if player["hp"] <= 0:
-        await q.answer("💀 تو مرده‌ای!", show_alert=True)
-        return
-
-    await q.answer()
-
-    if action in ("ab1", "ab2", "ab3"):
-        action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
-        status, log = player_action(session_id, user_id, action_map[action])
-    else:
-        status, log = player_action(session_id, user_id, action)
-    if status is None:
-        await q.answer(log, show_alert=True)
-        return
-    if status in ("won", "team1_won", "team2_won", "draw"):
-        result = finish_multi_battle(session_id)
-        if result:
-            if status == "won":
-                text = "🏆 بردی!\n\n"
-            elif status == "team1_won":
-                text = "🏆 Team 1 برنده شد!\n\n"
-            elif status == "team2_won":
-                text = "🏆 Team 2 برنده شد!\n\n"
-            else:
-                text = "🤝 مساوی!\n\n"
-            text += f"{log}\n\n💰 جوایز:\n"
-            for uid, amount in result["rewards"].items():
-                text += f"👤 {get_username(uid)}: +{amount:,} coin\n"
-            try:
-                await q.edit_message_text(text)
-            except Exception:
-                await q.message.reply_text(text)
-        return
-    battle = get_multi_battle(session_id)
-    if not battle:
-        return
-    view = build_battle_view(battle)
-    log_lines = log.split("\n")
-    if len(log_lines) > 5:
-        log = "\n".join(log_lines[-5:])
-    full_text = f"{log}\n\n{view}"
-    if len(full_text) > 3500:
-        full_text = full_text[:3500] + "..."
-    next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def multi_skip_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    session_id = q.data.replace("mb_skip_", "")
-    user_id = q.from_user.id
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد نیست!", show_alert=True)
-        return
-    if str(battle["host"]) != str(user_id):
-        await q.answer("❌ فقط سازنده‌ی نبرد می‌تونه نوبت رو رد کنه!", show_alert=True)
-        return
-    next_turn(battle)
-    next_player, _ = get_player(battle, battle["current_turn"])
-    if next_player and next_player.get("frozen", 0) > 0:
-        next_player["frozen"] -= 1
-        next_turn(battle)
-    update_multi_battle(session_id, battle)
-    log = "⏭️ نوبت به صورت دستی رد شد!"
-    view = build_battle_view(battle)
-    next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def multi_domain_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    session_id = q.data.replace("mb_domain_", "")
-    user_id = q.from_user.id
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد نیست!", show_alert=True)
-        return
-    if str(battle["current_turn"]) != str(user_id):
-        await q.answer("⏳ نوبت تو نیست!", show_alert=True)
-        return
-    await q.answer()
-    status, log = player_action(session_id, user_id, "domain")
-    if status is None:
-        await q.answer(log, show_alert=True)
-        return
-    battle = get_multi_battle(session_id)
-    if not battle:
-        return
-    view = build_battle_view(battle)
-    next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def multi_bankai_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    session_id = q.data.replace("mb_bankai_", "")
-    user_id = q.from_user.id
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد نیست!", show_alert=True)
-        return
-    if str(battle["current_turn"]) != str(user_id):
-        await q.answer("⏳ نوبت تو نیست!", show_alert=True)
-        return
-    await q.answer()
-    status, log = player_action(session_id, user_id, "bankai")
-    if status is None:
-        await q.answer(log, show_alert=True)
-        return
-    battle = get_multi_battle(session_id)
-    if not battle:
-        return
-    view = build_battle_view(battle)
-    next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(f"{log}\n\n{view}", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def multi_arise_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    # 🆕 Arise در Multi Battle
-    q = update.callback_query
-    session_id = q.data.replace("mb_arise_", "")
-    user_id = q.from_user.id
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد نیست!", show_alert=True)
-        return
-    player, _ = get_player(battle, user_id)
-    if not player:
-        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
-        return
-    if player["name"] != "Sung Jin-Woo":
-        await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
-        return
-    shadows = get_user_shadows(user_id, "Sung Jin-Woo")
-    if not shadows:
-        await q.answer("❌ هیچ سایه‌ای نداری!", show_alert=True)
-        return
-    shadows_text = "💀 **سایه‌های تو:**\n\n"
-    for i, (sname, atk_bonus) in enumerate(shadows, 1):
-        shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
-    total_bonus = sum(s[1] for s in shadows)
-    shadows_text += f"\n⚔️ مجموع ATK: +{total_bonus}"
-    await q.answer(f"💀 {len(shadows)} سایه (+{total_bonus} ATK)", show_alert=True)
-    try:
-        await q.message.reply_text(shadows_text)
-    except Exception:
-        pass
-
-
-async def multi_wait_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer("⏳ هنوز نوبت تو نیست!", show_alert=True)
-
-
-async def multi_item_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    session_id = q.data.replace("mb_item_", "")
-    user_id = q.from_user.id
-    items = get_items(user_id)
-    if not items:
-        await q.answer("❌ آیتم نداری.", show_alert=True)
-        return
-    kb = []
-    for n, c in items:
-        fa = ITEM_FA.get(n, n)
-        kb.append([InlineKeyboardButton(f"{fa} (x{c})", callback_data=f"mb_ituse_{n}_{session_id}")])
-    kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data=f"mb_back_{session_id}")])
-    await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
-
-
-async def multi_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    session_id = q.data.replace("mb_back_", "")
-    battle = get_multi_battle(session_id)
-    if not battle:
-        await q.answer("نبرد نیست!", show_alert=True)
-        return
-    view = build_battle_view(battle)
-    next_player, _ = get_player(battle, battle["current_turn"])
-    next_char = next_player["name"] if next_player else None
-    next_uid = battle["current_turn"]
-    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
-    try:
-        await q.edit_message_text(view, reply_markup=InlineKeyboardMarkup(kb))
-    except Exception:
-        await q.message.reply_text(view, reply_markup=InlineKeyboardMarkup(kb))
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
 async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
@@ -2207,10 +1297,7 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         create_battle(user_id, enemy_name, char[5], enemy_hp)
         battle_data = get_battle(user_id)
         text = f"👹 یه دشمن ظاهر شد!\n\n{enemy_name}\n\n" + build_battle_message(battle_data, char)
-        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
-
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     elif event == "treasure":
         t_key, t_data = random_treasure()
         if t_data:
@@ -2224,14 +1311,12 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
                     chosen_item = random.choice(item_names)
                     conn = sqlite3.connect(DB_NAME)
                     c = conn.cursor()
-                    c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?",
-                              (user_id, chosen_item))
+                    c.execute("SELECT id, quantity FROM items WHERE user_id=? AND item_name=?", (user_id, chosen_item))
                     row = c.fetchone()
                     if row:
                         c.execute("UPDATE items SET quantity = quantity + 1 WHERE id=?", (row[0],))
                     else:
-                        c.execute("INSERT INTO items (user_id, item_name, quantity) VALUES (?,?,1)",
-                                  (user_id, chosen_item))
+                        c.execute("INSERT INTO items (user_id, item_name, quantity) VALUES (?,?,1)", (user_id, chosen_item))
                     conn.commit()
                     conn.close()
                     reward_text = f"🎁 آیتم: {chosen_item}"
@@ -2249,7 +1334,6 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
     elif event == "mine":
         amount = random_reward(region_key) // 4
         add_coins(user_id, amount)
@@ -2259,7 +1343,6 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
     elif event == "gate":
         all_regions = list(REGIONS.keys())
         current_idx = all_regions.index(region_key) if region_key in all_regions else 0
@@ -2287,7 +1370,6 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
             [InlineKeyboardButton("🔙 بازگشت", callback_data="world_back")],
         ]
         await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
-
     elif event == "rare_boss":
         boss_name = region["boss"]
         char = get_active_character(user_id)
@@ -2310,10 +1392,7 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         create_battle(user_id, boss_name, char[5], boss_hp)
         battle_data = get_battle(user_id)
         text = f"🌟 یه باس کمیاب ظاهر شد!\n\n👑 {boss_name}\n\n" + build_battle_message(battle_data, char)
-        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(
-            get_battle_kb(char[2], user_id)
-        ))
-
+        await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
     elif event == "trap":
         loss = random_reward(region_key) // 4
         coins = get_coins(user_id)
@@ -2365,6 +1444,8 @@ async def world_back_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")],
     ]
     await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(kb))
+
+
 async def quests_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     reset_daily_quests(user_id)
@@ -2424,223 +1505,225 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for i, (name, char, rank) in enumerate(rows, 1):
             text += f"{i}. {name or 'Unknown'} - {char} ({rank})\n"
         await q.message.reply_text(text)
-async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    if not is_admin(user_id):
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("No active character.")
+        return
+    kb = [
+        [InlineKeyboardButton("🌀 JJK Bosses", callback_data="coop_jjk")],
+        [InlineKeyboardButton("🏴‍☠️ One Piece Bosses", callback_data="coop_op")],
+        [InlineKeyboardButton("🗡️ Solo Leveling Bosses", callback_data="coop_solo")],
+    ]
+    await update.message.reply_text("👥 Co-op - Host chooses boss:", reply_markup=InlineKeyboardMarkup(kb))
+
+async def coop_boss_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    boss_name = q.data.replace("coopboss_", "")
+    host_id = q.from_user.id
+    safe_boss = boss_name.replace(" ", "_").replace("+", "plus")
+    session_id = f"coop_{host_id}_{safe_boss}"
+    COOP_SESSIONS[session_id] = {"host": host_id, "boss": boss_name, "players": [host_id]}
+    await q.message.reply_text(
+        f"👥 Co-op: {boss_name}\nSession: {session_id}\n"
+        f"Others: /join {session_id}\nHost: /startcoop {session_id}"
+    )
+
+async def join_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args:
+        await update.message.reply_text("Usage: /join <session_id>")
+        return
+    session_id = ctx.args[0]
+    if session_id not in COOP_SESSIONS:
+        await update.message.reply_text("Session not found.")
+        return
+    user_id = update.effective_user.id
+    if not get_active_character(user_id):
+        await update.message.reply_text("Need active character.")
+        return
+    s = COOP_SESSIONS[session_id]
+    if user_id in s["players"]:
+        await update.message.reply_text("Already joined!")
+        return
+    if len(s["players"]) >= 2:
+        await update.message.reply_text("Session full.")
+        return
+    s["players"].append(user_id)
+    await update.message.reply_text("✅ Joined!")
+
+async def start_coop(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args:
+        await update.message.reply_text("Usage: /startcoop <session_id>")
+        return
+    session_id = ctx.args[0]
+    if session_id not in COOP_SESSIONS:
+        await update.message.reply_text("Session not found.")
+        return
+    s = COOP_SESSIONS[session_id]
+    if update.effective_user.id != s["host"]:
+        await update.message.reply_text("Only host can start.")
+        return
+    if len(s["players"]) < 2:
+        await update.message.reply_text("Need 2 players.")
+        return
+    p1_id, p2_id = s["players"][0], s["players"][1]
+    char1 = get_active_character(p1_id)
+    char2 = get_active_character(p2_id)
+    boss_hp = 5000
+    if s["boss"] in BLEACH_BOSSES:
+        boss_hp = BLEACH_BOSSES[s["boss"]]["hp"]
+    elif s["boss"] in BOSSES_JJK:
+        boss_hp = BOSSES_JJK[s["boss"]]["hp"]
+    team1 = [
+        {"uid": p1_id, "name": char1[2], "display": get_username(p1_id), "hp": char1[5], "max_hp": char1[5], "atk": char1[6], "def": char1[7], "dodge": char1[8], "defending": 0, "dodged_next": 0},
+        {"uid": p2_id, "name": char2[2], "display": get_username(p2_id), "hp": char2[5], "max_hp": char2[5], "atk": char2[6], "def": char2[7], "dodge": char2[8], "defending": 0, "dodged_next": 0},
+    ]
+    create_multi_battle(session_id=session_id, battle_type="coop", host_id=s["host"], players=[p1_id, p2_id], team1=team1, team2=[], boss_name=s["boss"], boss_hp=boss_hp)
+    battle = get_multi_battle(session_id)
+    await update.message.reply_text(
+        build_battle_view(battle),
+        reply_markup=InlineKeyboardMarkup(get_multi_kb(session_id, char1[2], battle["current_turn"], p1_id))
+    )
+
+async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not get_active_character(user_id):
+        await update.message.reply_text("No active character.")
+        return
+    session_id = f"pvp_{user_id}"
+    PVP_SESSIONS[session_id] = {"host": user_id, "opponent": None}
+    await update.message.reply_text(f"⚔️ PvP session: {session_id}\nOpponent: /joinpvp {session_id}")
+
+async def join_pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not ctx.args:
+        await update.message.reply_text("Usage: /joinpvp <session_id>")
+        return
+    session_id = ctx.args[0]
+    if session_id not in PVP_SESSIONS:
+        await update.message.reply_text("Not found.")
+        return
+    s = PVP_SESSIONS[session_id]
+    user_id = update.effective_user.id
+    if user_id == s["host"]:
+        await update.message.reply_text("Can't fight yourself.")
+        return
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("No active character.")
+        return
+    char_host = get_active_character(s["host"])
+    team1 = [{"uid": s["host"], "name": char_host[2], "display": get_username(s["host"]), "hp": char_host[5], "max_hp": char_host[5], "atk": char_host[6], "def": char_host[7], "dodge": char_host[8], "defending": 0, "dodged_next": 0}]
+    team2 = [{"uid": user_id, "name": char[2], "display": get_username(user_id), "hp": char[5], "max_hp": char[5], "atk": char[6], "def": char[7], "dodge": char[8], "defending": 0, "dodged_next": 0}]
+    create_multi_battle(session_id=session_id, battle_type="pvp", host_id=s["host"], players=[s["host"], user_id], team1=team1, team2=team2)
+    battle = get_multi_battle(session_id)
+    current_turn = battle["current_turn"]
+    next_player, _ = get_player(battle, current_turn)
+    next_char = next_player["name"] if next_player else char_host[2]
+    kb = get_multi_kb(session_id, next_char, current_turn, current_turn)
+    await update.message.reply_text(build_battle_view(battle), reply_markup=InlineKeyboardMarkup(kb))
+
+async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    data = q.data
+    parts = data.split("_", 2)
+    action = parts[1]
+    session_id = parts[2]
+    user_id = q.from_user.id
+    battle = get_multi_battle(session_id)
+    if not battle:
+        await q.answer("نبرد فعال نیست!", show_alert=True)
+        return
+    if str(battle["current_turn"]) != str(user_id):
+        await q.answer("⏳ نوبت تو نیست! صبر کن...", show_alert=True)
+        return
+    player, _ = get_player(battle, user_id)
+    if not player:
+        await q.answer("❌ تو توی این نبرد نیستی!", show_alert=True)
+        return
+    if player["hp"] <= 0:
+        await q.answer("💀 تو مرده‌ای!", show_alert=True)
+        return
+    await q.answer()
+
+    if action in ("ab1", "ab2", "ab3"):
+        action_map = {"ab1": "ability_1", "ab2": "ability_2", "ab3": "ability_3"}
+        status, log = player_action(session_id, user_id, action_map[action])
+    else:
+        status, log = player_action(session_id, user_id, action)
+    if status is None:
+        await q.answer(log, show_alert=True)
+        return
+    if status in ("won", "team1_won", "team2_won", "draw"):
+        result = finish_multi_battle(session_id)
+        if result:
+            text = "🏆 بردی!\n\n"
+            text += f"{log}\n\n💰 جوایز:\n"
+            for uid, amount in result["rewards"].items():
+                text += f"👤 {get_username(uid)}: +{amount:,} coin\n"
+            try:
+                await q.edit_message_text(text)
+            except Exception:
+                await q.message.reply_text(text)
+        return
+    battle = get_multi_battle(session_id)
+    if not battle:
+        return
+    view = build_battle_view(battle)
+    log_lines = log.split("\n")
+    if len(log_lines) > 5:
+        log = "\n".join(log_lines[-5:])
+    full_text = f"{log}\n\n{view}"
+    if len(full_text) > 3500:
+        full_text = full_text[:3500] + "..."
+    next_player, _ = get_player(battle, battle["current_turn"])
+    next_char = next_player["name"] if next_player else None
+    next_uid = battle["current_turn"]
+    kb = get_multi_kb(session_id, next_char, next_uid, next_uid)
+    try:
+        await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
+    except Exception:
+        await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(kb))
+async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id):
         await update.message.reply_text("❌ تو ادمین نیستی!")
         return
-    text = "👑 پنل ادمین\n━━━━━━━━━━━━━━━━━━━\n\n"
-    if is_owner(user_id):
-        text += "🔑 مالک اصلی\n\n"
-    text += "💰 /give /take\n"
-    text += "👤 /userinfo /allusers /resetuser /ban /unban\n"
-    text += "🎭 /givechar /resetchar\n"
-    text += "📜 /editquest /viewquests\n"
-    if is_owner(user_id):
-        text += "\n👑 /addadmin /removeadmin /listadmins\n"
-        text += "📜 /sethelp /viewhelp\n"
-        text += "🖼️ عکس + کپشن /setcharimage <name>\n"
-        text += "📢 /addchannel /removechannel /listchannels\n"
-        text += "🎯 /setquest\n"
-        text += "\n👑 /ownerpanel\n"
-    await update.message.reply_text(text)
+    caption = update.message.caption
+    if not caption or len(caption.split()) < 2:
+        await update.message.reply_text("Usage: عکس رو با کپشن /setcharimage <char_name> بفرست")
+        return
+    char_name = " ".join(caption.split()[1:])
+    photo_file = await update.message.photo[-1].get_file()
+    image_url = photo_file.file_path 
+    from database import set_char_image_db
+    set_char_image_db(char_name, image_url)
+    await update.message.reply_text(f"✅ عکس برای {char_name} ثبت شد!")
 
-
-async def give_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_coins"):
+async def send_gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    sender_id = update.effective_user.id
+    if not ctx.args:
+        await update.message.reply_text("Usage: /gift <amount> (روی پیام طرف ریپلای کن) یا /gift <user_id> <amount>")
         return
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /give <user_id> <amount>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-        amount = int(ctx.args[1])
-    except ValueError:
-        await update.message.reply_text("❌ اعداد معتبر بده.")
-        return
-    give_coins(target_id, amount)
-    await update.message.reply_text(f"✅ {amount:,} coin به {target_id} دادی.")
-
-
-async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_coins"):
-        return
-    if len(ctx.args) < 2:
-        await update.message.reply_text("Usage: /take <user_id> <amount>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-        amount = int(ctx.args[1])
-    except ValueError:
-        await update.message.reply_text("❌ اعداد معتبر بده.")
-        return
-    if take_coins(target_id, amount):
-        await update.message.reply_text(f"✅ {amount:,} coin از {target_id} گرفتی.")
+    target_id = None
+    amount = 0
+    if update.message.reply_to_message:
+        target_id = update.message.reply_to_message.from_user.id
+        try: amount = int(ctx.args[0])
+        except ValueError: return await update.message.reply_text("❌ مبلغ باید عدد باشه.")
+    elif len(ctx.args) >= 2:
+        try: target_id = int(ctx.args[0]); amount = int(ctx.args[1])
+        except ValueError: return await update.message.reply_text("❌ آیدی یا مبلغ نامعتبره.")
     else:
-        await update.message.reply_text("❌ کاربر Coin کافی نداره.")
-
-
-async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /userinfo <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    user, chars = get_user_stats(target_id)
-    if not user:
-        await update.message.reply_text("❌ کاربر پیدا نشد.")
-        return
-    text = f"👤 کاربر: {user[0] or 'Unknown'}\n🆔 ID: {target_id}\n💰 Coins: {user[1]:,}\n\n🦸 کاراکترها:\n"
-    if not chars:
-        text += "  ❌ هیچ کاراکتری نداره\n"
-    else:
-        for c in chars:
-            text += f"  • {c[0]} ({c[1]}) Lv{c[2]}\n"
-    await update.message.reply_text(text)
-
-
-async def allusers_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
-        return
-    rows = get_all_users()
-    text = f"📋 کل کاربران: {len(rows)}\n\n"
-    for i, (uid, name, coins) in enumerate(rows[:30], 1):
-        text += f"{i}. {name or 'Unknown'} ({uid}) — {coins:,}\n"
-    if len(rows) > 30:
-        text += f"\n... و {len(rows) - 30} نفر دیگه"
-    await update.message.reply_text(text)
-
-
-async def resetuser_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /resetuser <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    reset_user(target_id)
-    await update.message.reply_text(f"♻️ کاربر {target_id} ریست شد.")
-
-
-async def ban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "ban_users"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /ban <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ban_user(target_id)
-    await update.message.reply_text(f"🚫 کاربر {target_id} بن شد.")
-
-
-async def unban_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "ban_users"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /unban <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    unban_user(target_id)
-    await update.message.reply_text(f"✅ کاربر {target_id} آنبن شد.")
-
-
-async def addadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /addadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    add_admin(target_id, "all", update.effective_user.id)
-    await update.message.reply_text(f"✅ {target_id} ادمین شد!")
-
-
-async def removeadmin_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ فقط مالک!")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /removeadmin <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = remove_admin(target_id)
-    await update.message.reply_text(msg)
-
-
-async def listadmins_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_owner(update.effective_user.id):
-        return
-    admins = list_admins()
-    text = "👑 ادمین‌ها:\n\n"
-    for uid, role, perms in admins:
-        text += f"👤 {uid} — {role} | {perms}\n"
-    if not admins:
-        text = "📭 هیچ ادمینی اضافه نشده."
-    await update.message.reply_text(text)
-
-
-async def givechar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if len(ctx.args) < 3:
-        await update.message.reply_text("Usage: /givechar <user_id> <char_name> <rank>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    rank = ctx.args[-1]
-    char_name = " ".join(ctx.args[1:-1])
-    if rank not in CHARACTERS or char_name not in CHARACTERS[rank]:
-        await update.message.reply_text("❌ کاراکتر پیدا نشد.")
-        return
-    stats = get_all_stats(char_name, rank)
-    ok, msg = give_character(target_id, char_name, rank,
-                             stats.get("hp", 400), stats.get("atk", 60),
-                             stats.get("def", 20), stats.get("dodge", 10))
-    await update.message.reply_text(msg)
-
-
-async def resetchar_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not has_permission(update.effective_user.id, "manage_chars"):
-        return
-    if not ctx.args:
-        await update.message.reply_text("Usage: /resetchar <user_id>")
-        return
-    try:
-        target_id = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("❌ آیدی معتبر بده.")
-        return
-    ok, msg = reset_character(target_id)
-    await update.message.reply_text(msg)
+        return await update.message.reply_text("❌ باید روی پیام کسی ریپلای کنی یا آیدی بفرستی.")
+    if target_id == sender_id: return await update.message.reply_text("❌ نمیتونی به خودت هدیه بدی!")
+    if amount <= 0: return await update.message.reply_text("❌ مبلغ باید بیشتر از صفر باشه!")
+    from database import spend_coins, add_coins
+    if get_coins(sender_id) < amount:
+        return await update.message.reply_text(f"❌ سکه کافی نداری! موجودی تو: {get_coins(sender_id):,}")
+    if spend_coins(sender_id, amount):
+        add_coins(target_id, amount)
+        await update.message.reply_text(f"🎁 **هدیه ارسال شد!**\nاز: {get_username(sender_id)}\nبه: {get_username(target_id)}\n💰 مبلغ: {amount:,} سکه")
 
 async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = (
@@ -2660,36 +1743,24 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(text)
 
-
 async def post_init(app):
     commands_list = [
-        BotCommand("start", "شروع بازی"),
-        BotCommand("profile", "پروفایل"),
-        BotCommand("coins", "موجودی سکه"),
-        BotCommand("shop", "شاپ"),
-        BotCommand("upgrade", "ارتقای لول"),
-        BotCommand("battle", "باس‌فایت تکی"),
-        BotCommand("pvp", "نبرد 1v1"),
-        BotCommand("team", "نبرد تیمی"),
-        BotCommand("coop", "نبرد گروهی"),
-        BotCommand("world", "دنیای آزاد"),
-        BotCommand("quests", "کوئست روزانه"),
-        BotCommand("leaderboard", "لیدربورد"),
-        BotCommand("guild", "کلن"),
-        BotCommand("gift", "هدیه دادن"),
-        BotCommand("modes", "مودها (قلعه/زامبی/برج)"),
-        BotCommand("help", "راهنما"),
+        BotCommand("start", "شروع بازی"), BotCommand("profile", "پروفایل"),
+        BotCommand("coins", "موجودی سکه"), BotCommand("shop", "شاپ"),
+        BotCommand("upgrade", "ارتقای لول"), BotCommand("battle", "باس‌فایت تکی"),
+        BotCommand("pvp", "نبرد 1v1"), BotCommand("team", "نبرد تیمی"),
+        BotCommand("coop", "نبرد گروهی"), BotCommand("world", "دنیای آزاد"),
+        BotCommand("quests", "کوئست روزانه"), BotCommand("leaderboard", "لیدربورد"),
+        BotCommand("guild", "کلن"), BotCommand("gift", "هدیه دادن"),
+        BotCommand("modes", "مودها (قلعه/زامبی/برج)"), BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
-
 
 def main():
     init_db()
     init_multi_table()
-    try:
-        init_quests_table()
-    except Exception:
-        pass
+    try: init_quests_table()
+    except Exception: pass
 
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
@@ -2705,9 +1776,6 @@ def main():
     app.add_handler(CommandHandler("battle", battle))
     app.add_handler(CommandHandler("pvp", pvp))
     app.add_handler(CommandHandler("joinpvp", join_pvp))
-    app.add_handler(CommandHandler("team", team))
-    app.add_handler(CommandHandler("jointeam", join_team))
-    app.add_handler(CommandHandler("startteam", start_team))
     app.add_handler(CommandHandler("coop", coop))
     app.add_handler(CommandHandler("join", join_coop))
     app.add_handler(CommandHandler("startcoop", start_coop))
@@ -2726,114 +1794,43 @@ def main():
     app.add_handler(CommandHandler("claim", claim))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("gift", send_gift))
-    app.add_handler(CommandHandler("gifthistory", get_gift_history))
-    app.add_handler(CommandHandler("topgivers", get_top_givers))
     app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(CommandHandler("admin", admin))
-    app.add_handler(CommandHandler("give", give_cmd))
-    app.add_handler(CommandHandler("take", take_cmd))
-    app.add_handler(CommandHandler("userinfo", userinfo_cmd))
-    app.add_handler(CommandHandler("allusers", allusers_cmd))
-    app.add_handler(CommandHandler("resetuser", resetuser_cmd))
-    app.add_handler(CommandHandler("ban", ban_cmd))
-    app.add_handler(CommandHandler("unban", unban_cmd))
-    app.add_handler(CommandHandler("addadmin", addadmin_cmd))
-    app.add_handler(CommandHandler("removeadmin", removeadmin_cmd))
-    app.add_handler(CommandHandler("listadmins", listadmins_cmd))
-    app.add_handler(CommandHandler("givechar", givechar_cmd))
-    app.add_handler(CommandHandler("resetchar", resetchar_cmd))
-    
 
-    # 🆕 MODES Commands
-    app.add_handler(CommandHandler("modes", modes_cmd))
-    app.add_handler(CommandHandler("castle", castle_cmd))
-    app.add_handler(CommandHandler("joincastle", join_castle_cmd))
-    app.add_handler(CommandHandler("zombie", zombie_cmd))
-    app.add_handler(CommandHandler("tower", tower_cmd))
-
-        # ============ MESSAGE HANDLERS ============
-    try:
-        app.add_handler(MessageHandler(
-            filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
-            setcharimage_cmd
-        ))
-    except NameError:
-        pass
+    # ============ MESSAGE HANDLERS ============
+    app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
 
     # ============ CALLBACK HANDLERS ============
-    # Start / Profile / Select
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
-
-    # Shop Anime Selectors
-    app.add_handler(CallbackQueryHandler(shop_anime_callback, pattern="^shchanime_"))
-    app.add_handler(CallbackQueryHandler(shop_char_rank_callback, pattern="^shchrank_"))
-    app.add_handler(CallbackQueryHandler(buy_char_callback, pattern="^buych_"))
-
-    # Shop
     app.add_handler(CallbackQueryHandler(shop_callback, pattern="^shop_"))
     app.add_handler(CallbackQueryHandler(buy_ability_callback, pattern="^buyab_"))
     app.add_handler(CallbackQueryHandler(buy_item_callback, pattern="^buyit_"))
     app.add_handler(CallbackQueryHandler(buy_buff_callback, pattern="^buybf_"))
-
-    # Battle
+    
+    # 🆕 Battle Handlers
     app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
+    app.add_handler(CallbackQueryHandler(bosses_anime_callback, pattern="^bosses_"))
+    app.add_handler(CallbackQueryHandler(battle_back_callback, pattern="^battle_back$"))
     app.add_handler(CallbackQueryHandler(action_callback, pattern="^act_"))
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
     app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
     app.add_handler(CallbackQueryHandler(shop_buff_use_callback, pattern="^shopbf_"))
-
-    # Coop
+    
     app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
-
-    # Multi Battle
-    app.add_handler(CallbackQueryHandler(
-        multi_action_callback,
-        pattern="^mb_(attack|defend|dodge|ab1|ab2|ab3)_"
-    ))
-    app.add_handler(CallbackQueryHandler(multi_skip_callback, pattern="^mb_skip_"))
-    app.add_handler(CallbackQueryHandler(multi_domain_callback, pattern="^mb_domain_"))
-    app.add_handler(CallbackQueryHandler(multi_bankai_callback, pattern="^mb_bankai_"))
-    app.add_handler(CallbackQueryHandler(multi_arise_callback, pattern="^mb_arise_"))
-    app.add_handler(CallbackQueryHandler(multi_item_callback, pattern="^mb_item_"))
-    app.add_handler(CallbackQueryHandler(multi_wait_callback, pattern="^mb_wait_"))
-    app.add_handler(CallbackQueryHandler(multi_back_callback, pattern="^mb_back_"))
-
-    # World
-    app.add_handler(CallbackQueryHandler(
-        world_region_callback,
-        pattern="^world_(forest|desert|mountain|volcano|dungeon)$"
-    ))
+    app.add_handler(CallbackQueryHandler(multi_action_callback, pattern="^mb_(attack|defend|dodge|ab1|ab2|ab3)_"))
+    
+    app.add_handler(CallbackQueryHandler(world_region_callback, pattern="^world_(forest|desert|mountain|volcano|dungeon)$"))
     app.add_handler(CallbackQueryHandler(world_explore_callback, pattern="^explore_"))
     app.add_handler(CallbackQueryHandler(world_progress_callback, pattern="^world_progress$"))
     app.add_handler(CallbackQueryHandler(world_treasures_callback, pattern="^world_treasures$"))
     app.add_handler(CallbackQueryHandler(world_back_callback, pattern="^world_back$"))
-
-    # Guild / Leaderboard
+    
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # 🆕 Modes Menu
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
-    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
-    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
-
-    # Modes Game Callbacks
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
-    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
-    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
-
-    # Modes Back
-    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
-
-    # 🆕 Arise
-    app.add_handler(CallbackQueryHandler(arise_callback, pattern="^arise_show$"))
-    app.add_handler(CallbackQueryHandler(shadows_back_callback, pattern="^shadows_back$"))
-
     print("🤖 Bot Started!")
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
