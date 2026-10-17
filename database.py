@@ -944,3 +944,12 @@ def get_total_users_count():
     count = c.fetchone()[0]
     conn.close()
     return count
+def get_shadow_slots(user_id, char_name):
+    """گرفتن تعداد اسلات‌های سایه‌ی کاربر"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT COUNT(*) FROM shadows
+                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    count = c.fetchone()[0]
+    conn.close()
+    return count
