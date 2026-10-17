@@ -4,7 +4,9 @@ from config import (DB_NAME, ABILITIES_3, DOMAINS, BANKAI, ABILITIES, BUFFS, ITE
                     DOMAINS_JJK, BLEACH_BANKAI,
                     BOSSES, BOSSES_JJK, BLEACH_BOSSES, BOSSES_OPM,
                     AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
-                    DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES)
+                    DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES,
+                    JJK_CE_COST_ABILITY_1, JJK_CE_COST_ABILITY_2,
+                    JJK_CE_COST_ABILITY_3, JJK_CE_COST_DOMAIN, ABILITIES_JJK)
 from database import (add_coins, get_battle, update_battle, end_battle,
                       get_coins, get_shadows_atk_bonus)
 
@@ -224,7 +226,12 @@ def player_attack(battle, char):
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    dmg, crit = roll_damage(char[6], 0, 0)
+    # 🆕 کم کردن دمیج کاراکترهای JJK (۲۰٪ کمتر)
+    if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
+        dmg, crit = roll_damage(char[6] * 0.8, 0, 0)
+    else:
+        dmg, crit = roll_damage(char[6], 0, 0)
+
     # 🆕 Arise Bonus
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
@@ -323,7 +330,35 @@ def player_ability(battle, char, ability_name):
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    # ========== DOMAIN (×۸ + فریز) ==========
+    abilities = ABILITIES_3.get(char_name, {})
+
+    # 🆕 چک کردن انرژی نفرینی برای JJK
+    if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+        row = c.fetchone()
+        ce = row[0] if row else 0
+        
+        cost = 0
+        if ability_name == "DOMAIN":
+            cost = JJK_CE_COST_DOMAIN
+        elif abilities and abilities.get("ability_1", {}).get("name") == ability_name:
+            cost = JJK_CE_COST_ABILITY_1
+        elif abilities and abilities.get("ability_2", {}).get("name") == ability_name:
+            cost = JJK_CE_COST_ABILITY_2
+        elif abilities and abilities.get("ability_3", {}).get("name") == ability_name:
+            cost = JJK_CE_COST_ABILITY_3
+            
+        if ce < cost:
+            conn.close()
+            return "active", f"❌ انرژی نفرینی کافی نداری! (نیاز: {cost}، داری: {ce})", battle
+            
+        c.execute("UPDATE characters SET cursed_energy = cursed_energy - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+        conn.commit()
+        conn.close()
+
+    # ========== DOMAIN (×۲.۵ + فریز) ==========
     if ability_name == "DOMAIN":
         if battle.get("domain_used", 0) >= 1:
             return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
@@ -337,10 +372,11 @@ def player_ability(battle, char, ability_name):
         effects = domain.get("effects", {})
         battle["domain_atk_boost"] = effects.get("atk_boost", 0)
 
-        dmg = int(char[6] * 8)
+        # 🆕 دمیج گسترش قلمرو بر اساس ATK کاراکتر (به جای ۸ برابر، ۲.۵ برابر)
+        dmg = int(char[6] * 2.5)
         bhp = max(0, bhp - dmg)
         text = box_title(f"🌀 {domain['name'][:20]}", 26)
-        text += f"\n\n💥 {format_num(dmg)} آسیب (×۸)"
+        text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
 
         if "freeze" in effects:
             battle["boss_frozen"] = effects["freeze"]
@@ -415,7 +451,6 @@ def player_ability(battle, char, ability_name):
         return "active", text, battle
 
     # ========== ABILITY های ۳گانه ==========
-    abilities = ABILITIES_3.get(char_name, {})
     if not abilities:
         return "active", "❌ Ability پیدا نشد.", battle
 
@@ -702,6 +737,19 @@ def build_battle_message(battle, char):
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
         if shadow_bonus > 0:
             text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
+
+    # 🆕 نمایش انرژی نفرینی برای JJK
+    if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+            row = c.fetchone()
+            conn.close()
+            if row:
+                text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[1]}"
+        except Exception:
+            pass
 
     if battle.get("domain_active", 0) == 1:
         text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
