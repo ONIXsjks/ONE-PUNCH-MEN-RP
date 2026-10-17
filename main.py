@@ -227,13 +227,23 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if char_name == "Sung Jin-Woo":
         arise_text = f"\n💀 **Arise:** {get_shadows_count(user_id, char_name)}/{MAX_SHADOWS} (+{get_shadows_atk_bonus(user_id, char_name)} ATK)\n"
     
+    ce_text = ""
+    if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            ce_text = f"\n🔮 **انرژی نفرینی:** {row[0]}/{row[1]}\n"
+    
     text = (
         f"╔══════════════════════════╗\n║      👤 @{username[:14].center(14)} ║\n╚══════════════════════════╝\n\n"
         f"╭───── 🎭 کاراکتر فعال ─────╮\n│ 🦸 {char_name[:18].ljust(18)} │\n│ ⭐ Rank: {rank.ljust(14)} │\n│ 📊 Level: {str(level).ljust(13)} │\n╰────────────────────────────╯\n\n"
         f"⚔️ آمار کاراکتر:\n├ ❤️ HP: {hp:,}\n├ ⚔️ ATK: {atk:,}\n├ 🛡️ DEF: {dfn:,}\n├ 💨 DODGE: {dodge}%\n└ 🎰 Slots: {slots}\n\n"
         f"🔥 Ability ها:\n{abs_text}\n"
         f"🌀 Domain: {'✅' if has_domain else '❌'}{domain_name}\n⚔️ Bankai: {'✅' if has_bankai else '❌'}{bankai_name}\n"
-        f"{arise_text}\n💰 سکه: {get_coins(user_id):,}\n━━━━━━━━━━━━━━━━━━━━━━━━"
+        f"{arise_text}{ce_text}\n💰 سکه: {get_coins(user_id):,}\n━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     kb = [
         [InlineKeyboardButton("🎭 تغییر کاراکتر", callback_data="prof_select"), InlineKeyboardButton("📜 کوئست‌ها", callback_data="prof_quests")],
@@ -315,6 +325,46 @@ async def edit_shop_msg(q, caption, keyboard):
                 await q.edit_message_text(caption, reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception:
                 await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
+
+# 🆕 دستور ارتقای انرژی نفرینی
+async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    char = get_active_character(user_id)
+    if not char:
+        await update.message.reply_text("❌ کاراکتر فعال نداری.")
+        return
+        
+    if char[2] not in DOMAINS_JJK and char[2] not in ABILITIES_JJK:
+        await update.message.reply_text("❌ این کاراکتر انرژی نفرینی نداره!")
+        return
+        
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return
+        
+    ce, max_ce = row[0], row[1]
+    
+    if max_ce >= 500:
+        conn.close()
+        await update.message.reply_text("❌ انرژی نفرینی به حداکثر (۵۰۰) رسیده!")
+        return
+        
+    cost = 10000
+    from database import spend_coins
+    if not spend_coins(user_id, cost):
+        conn.close()
+        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
+        return
+        
+    c.execute("UPDATE characters SET max_cursed_energy = max_cursed_energy + 10, cursed_energy = cursed_energy + 10 WHERE user_id=? AND is_active=1", (user_id,))
+    conn.commit()
+    conn.close()
+    
+    await update.message.reply_text(f"✅ انرژی نفرینی +۱۰ (حداکثر جدید: {min(max_ce + 10, 500)})")
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1183,7 +1233,6 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_name = " ".join(caption.split()[1:])
     
-    # 🆕 ذخیره آیدی دائمی عکس (file_id) به جای لینک موقت
     photo_file_id = update.message.photo[-1].file_id
     from database import set_char_image_db
     set_char_image_db(char_name, photo_file_id)
@@ -1227,7 +1276,8 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "📜 /quests - کوئست روزانه\n"
         "🗺️ /world - دنیای آزاد\n"
         "🏆 /leaderboard - لیدربورد\n"
-        "🎁 /gift - هدیه دادن\n\n"
+        "🎁 /gift - هدیه دادن\n"
+        "🔮 /upgradece - ارتقای انرژی نفرینی\n\n"
         "🔧 /admin - پنل ادمین"
     )
     await update.message.reply_text(text)
@@ -1241,7 +1291,7 @@ async def post_init(app):
         BotCommand("world", "دنیای آزاد"), BotCommand("quests", "کوئست روزانه"),
         BotCommand("leaderboard", "لیدربورد"), BotCommand("guild", "کلن"),
         BotCommand("gift", "هدیه دادن"), BotCommand("modes", "مودها"),
-        BotCommand("help", "راهنما"),
+        BotCommand("upgradece", "ارتقای انرژی نفرینی"), BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
 def main():
@@ -1292,6 +1342,9 @@ def main():
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
 
+    # 🆕 Energy Upgrade Command
+    app.add_handler(CommandHandler("upgradece", upgrade_ce))
+
     # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
 
@@ -1333,7 +1386,7 @@ def main():
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
 
-    # 🆕 Modes Handlers (این بخش اصلاح شد)
+    # Modes
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
