@@ -164,12 +164,12 @@ LEVEL_COST = [
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
 # ============================================================
-# 🆕 JJK CURSED ENERGY
+# 🆕 JJK CURSED ENERGY (پایه‌ها ثابت موندن)
 # ============================================================
 JJK_CE_MAX_BASE = 120
 JJK_CE_MAX_CAP = 500
-JJK_CE_COST_ABILITY_1 = 5
-JJK_CE_COST_ABILITY_2 = 15
+JJK_CE_COST_ABILITY_1 = 20
+JJK_CE_COST_ABILITY_2 = 20
 JJK_CE_COST_ABILITY_3 = 40
 JJK_CE_COST_DOMAIN = 50
 
@@ -267,6 +267,7 @@ ITEM_FA = {
     "Energy Drink": "نوشیدنی انرژی",
     "Bomb": "بمب",
     "Smoke Bomb": "بمب دود",
+    # 🆕 7 ANIMES NEW
     "Jinwoo Sword": "شمشیر جین‌وو",
     "Shadow Stone": "سنگ سایه",
     "Magic Bean": "لوبیای جادویی",
@@ -404,6 +405,7 @@ CHAR_PRICES.update(CHAR_PRICES_BLEACH)
 # ============================================================
 BOSSES = {}
 
+# --- انیمه‌های قبلی ---
 for key, val in BOSSES_OPM.items():
     BOSSES[key] = val
 for key, val in BOSSES_JJK.items():
@@ -411,6 +413,7 @@ for key, val in BOSSES_JJK.items():
 for key, val in BLEACH_BOSSES.items():
     BOSSES[key] = val
 
+# --- ۷ انیمه اول ---
 for key, val in AOT_BOSSES.items():
     BOSSES[key] = val
 for key, val in BLACKCLOVER_BOSSES.items():
@@ -426,6 +429,7 @@ for key, val in NARUTO_BOSSES.items():
 for key, val in SDS_BOSSES.items():
     BOSSES[key] = val
 
+# --- 🆕 ۸ انیمه جدید ---
 for key, val in ONEPIECE_BOSSES.items():
     BOSSES[key] = val
 for key, val in DRAGONBALL_BOSSES.items():
