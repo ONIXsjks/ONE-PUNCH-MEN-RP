@@ -182,7 +182,6 @@ ABILITIES = {
     "Phoenix Reborn":  {"effect": "revive 50% HP",       "effect_fa": "بازگشت با ۵۰٪ HP",      "price": 30000},
     "Dragon Fist":     {"effect": "ATK +250 (3 turns)",  "effect_fa": "حمله +۲۵۰ (۳ راند)",     "price": 22000},
 }
-
 # ============================================================
 # ITEMS
 # ============================================================
@@ -196,6 +195,29 @@ ITEMS = {
     "Energy Drink":   {"effect": "extra turn",        "effect_fa": "نوبت اضافه",         "price": 4500},
     "Bomb":           {"effect": "500 damage",        "effect_fa": "۵۰۰ آسیب",           "price": 5500},
     "Smoke Bomb":     {"effect": "DODGE +50%",        "effect_fa": "جاخالی +۵۰٪",        "price": 7000},
+
+    # ============ 🆕 7 ANIMES NEW ITEMS ============
+    # Solo Leveling
+    "Jinwoo Sword":       {"effect": "ATK +50% (3 turns)",    "effect_fa": "ATK +۵۰٪ (۳ راند)",       "price": 75000},
+    "Shadow Stone":       {"effect": "arise boss",            "effect_fa": "تبدیل باس به سایه",        "price": 50000},
+    # Dragon Ball
+    "Magic Bean":         {"effect": "full HP restore",       "effect_fa": "پر کردن کامل HP",         "price": 45000},
+    "Saiyan Crystal":     {"effect": "ATK +100% (2 turns)",   "effect_fa": "ATK +۱۰۰٪ (۲ راند)",      "price": 85000},
+    # Code Geass
+    "Lelouch Geass":      {"effect": "enemy skip 1 turn",     "effect_fa": "دشمن ۱ نوبت محروم",       "price": 90000},
+    "Zero Mask":          {"effect": "DEF +50% (3 turns)",    "effect_fa": "DEF +۵۰٪ (۳ راند)",       "price": 40000},
+    # Sakamoto Days
+    "Sakamoto Chopsticks":{"effect": "double attack 1 turn",  "effect_fa": "دابل حمله (۱ نوبت)",       "price": 60000},
+    "Secret Candy":       {"effect": "restore 50% HP",        "effect_fa": "بازیابی ۵۰٪ HP",          "price": 25000},
+    # Hunter x Hunter
+    "Kurapika Chain":     {"effect": "freeze enemy 1 turn",   "effect_fa": "فریز دشمن (۱ نوبت)",       "price": 70000},
+    "Hisoka Card":        {"effect": "double ATK 1 turn",     "effect_fa": "دابل ATK (۱ نوبت)",        "price": 55000},
+    # One Piece
+    "Sea Meat":           {"effect": "restore 70% HP",        "effect_fa": "بازیابی ۷۰٪ HP",          "price": 35000},
+    "One Piece Fragment": {"effect": "ATK+75% DEF+50% 2turn", "effect_fa": "ATK+۷۵٪ DEF+۵۰٪ (۲ راند)", "price": 95000},
+    # Tokyo Ghoul
+    "Kaneki Mask":        {"effect": "DEF +75% (2 turns)",    "effect_fa": "DEF +۷۵٪ (۲ راند)",       "price": 65000},
+    "Kaneki Kagune":      {"effect": "ATK +80% (3 turns)",    "effect_fa": "ATK +۸۰٪ (۳ راند)",       "price": 80000},
 }
 
 # ============================================================
@@ -242,6 +264,21 @@ ITEM_FA = {
     "Energy Drink": "نوشیدنی انرژی",
     "Bomb": "بمب",
     "Smoke Bomb": "بمب دود",
+    # 🆕 7 ANIMES NEW
+    "Jinwoo Sword": "شمشیر جین‌وو",
+    "Shadow Stone": "سنگ سایه",
+    "Magic Bean": "لوبیای جادویی",
+    "Saiyan Crystal": "کریستال سایان",
+    "Lelouch Geass": "گِیاس لولوش",
+    "Zero Mask": "ماسک زیرو",
+    "Sakamoto Chopsticks": "چاپ‌استیک ساکاموتو",
+    "Secret Candy": "آب‌نبات مخفی",
+    "Kurapika Chain": "زنجیر کوراپیکا",
+    "Hisoka Card": "کارت هیسوکا",
+    "Sea Meat": "گوشت دریایی",
+    "One Piece Fragment": "قطعه‌ی وان‌پیس",
+    "Kaneki Mask": "ماسک کانکی",
+    "Kaneki Kagune": "کاگونِه کانکی",
 }
 
 BUFF_FA = {
@@ -254,7 +291,6 @@ BUFF_FA = {
     "Mega Buff": "باف مگا",
     "God Buff": "باف خدا",
 }
-
 # ============================================================
 # MERGE — CHARACTERS (همه ۱۸ انیمه)
 # ============================================================
