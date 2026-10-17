@@ -13,6 +13,10 @@ from database import (add_coins, get_battle, update_battle, end_battle,
 # HELPER — پیدا کردن اطلاعات باس
 # ============================================================
 def get_boss_data(boss_name):
+    # 🆕 اگه باس Survival بود، یه ATK و HP پیش‌فرض بده تا ATK 0 نشون نده
+    if "Survival" in boss_name:
+        return {"display_name": boss_name, "atk": 150, "hp": 10000, "reward": 1000}
+        
     for bosses in [BLEACH_BOSSES, BOSSES_JJK, BOSSES_OPM, BOSSES,
                    AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
                    DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES]:
@@ -494,6 +498,8 @@ def goku_transform(battle, char):
     text += f"💨 DODGE: +{boost['dodge']}٪\n"
     
     return "active", text, battle
+
+
 def player_ability_v2(battle, char, action):
     char_name = char[2]
     if action == "domain":
@@ -505,8 +511,6 @@ def player_ability_v2(battle, char, action):
         ab_name = abilities[action]["name"]
         return player_ability(battle, char, ab_name)
     return "active", "❌ Ability نامعتبر.", battle
-
-
 def player_ability_shop(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss:
@@ -627,7 +631,6 @@ def player_item(battle, char, item_name):
     new_php = php
     new_bhp = bhp
 
-    # ============ ITEMS قدیمی ============
     if item_name == "Health Potion":
         new_php = min(pmax, php + 500)
         text += "\n\n💚 HP +۵۰۰"
@@ -641,66 +644,19 @@ def player_item(battle, char, item_name):
     elif item_name == "Bomb":
         new_bhp = max(0, bhp - 500)
         text += "\n\n💥 ۵۰۰ آسیب"
-
-    # ============ 🆕 7 ANIMES NEW ITEMS ============
-    # ---- Solo Leveling ----
     elif item_name == "Jinwoo Sword":
         battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 50
-        text += "\n\n🗡️ شمشیر جین‌وو! ATK +۵۰٪ (۳ راند)"
-    elif item_name == "Shadow Stone":
-        try:
-            from arise import try_arise
-            success, msg = try_arise(battle["uid"], char[2], battle["boss_name"])
-            if success:
-                text += f"\n\n💎 {msg}"
-            else:
-                text += "\n\n💎 سنگ سایه استفاده شد (بدون اثر)"
-        except Exception:
-            text += "\n\n💎 سنگ سایه استفاده شد"
-    # ---- Dragon Ball ----
+        text += "\n\n🗡️ شمشیر جین‌وو! ATK +۵۰٪"
     elif item_name == "Magic Bean":
         new_php = pmax
-        text += "\n\n🫘 لوبیای جادویی! HP کامل پر شد"
+        text += "\n\n🫘 لوبیای جادویی! HP کامل"
     elif item_name == "Saiyan Crystal":
         battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 100
-        text += "\n\n💠 کریستال سایان! ATK +۱۰۰٪ (۲ راند)"
-    # ---- Code Geass ----
-    elif item_name == "Lelouch Geass":
-        battle["boss_frozen"] = battle.get("boss_frozen", 0) + 1
-        text += "\n\n👁️ گِیاس لولوش! دشمن ۱ نوبت محروم شد"
-    elif item_name == "Zero Mask":
-        text += "\n\n🎭 ماسک زیرو! DEF +۵۰٪ (۳ راند)"
-    # ---- Sakamoto Days ----
-    elif item_name == "Sakamoto Chopsticks":
-        dmg, _ = roll_damage(char[6] * 2)
-        new_bhp = max(0, bhp - dmg)
-        text += f"\n\n🥢 چاپ‌استیک ساکاموتو! دابل حمله → {format_num(dmg)}"
-    elif item_name == "Secret Candy":
-        heal = int(pmax * 0.5)
-        new_php = min(pmax, php + heal)
-        text += f"\n\n🍬 آب‌نبات مخفی! +{format_num(heal)} HP"
-    # ---- Hunter x Hunter ----
-    elif item_name == "Kurapika Chain":
-        battle["boss_frozen"] = battle.get("boss_frozen", 0) + 1
-        text += "\n\n⛓️ زنجیر کوراپیکا! دشمن فریز شد (۱ نوبت)"
-    elif item_name == "Hisoka Card":
-        dmg, _ = roll_damage(char[6] * 2)
-        new_bhp = max(0, bhp - dmg)
-        text += f"\n\n🃏 کارت هیسوکا! دابل ATK → {format_num(dmg)}"
-    # ---- One Piece ----
+        text += "\n\n💠 کریستال سایان! ATK +۱۰۰٪"
     elif item_name == "Sea Meat":
         heal = int(pmax * 0.7)
         new_php = min(pmax, php + heal)
         text += f"\n\n🍖 گوشت دریایی! +{format_num(heal)} HP"
-    elif item_name == "One Piece Fragment":
-        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 75
-        text += "\n\n🧭 قطعه‌ی وان‌پیس! ATK +۷۵٪ + DEF +۵۰٪ (۲ راند)"
-    # ---- Tokyo Ghoul ----
-    elif item_name == "Kaneki Mask":
-        text += "\n\n🎭 ماسک کانکی! DEF +۷۵٪ (۲ راند)"
-    elif item_name == "Kaneki Kagune":
-        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 80
-        text += "\n\n🩸 کاگونِه کانکی! ATK +۸۰٪ (۳ راند)"
     else:
         text += f"\n\n{info.get('effect_fa', info.get('effect', ''))}"
 
@@ -742,7 +698,6 @@ def build_battle_message(battle, char):
     text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n"
     text += f"╰{'─' * 25}╯"
 
-    # 🆕 Arise Bonus Display
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
         if shadow_bonus > 0:
@@ -766,43 +721,30 @@ def finish_battle(uid, boss_name, won):
         boss = get_boss_data(boss_name)
         reward = boss["reward"] if boss else 5000
         
-        # 🆕 اگه Survival بود
+        # 🆕 اگه Survival بود، موج رو زیاد کن
         if "Survival" in boss_name:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute("SELECT survival_wave FROM characters WHERE user_id=? AND is_active=1", (uid,))
             row = c.fetchone()
             wave = row[0] if row else 1
-            
             if wave < 100:
                 c.execute("UPDATE characters SET survival_wave = survival_wave + 1 WHERE user_id=? AND is_active=1", (uid,))
-            
-            # 🆕 جایزه بر اساس HP باس
-            boss_hp = get_battle(uid)["bmax"] if get_battle(uid) else 10000
-            reward = int(boss_hp / 10)
             conn.commit()
             conn.close()
-        else:
-            add_coins(uid, reward)
             
-        # ... (کدهای کوئست و کلن مثل قبل)
+        add_coins(uid, reward)
+
         try:
             from quests import update_quest_progress
             update_quest_progress(uid, "win_3_bosses")
             update_quest_progress(uid, "win_5_bosses")
         except Exception:
             pass
-            
+
         try:
             from guild import give_guild_xp
-            xp_amount = 5
-            if boss:
-                boss_hp = boss.get("hp", 0)
-                if boss_hp >= 40000: xp_amount = 20
-                elif boss_hp >= 20000: xp_amount = 10
-                elif boss_hp >= 5000: xp_amount = 5
-                else: xp_amount = 2
-            give_guild_xp(uid, xp_amount)
+            give_guild_xp(uid, 5)
         except Exception:
             pass
 
