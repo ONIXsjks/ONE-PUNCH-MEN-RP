@@ -765,37 +765,54 @@ def finish_battle(uid, boss_name, won):
     if won:
         boss = get_boss_data(boss_name)
         reward = boss["reward"] if boss else 5000
-        add_coins(uid, reward)
-
-        # Quest progress
+        
+        # 🆕 اگه Survival بود
+        if "Survival" in boss_name:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("SELECT survival_wave FROM characters WHERE user_id=? AND is_active=1", (uid,))
+            row = c.fetchone()
+            wave = row[0] if row else 1
+            
+            if wave < 100:
+                c.execute("UPDATE characters SET survival_wave = survival_wave + 1 WHERE user_id=? AND is_active=1", (uid,))
+            
+            # 🆕 جایزه بر اساس HP باس
+            boss_hp = get_battle(uid)["bmax"] if get_battle(uid) else 10000
+            reward = int(boss_hp / 10)
+            conn.commit()
+            conn.close()
+        else:
+            add_coins(uid, reward)
+            
+        # ... (کدهای کوئست و کلن مثل قبل)
         try:
             from quests import update_quest_progress
             update_quest_progress(uid, "win_3_bosses")
             update_quest_progress(uid, "win_5_bosses")
-            if boss_name == "Saitama Phase 1":
-                update_quest_progress(uid, "kill_saitama")
-            if boss_name.startswith("Goku"):
-                update_quest_progress(uid, "kill_goku")
         except Exception:
             pass
-
-        # Guild XP
+            
         try:
             from guild import give_guild_xp
             xp_amount = 5
             if boss:
                 boss_hp = boss.get("hp", 0)
-                if boss_hp >= 40000:
-                    xp_amount = 20
-                elif boss_hp >= 20000:
-                    xp_amount = 10
-                elif boss_hp >= 5000:
-                    xp_amount = 5
-                else:
-                    xp_amount = 2
+                if boss_hp >= 40000: xp_amount = 20
+                elif boss_hp >= 20000: xp_amount = 10
+                elif boss_hp >= 5000: xp_amount = 5
+                else: xp_amount = 2
             give_guild_xp(uid, xp_amount)
         except Exception:
             pass
 
         return reward
-    return 0
+    else:
+        # 🆕 اگه Survival بود، ریست کن
+        if "Survival" in boss_name:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("UPDATE characters SET survival_wave = 1 WHERE user_id=? AND is_active=1", (uid,))
+            conn.commit()
+            conn.close()
+        return 0
