@@ -194,6 +194,15 @@ GEASS_COST_ABILITY_3 = 40
 GEASS_COST_ULTIMATE = 50
 
 # ============================================================
+# 🆕 ONE PIECE HAKI
+# ============================================================
+HAKI_MAX_BASE = 120
+HAKI_MAX_CAP = 500
+HAKI_COST_ABILITY_1 = 20
+HAKI_COST_ABILITY_2 = 20
+HAKI_COST_ABILITY_3 = 40
+
+# ============================================================
 # GENERAL ABILITIES (Shop)
 # ============================================================
 ABILITIES = {
@@ -506,24 +515,8 @@ BANKAI = {}
 BANKAI.update(BLEACH_BANKAI)
 
 # ============================================================
-# ABILITY MULTIPLIERS
+# 🆕 CODE GEASS ULTIMATE GEASS
 # ============================================================
-ABILITY_MULTIPLIERS = {
-    "ability_1": 3,
-    "ability_2": 5,
-    "ability_3": 10,
-    "domain": 8,
-    "bankai": 6,
-    "simple": 1,
-}
-
-# ============================================================
-# ADMIN
-# ============================================================
-ADMIN_IDS = [
-    7023690411,
-]
-# ============ 🆕 CODE GEASS ULTIMATE GEASS ============
 ULTIMATE_GEASS = {
     "Lelouch Lamperouge": {"name": "Geass of Absolute Command", "effect": "skip_enemy_turn", "duration": 2},
     "Suzaku Kururugi": {"name": "Live Geass", "effect": "atk_boost", "value": 100, "duration": 3},
@@ -541,3 +534,22 @@ ULTIMATE_GEASS = {
     "Cornelia li Britannia": {"name": "Witch's Command", "effect": "atk_boost", "value": 75, "duration": 2},
     "Diethard Ried": {"name": "Truth of the World", "effect": "atk_boost", "value": 50, "duration": 2},
 }
+
+# ============================================================
+# ABILITY MULTIPLIERS
+# ============================================================
+ABILITY_MULTIPLIERS = {
+    "ability_1": 3,
+    "ability_2": 5,
+    "ability_3": 10,
+    "domain": 8,
+    "bankai": 6,
+    "simple": 1,
+}
+
+# ============================================================
+# ADMIN
+# ============================================================
+ADMIN_IDS = [
+    7023690411,
+]
