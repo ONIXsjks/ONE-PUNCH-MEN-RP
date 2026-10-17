@@ -33,7 +33,9 @@ def init_db():
         reiatsu INTEGER DEFAULT 120,
         max_reiatsu INTEGER DEFAULT 120,
         geass_power INTEGER DEFAULT 120,
-        max_geass_power INTEGER DEFAULT 120
+        max_geass_power INTEGER DEFAULT 120,
+        haki INTEGER DEFAULT 120,
+        max_haki INTEGER DEFAULT 120
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS abilities_owned (
@@ -222,6 +224,19 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # 🆕 ستون‌های هاکی (One Piece)
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
+        print("✅ Column haki added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
+        print("✅ Column max_haki added")
+    except sqlite3.OperationalError:
+        pass
+
     # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
@@ -342,8 +357,6 @@ def get_battle(user_id):
         "spam_state": row[16] if len(row) > 16 and row[16] else "ability_1",
         "goku_form": row[17] if len(row) > 17 and row[17] else 0,
     }
-
-
 def update_battle(battle, status='active'):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -478,6 +491,8 @@ def get_shadows_atk_bonus(user_id, char_name):
     total = c.fetchone()[0]
     conn.close()
     return total
+
+
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -615,8 +630,6 @@ def get_top_guilds(limit=10):
     rows = c.fetchall()
     conn.close()
     return rows
-
-
 def kick_guild_member(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
