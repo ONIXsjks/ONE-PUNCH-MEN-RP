@@ -7,10 +7,10 @@ import time
 import sqlite3
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from database import (add_coins, get_coins, get_username, get_user_buffs, 
-                      create_battle, get_battle, end_battle, DB_NAME)
+from database import (add_coins, get_coins, get_username, DB_NAME,
+                      create_battle, get_battle, end_battle)
 from characters import get_active_character
-from battle import build_battle_message, get_boss_data
+from battle import build_battle_message, finish_battle
 
 
 # ============================================================
@@ -37,14 +37,6 @@ def get_survival_wave(user_id):
     row = c.fetchone()
     conn.close()
     return row[0] if row else 1
-
-
-def update_survival_wave(user_id, wave):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("UPDATE characters SET survival_wave = ? WHERE user_id=? AND is_active=1", (user_id, wave))
-    conn.commit()
-    conn.close()
 
 
 # ============================================================
@@ -94,7 +86,6 @@ async def castle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle_data = get_battle(user_id)
         text = f"🏰 **قلعه - موج {wave}**\n\n" + build_battle_message(battle_data, char)
         
-        # 🆕 استفاده از دکمه‌های نبرد (از main.py)
         from main import get_battle_kb
         await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id)))
         return
@@ -205,7 +196,7 @@ async def tower_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 # ============================================================
-# 🎮 MAIN MENU
+# 🎮 MAIN MENU & BACK
 # ============================================================
 async def modes_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     kb = [
@@ -214,3 +205,7 @@ async def modes_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🗼 برج", callback_data="modes_tower")],
     ]
     await update.message.reply_text("🎮 **مودهای بقا (Survival):**", reply_markup=InlineKeyboardMarkup(kb))
+
+async def join_castle_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    # این تابع برای جلوگیری از خطا اضافه شده، ولی چون مودها تک‌نفره شدن استفاده نمیشه
+    pass
