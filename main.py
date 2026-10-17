@@ -80,12 +80,20 @@ from mushoku_data import (CHARACTERS_MUSHOKU, CHAR_PRICES_MUSHOKU, ABILITIES_MUS
 from codegeass_data import (CHARACTERS_CODEGEASS, CHAR_PRICES_CODEGEASS, ABILITIES_CODEGEASS, CODEGEASS_BOSSES, CODEGEASS_FODDER)
 from tokyoghoul_data import (CHARACTERS_TOKYOGHOUL, CHAR_PRICES_TOKYOGHOUL, ABILITIES_TOKYOGHOUL, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER)
 
+from onepiece_stats import ONEPIECE_STATS
+from dragonball_stats import DRAGONBALL_STATS
+from hxh_stats import HXH_STATS
+from sakamoto_stats import SAKAMOTO_STATS
+from sololeveling_stats import SOLOLEVELING_STATS
+from mushoku_stats import MUSHOKU_STATS
+from codegeass_stats import CODEGEASS_STATS
+from tokyoghoul_stats import TOKYOGHOUL_STATS
+
 from world import (REGIONS, TREASURES, get_region, get_region_name, random_explore_event, random_treasure, random_reward, can_unlock_region, get_player_region_view, get_region_view, format_treasure, format_world_progress, format_treasures_list)
 from anime_registry import (ANIME_REGISTRY, get_anime, get_anime_list, get_characters_by_anime, get_char_price_by_anime, find_char_anime, get_anime_bosses, get_anime_shop_abilities)
 from modes import (modes_cmd, castle_cmd, castle_callback, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
 from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 from gift import send_gift, get_gift_history, get_top_givers
-
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
