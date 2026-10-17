@@ -336,7 +336,7 @@ def player_ability(battle, char, ability_name):
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute("SELECT cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+        c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
         row = c.fetchone()
         ce = row[0] if row else 0
         
@@ -351,12 +351,22 @@ def player_ability(battle, char, ability_name):
             cost = JJK_CE_COST_ABILITY_3
             
         if ce < cost:
-            conn.close()
-            return "active", f"❌ انرژی نفرینی کافی نداری! (نیاز: {cost}، داری: {ce})", battle
+            # 🆕 اگه انرژی کم بود، از HP کم میشه (هر ۱ انرژی = ۱۰ HP)
+            hp_cost = (cost - ce) * 10
+            if php <= hp_cost:
+                conn.close()
+                return "active", f"❌ نه انرژی داری نه HP کافی! (نیاز: {hp_cost} HP)", battle
             
-        c.execute("UPDATE characters SET cursed_energy = cursed_energy - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
-        conn.commit()
-        conn.close()
+            php -= hp_cost
+            c.execute("UPDATE characters SET cursed_energy = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
+            conn.commit()
+            conn.close()
+            extra_text = f"🩸 **از HP خودت انرژی ساختی! (-{format_num(hp_cost)} HP)**\n\n"
+        else:
+            c.execute("UPDATE characters SET cursed_energy = cursed_energy - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+            conn.commit()
+            conn.close()
+            extra_text = ""
 
     # ========== DOMAIN (×۲.۵ + فریز) ==========
     if ability_name == "DOMAIN":
@@ -372,10 +382,10 @@ def player_ability(battle, char, ability_name):
         effects = domain.get("effects", {})
         battle["domain_atk_boost"] = effects.get("atk_boost", 0)
 
-        # 🆕 دمیج گسترش قلمرو بر اساس ATK کاراکتر (به جای ۸ برابر، ۲.۵ برابر)
+        # 🆕 دمیج گسترش قلمرو بر اساس ATK کاراکتر (۲.۵ برابر)
         dmg = int(char[6] * 2.5)
         bhp = max(0, bhp - dmg)
-        text = box_title(f"🌀 {domain['name'][:20]}", 26)
+        text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26)
         text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
 
         if "freeze" in effects:
@@ -478,12 +488,12 @@ def player_ability(battle, char, ability_name):
     bhp = max(0, bhp - dmg)
 
     if found_key == "ability_3":
-        text = box_title(f"🟣 {ability_name[:20]}!", 26)
+        text = extra_text + box_title(f"🟣 {ability_name[:20]}!", 26)
         battle["spam_state"] = "purple_used"
     elif found_key == "ability_1":
-        text = box_simple(f"🔵 {ability_name[:18]}!")
+        text = extra_text + box_simple(f"🔵 {ability_name[:18]}!")
     else:
-        text = box_simple(f"🔴 {ability_name[:18]}!")
+        text = extra_text + box_simple(f"🔴 {ability_name[:18]}!")
 
     text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"
     text += f"\n\n👹 {boss['display_name']}"
@@ -783,6 +793,13 @@ def finish_battle(uid, boss_name, won):
             
         add_coins(uid, reward)
 
+        # 🆕 برگشت انرژی نفرینی بعد از برد (۲۰ واحد)
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE characters SET cursed_energy = MIN(max_cursed_energy, cursed_energy + 20) WHERE user_id=? AND is_active=1", (uid,))
+        conn.commit()
+        conn.close()
+
         try:
             from quests import update_quest_progress
             update_quest_progress(uid, "win_3_bosses")
@@ -805,4 +822,12 @@ def finish_battle(uid, boss_name, won):
             c.execute("UPDATE characters SET survival_wave = 1 WHERE user_id=? AND is_active=1", (uid,))
             conn.commit()
             conn.close()
+        
+        # 🆕 برگشت انرژی نفرینی بعد از باخت (۱۰ واحد)
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE characters SET cursed_energy = MIN(max_cursed_energy, cursed_energy + 10) WHERE user_id=? AND is_active=1", (uid,))
+        conn.commit()
+        conn.close()
+        
         return 0
