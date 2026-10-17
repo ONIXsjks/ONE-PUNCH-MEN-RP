@@ -145,6 +145,7 @@ def get_battle_kb(char_name=None, user_id=None):
         if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
         if char_name == "Son Goku": kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
+        if char_name in ABILITIES_CODEGEASS: kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
 
@@ -166,6 +167,7 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
         if has_domain: kb.append([InlineKeyboardButton("🌀 Domain", callback_data=f"mb_domain_{session_id}")])
         if has_bankai: kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data=f"mb_bankai_{session_id}")])
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
+        if char_name == "Son Goku": kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data=f"mb_goku_form_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
 
@@ -769,11 +771,13 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not battle:
         await q.message.reply_text("❌ نبرد فعالی نداری. /battle بزن.")
         return
+    
     if action == "surrender":
         end_battle(battle["id"])
         try: await q.edit_message_text("🏳️ تسلیم شدی!")
         except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
+        
     if action in ("ability_1", "ability_2", "ability_3"):
         status, text, battle = player_ability_v2(battle, char, action)
     elif action == "attack":
@@ -787,6 +791,11 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await q.answer("❌ فقط گوکو می‌تونه تغییر فرم بده!", show_alert=True)
             return
         status, text, battle = goku_transform(battle, char)
+    elif action == "ultimate_geass":
+        if char[2] not in ABILITIES_CODEGEASS:
+            await q.answer("❌ این کاراکتر گیاس دوم نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "ultimate_geass")
     elif action == "item":
         items = get_items(user_id)
         if not items:
@@ -1339,7 +1348,6 @@ async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     char_name = " ".join(caption.split()[1:])
     
-    # 🆕 ذخیره آیدی دائمی عکس (file_id) به جای لینک موقت
     photo_file_id = update.message.photo[-1].file_id
     from database import set_char_image_db
     set_char_image_db(char_name, photo_file_id)
