@@ -10,7 +10,8 @@ from config import (DB_NAME, ABILITIES_3, DOMAINS, BANKAI, ABILITIES, BUFFS, ITE
                     BLEACH_REI_COST_ABILITY_1, BLEACH_REI_COST_ABILITY_2,
                     BLEACH_REI_COST_ABILITY_3, BLEACH_REI_COST_BANKAI, ABILITIES_BLEACH,
                     GEASS_COST_ABILITY_1, GEASS_COST_ABILITY_2,
-                    GEASS_COST_ABILITY_3, GEASS_COST_ULTIMATE, ABILITIES_CODEGEASS)
+                    GEASS_COST_ABILITY_3, GEASS_COST_ULTIMATE, ABILITIES_CODEGEASS,
+                    ULTIMATE_GEASS) # 🆕 ایمپورت گیاس دوم
 from database import (add_coins, get_battle, update_battle, end_battle,
                       get_coins, get_shadows_atk_bonus)
 
@@ -341,6 +342,9 @@ def player_ability(battle, char, ability_name):
     if ability_name == "BANKAI":
         if battle.get("bankai_used", 0) >= 1:
             return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle
+    if ability_name == "ULTIMATE_GEASS":
+        if battle.get("geass_used", 0) >= 1:
+            return "active", "❌ گیاس دوم فقط ۱ بار در نبرد!", battle
 
     found_key = None
     for key in ["ability_1", "ability_2", "ability_3"]:
@@ -395,14 +399,14 @@ def player_ability(battle, char, ability_name):
             row = c.fetchone()
             energy = row[0] if row else 0
             
-            if found_key == "ability_1":
+            if ability_name == "ULTIMATE_GEASS":
+                cost = GEASS_COST_ULTIMATE
+            elif found_key == "ability_1":
                 cost = GEASS_COST_ABILITY_1
             elif found_key == "ability_2":
                 cost = GEASS_COST_ABILITY_2
             elif found_key == "ability_3":
                 cost = GEASS_COST_ABILITY_3
-            elif ability_name == "ULTIMATE_GEASS":
-                cost = GEASS_COST_ULTIMATE
 
         char_level = char[4]
         level_penalty = (char_level // 10) * 2
@@ -524,6 +528,60 @@ def player_ability(battle, char, ability_name):
             return "lost", text, battle
         return "active", text, battle
 
+    # ========== ULTIMATE GEASS (فقط Code Geass) ==========
+    if ability_name == "ULTIMATE_GEASS":
+        if char_name not in ABILITIES_CODEGEASS:
+            return "active", "❌ این کاراکتر گیاس دوم نداره!", battle
+        
+        geass = ULTIMATE_GEASS.get(char_name)
+        if not geass:
+            return "active", "❌ گیاس دوم تعریف نشده!", battle
+        
+        battle["geass_used"] = 1
+        effect = geass.get("effect", "")
+        
+        dmg = int(char[6] * 4)
+        bhp = max(0, bhp - dmg)
+        
+        text = extra_text + box_title(f"👁️ {geass['name'][:20]}", 26)
+        text += f"\n\n💥 {format_num(dmg)} آسیب (×۴)"
+        
+        if effect == "skip_enemy_turn":
+            battle["boss_frozen"] = geass.get("duration", 2)
+            text += f"\n❄️ باس {geass.get('duration', 2)} نوبت محروم شد!"
+        elif effect == "atk_boost":
+            battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + geass.get("value", 100)
+            text += f"\n⚔️ ATK +{geass.get('value', 100)}٪"
+        elif effect == "def_boost":
+            text += f"\n🛡️ DEF +{geass.get('value', 100)}٪"
+        elif effect == "dodge_boost":
+            text += f"\n💨 DODGE +{geass.get('value', 50)}٪"
+        elif effect == "heal":
+            heal = int(pmax * geass.get("value", 50) / 100)
+            php = min(pmax, php + heal)
+            text += f"\n💚 +{format_num(heal)} HP"
+            
+        text += f"\n\n👹 {boss['display_name']}"
+        text += f"\n{hp_bar(bhp, bmax)}"
+
+        if bhp <= 0:
+            battle["php"] = php; battle["bhp"] = bhp
+            return "won", text, battle
+
+        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
+
+        battle = apply_bankai_round(battle)
+        php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+        if bt:
+            text += f"\n{bt}"
+
+        battle["php"] = php; battle["bhp"] = bhp
+        if bhp <= 0:
+            return "won", text, battle
+        if php <= 0:
+            return "lost", text, battle
+        return "active", text, battle
+
     # ========== ABILITY های ۳گانه ==========
     if not abilities:
         return "active", "❌ Ability پیدا نشد.", battle
@@ -606,6 +664,8 @@ def player_ability_v2(battle, char, action):
         return player_ability(battle, char, "DOMAIN")
     if action == "bankai":
         return player_ability(battle, char, "BANKAI")
+    if action == "ultimate_geass":
+        return player_ability(battle, char, "ULTIMATE_GEASS")
     abilities = ABILITIES_3.get(char_name, {})
     if action in abilities:
         ab_name = abilities[action]["name"]
