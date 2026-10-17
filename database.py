@@ -1,6 +1,6 @@
+
 import sqlite3
 from config import DB_NAME
-
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -79,6 +79,7 @@ def init_db():
         domain_atk_boost INTEGER DEFAULT 0,
         spam_state TEXT DEFAULT 'ability_1',
         goku_form INTEGER DEFAULT 0,
+        luffy_form INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
@@ -173,6 +174,12 @@ def init_db():
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
         print("✅ Column goku_form added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+        print("✅ Column luffy_form added")
     except sqlite3.OperationalError:
         pass
 
@@ -314,7 +321,6 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     
-    # 🆕 محاسبه HP باس بر اساس موج برای مودهای Survival
     if "Survival" in boss_name:
         c.execute("SELECT survival_wave FROM characters WHERE user_id=? AND is_active=1", (user_id,))
         row = c.fetchone()
@@ -327,8 +333,8 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     c.execute("""INSERT INTO active_battles
         (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp,
          turn, status, domain_used, boss_frozen, domain_active, domain_turns,
-         domain_name, domain_atk_boost, spam_state, goku_form)
-        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1',0)""",
+         domain_name, domain_atk_boost, spam_state, goku_form, luffy_form)
+        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1',0,0)""",
         (user_id, boss_name, player_hp, player_hp, boss_hp, boss_hp))
     bid = c.lastrowid
     conn.commit()
@@ -342,7 +348,7 @@ def get_battle(user_id):
     c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
                         boss_hp, boss_max_hp, player_defending, turn, status,
                         domain_used, boss_frozen, domain_active, domain_turns,
-                        domain_name, domain_atk_boost, spam_state, goku_form
+                        domain_name, domain_atk_boost, spam_state, goku_form, luffy_form
                  FROM active_battles WHERE user_id=? AND status='active'""", (user_id,))
     row = c.fetchone()
     conn.close()
@@ -356,14 +362,17 @@ def get_battle(user_id):
         "domain_turns": row[13], "domain_name": row[14], "domain_atk_boost": row[15],
         "spam_state": row[16] if len(row) > 16 and row[16] else "ability_1",
         "goku_form": row[17] if len(row) > 17 and row[17] else 0,
+        "luffy_form": row[18] if len(row) > 18 and row[18] else 0,
     }
+
+
 def update_battle(battle, status='active'):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
-        domain_name=?, domain_atk_boost=?, spam_state=?, goku_form=? WHERE id=?""",
+        domain_name=?, domain_atk_boost=?, spam_state=?, goku_form=?, luffy_form=? WHERE id=?""",
         (battle["php"], battle["bhp"], battle["turn"],
          battle["defending"], status,
          battle["domain_used"], battle["boss_frozen"],
@@ -371,6 +380,7 @@ def update_battle(battle, status='active'):
          battle["domain_name"], battle["domain_atk_boost"],
          battle.get("spam_state", "ability_1"),
          battle.get("goku_form", 0),
+         battle.get("luffy_form", 0),
          battle["id"]))
     conn.commit()
     conn.close()
@@ -452,7 +462,7 @@ def remove_user_buff(user_id, char_name, buff_name):
     conn.close()
 
 
-# ============ 🆕 SHADOWS (Arise System) ============
+# ============ SHADOWS (Arise System) ============
 
 def add_shadow(user_id, char_name, shadow_name):
     conn = sqlite3.connect(DB_NAME)
@@ -928,8 +938,6 @@ def can_upgrade_guild(guild_id):
     if guild[5] < coin_cost:
         return False, f"❌ خزانه کافی نیست!\n💰 لازم: {coin_cost:,}\n💵 داری: {guild[5]:,}"
     return True, ""
-
-
 PERMISSIONS_LIST = ["manage_admins", "manage_coins", "manage_chars", "manage_quests", "manage_channels", "manage_help", "manage_images", "ban_users"]
 
 def has_permission_db(user_id, permission):
