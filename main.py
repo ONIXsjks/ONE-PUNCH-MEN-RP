@@ -2742,8 +2742,7 @@ def main():
     app.add_handler(CommandHandler("listadmins", listadmins_cmd))
     app.add_handler(CommandHandler("givechar", givechar_cmd))
     app.add_handler(CommandHandler("resetchar", resetchar_cmd))
-    app.add_handler(CommandHandler("ownerpanel", owner_panel))
-    app.add_handler(CommandHandler("resetall", resetall_cmd))
+    
 
     # 🆕 MODES Commands
     app.add_handler(CommandHandler("modes", modes_cmd))
