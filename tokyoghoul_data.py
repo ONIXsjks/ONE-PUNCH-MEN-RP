@@ -331,3 +331,32 @@ TOKYOGHOUL_STATS = {
         "price": 152000,
     },
 }
+
+# ============================================================
+# BOSSES
+# ============================================================
+CODEGEASS_BOSSES = {
+    # 🟢 ضعیف — Reward: 50,000
+    "Britannian Soldier": {"display_name": "سرباز بریتانیا", "hp": 1000, "atk": 80, "reward": 50000},
+    "Villetta Nu": {"display_name": "ویلتا نو", "hp": 1200, "atk": 90, "reward": 50000},
+
+    # 🟡 متوسط — Reward: 100,000
+    "Jeremiah Gottwald": {"display_name": "جرمایا گاتوالد", "hp": 4000, "atk": 300, "reward": 100000},
+
+    # 🟠 قوی — Reward: 200,000
+    "Cornelia li Britannia": {"display_name": "کورنلیا", "hp": 90000, "atk": 4400, "reward": 200000},
+    "Bismarck Waldstein": {"display_name": "بیسمارک", "hp": 100000, "atk": 4800, "reward": 200000},
+
+    # 🔴 افسانه‌ای — Reward: 500,000
+    "Charles zi Britannia": {"display_name": "چارلز", "hp": 200000, "atk": 5600, "reward": 500000},
+}
+
+# ============================================================
+# FODDER
+# ============================================================
+CODEGEASS_FODDER = {
+    "Britannian Soldier": {"display_name": "سرباز بریتانیا", "hp": 400, "atk": 30, "reward": 5000},
+    "Villetta Nu": {"display_name": "ویلتا نو", "hp": 1000, "atk": 80, "reward": 5000},
+    "Ohgi Kaname": {"display_name": "اوگی کانامه", "hp": 1200, "atk": 90, "reward": 5000},
+    "Jeremiah Gottwald": {"display_name": "جرمایا گاتوالد", "hp": 2000, "atk": 150, "reward": 5000},
+}
