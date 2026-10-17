@@ -26,7 +26,8 @@ def init_db():
         def INTEGER,
         dodge REAL,
         slots_unlocked INTEGER DEFAULT 3,
-        is_active INTEGER DEFAULT 0
+        is_active INTEGER DEFAULT 0,
+        survival_wave INTEGER DEFAULT 1
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS abilities_owned (
@@ -154,26 +155,30 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
+    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
-        print("Column spam_state added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
-        print("Column goku_form added")
     except sqlite3.OperationalError:
         pass
 
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+    except sqlite3.OperationalError:
+        pass
+
+    # 🆕 تغییر نام King به Harley Quinn
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-        print("King renamed to Harley Quinn in DB")
-    except Exception as e:
-        print(f"Rename DB error: {e}")
+    except Exception:
+        pass
 
     conn.commit()
     conn.close()
@@ -241,6 +246,16 @@ def spend_coins(user_id, amount):
 def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
+    
+    # 🆕 محاسبه HP باس بر اساس موج برای مودهای Survival
+    if "Survival" in boss_name:
+        c.execute("SELECT survival_wave FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+        row = c.fetchone()
+        wave = row[0] if row else 1
+        base_hp = 10000
+        growth = 1.047
+        boss_hp = min(1000000, int(base_hp * (growth ** (wave - 1))))
+    
     c.execute("DELETE FROM active_battles WHERE user_id=?", (user_id,))
     c.execute("""INSERT INTO active_battles
         (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp,
@@ -819,35 +834,18 @@ def get_current_region(user_id):
 
 # ============ GUILD HELPERS ============
 
-GUILD_MAX_MEMBERS = {
-    1: 5, 2: 10, 3: 15, 4: 20, 5: 30,
-    6: 40, 7: 50, 8: 75, 9: 100, 10: 150,
-}
-
-GUILD_UPGRADE_COST = {
-    1: (5000, 1000000), 2: (10000, 2500000), 3: (20000, 5000000),
-    4: (40000, 10000000), 5: (80000, 20000000), 6: (150000, 50000000),
-    7: (300000, 100000000), 8: (500000, 250000000), 9: (1000000, 500000000),
-}
-
-GUILD_MAX_TREASURY = {
-    1: 5000000, 2: 10000000, 3: 25000000, 4: 50000000,
-    5: 100000000, 6: 200000000, 7: 500000000,
-    8: 1000000000, 9: 2500000000, 10: 5000000000,
-}
-
+GUILD_MAX_MEMBERS = {1: 5, 2: 10, 3: 15, 4: 20, 5: 30, 6: 40, 7: 50, 8: 75, 9: 100, 10: 150}
+GUILD_UPGRADE_COST = {1: (5000, 1000000), 2: (10000, 2500000), 3: (20000, 5000000), 4: (40000, 10000000), 5: (80000, 20000000), 6: (150000, 50000000), 7: (300000, 100000000), 8: (500000, 250000000), 9: (1000000, 500000000)}
+GUILD_MAX_TREASURY = {1: 5000000, 2: 10000000, 3: 25000000, 4: 50000000, 5: 100000000, 6: 200000000, 7: 500000000, 8: 1000000000, 9: 2500000000, 10: 5000000000}
 
 def get_guild_max_members(level):
     return GUILD_MAX_MEMBERS.get(level, 5)
 
-
 def get_guild_upgrade_req(level):
     return GUILD_UPGRADE_COST.get(level, None)
 
-
 def get_guild_max_treasury(level):
     return GUILD_MAX_TREASURY.get(level, 5000000)
-
 
 def can_upgrade_guild(guild_id):
     guild = get_guild_by_id(guild_id)
@@ -860,20 +858,14 @@ def can_upgrade_guild(guild_id):
     if not req:
         return False, "خطا در محاسبه هزینه"
     xp_needed, coin_cost = req
-    xp = guild[4]
-    treasury = guild[5]
-    if xp < xp_needed:
-        return False, f"❌ XP کافی نیست!\n⚡ لازم: {xp_needed:,}\n💫 داری: {xp:,}"
-    if treasury < coin_cost:
-        return False, f"❌ خزانه کافی نیست!\n💰 لازم: {coin_cost:,}\n💵 داری: {treasury:,}"
+    if guild[4] < xp_needed:
+        return False, f"❌ XP کافی نیست!\n⚡ لازم: {xp_needed:,}\n💫 داری: {guild[4]:,}"
+    if guild[5] < coin_cost:
+        return False, f"❌ خزانه کافی نیست!\n💰 لازم: {coin_cost:,}\n💵 داری: {guild[5]:,}"
     return True, ""
 
 
-PERMISSIONS_LIST = [
-    "manage_admins", "manage_coins", "manage_chars", "manage_quests",
-    "manage_channels", "manage_help", "manage_images", "ban_users",
-]
-
+PERMISSIONS_LIST = ["manage_admins", "manage_coins", "manage_chars", "manage_quests", "manage_channels", "manage_help", "manage_images", "ban_users"]
 
 def has_permission_db(user_id, permission):
     admin = get_admin_db(user_id)
@@ -883,7 +875,6 @@ def has_permission_db(user_id, permission):
     if "all" in perms:
         return True
     return permission in perms
-
 
 def get_admin_perms_list(user_id):
     admin = get_admin_db(user_id)
@@ -897,11 +888,7 @@ def get_admin_perms_list(user_id):
 
 # ============ HELP KEYS ============
 
-HELP_KEYS = [
-    "welcome", "main_menu", "battle_help", "shop_help", "guild_help",
-    "quest_help", "jjk_help", "opm_help", "world_help", "general",
-]
-
+HELP_KEYS = ["welcome", "main_menu", "battle_help", "shop_help", "guild_help", "quest_help", "jjk_help", "opm_help", "world_help", "general"]
 
 def get_default_help(key):
     defaults = {
