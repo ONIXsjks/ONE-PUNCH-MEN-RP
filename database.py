@@ -27,7 +27,9 @@ def init_db():
         dodge REAL,
         slots_unlocked INTEGER DEFAULT 3,
         is_active INTEGER DEFAULT 0,
-        survival_wave INTEGER DEFAULT 1
+        survival_wave INTEGER DEFAULT 1,
+        cursed_energy INTEGER DEFAULT 120,
+        max_cursed_energy INTEGER DEFAULT 120
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS abilities_owned (
@@ -155,30 +157,46 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
+    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی (برای دیتابیس‌های موجود)
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+        print("✅ Column spam_state added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+        print("✅ Column goku_form added")
     except sqlite3.OperationalError:
         pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+        print("✅ Column survival_wave added")
     except sqlite3.OperationalError:
         pass
 
-    # 🆕 تغییر نام King به Harley Quinn
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+        print("✅ Column cursed_energy added")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+        print("✅ Column max_cursed_energy added")
+    except sqlite3.OperationalError:
+        pass
+
+    # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-    except Exception:
-        pass
+        print("✅ King renamed to Harley Quinn in DB")
+    except Exception as e:
+        print(f"Rename DB error: {e}")
 
     conn.commit()
     conn.close()
