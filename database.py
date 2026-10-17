@@ -144,6 +144,16 @@ def init_db():
         found_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
+    # 🆕 جدول سایه‌ها (Arise System)
+    c.execute("""CREATE TABLE IF NOT EXISTS shadows (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        char_name TEXT,
+        shadow_name TEXT,
+        atk_bonus INTEGER DEFAULT 25,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
     # اضافه کردن ستون spam_state به جدول قدیمی
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
@@ -349,6 +359,51 @@ def remove_user_buff(user_id, char_name, buff_name):
               (user_id, char_name, buff_name))
     conn.commit()
     conn.close()
+
+
+# ============ 🆕 SHADOWS (Arise System) ============
+
+def add_shadow(user_id, char_name, shadow_name):
+    """اضافه کردن سایه جدید (بعد از کشتن باس)"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""INSERT INTO shadows (user_id, char_name, shadow_name, atk_bonus)
+                 VALUES (?,?,?,25)""", (user_id, char_name, shadow_name))
+    conn.commit()
+    conn.close()
+
+
+def get_user_shadows(user_id, char_name):
+    """گرفتن لیست سایه‌های کاربر"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT shadow_name, atk_bonus FROM shadows
+                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+
+def get_shadows_count(user_id, char_name):
+    """تعداد سایه‌های کاربر"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT COUNT(*) FROM shadows
+                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    count = c.fetchone()[0]
+    conn.close()
+    return count
+
+
+def get_shadows_atk_bonus(user_id, char_name):
+    """مجموع ATK سایه‌ها"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""SELECT COALESCE(SUM(atk_bonus), 0) FROM shadows
+                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    total = c.fetchone()[0]
+    conn.close()
+    return total
 # ============ GUILD ============
 
 def get_guild_by_name(name):
@@ -871,6 +926,7 @@ def reset_all_players():
         c.execute("DELETE FROM abilities_owned")
         c.execute("DELETE FROM buffs")
         c.execute("DELETE FROM active_battles")
+        c.execute("DELETE FROM shadows")  # 🆕 ریست سایه‌ها
         conn.commit()
         return total
     except Exception as e:
