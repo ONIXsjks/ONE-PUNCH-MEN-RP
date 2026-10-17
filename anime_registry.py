@@ -1,8 +1,8 @@
 # ============================================================
-# ANIME REGISTRY — Central Registry for All 7 Animes
+# ANIME REGISTRY — Central Registry for All 18 Animes
 # ============================================================
 
-# ============ OPM ============
+# ============ OLD ANIMES ============
 from opm_data import (
     CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM
 )
@@ -11,64 +11,105 @@ try:
 except ImportError:
     OPM_FODDER = None
 
-# ============ JJK ============
 from jjk_data import (
     CHARACTERS_JJK, ABILITIES_JJK, BOSSES_JJK,
     FODDER_JJK, DOMAINS_JJK
 )
 
-# ============ BLEACH ============
 from bleach_data import (
     CHARACTERS_BLEACH, ABILITIES_BLEACH, BLEACH_BOSSES,
     BLEACH_FODDER, BLEACH_BANKAI, BLEACH_ABILITIES_SHOP
 )
 
-# ============ AOT ============
+# ============ 7 ANIMES (AOT, BC, Berserk, DS, CSM, Naruto, SDS) ============
 from aot_data import (
     CHARACTERS_AOT, ABILITIES_AOT, AOT_BOSSES,
     AOT_FODDER, CHAR_PRICES_AOT
 )
 
-# ============ BLACK CLOVER ============
 from blackclover_data import (
     CHARACTERS_BLACKCLOVER, ABILITIES_BLACKCLOVER,
     BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER,
     CHAR_PRICES_BLACKCLOVER
 )
 
-# ============ BERSERK ============
 from berserk_data import (
     CHARACTERS_BERSERK, ABILITIES_BERSERK,
     BERSERK_BOSSES, BERSERK_FODDER,
     CHAR_PRICES_BERSERK
 )
 
-# ============ DEMON SLAYER ============
 from demonslayer_data import (
     CHARACTERS_DEMONSLAYER, ABILITIES_DEMONSLAYER,
     DEMONSLAYER_BOSSES, DEMONSLAYER_FODDER,
     CHAR_PRICES_DEMONSLAYER
 )
 
-# ============ CHAINSAW MAN ============
 from chainsawman_data import (
     CHARACTERS_CHAINSAWMAN, ABILITIES_CHAINSAWMAN,
     CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER,
     CHAR_PRICES_CHAINSAWMAN
 )
 
-# ============ NARUTO ============
 from naruto_data import (
     CHARACTERS_NARUTO, ABILITIES_NARUTO,
     NARUTO_BOSSES, NARUTO_FODDER,
     CHAR_PRICES_NARUTO
 )
 
-# ============ SEVEN DEADLY SINS ============
 from sevendeadlysins_data import (
     CHARACTERS_SDS, ABILITIES_SDS,
     SDS_BOSSES, SDS_FODDER,
     CHAR_PRICES_SDS
+)
+
+# ============ 🆕 8 ANIMES NEW ============
+from onepiece_data import (
+    CHARACTERS_ONEPIECE, ABILITIES_ONEPIECE,
+    ONEPIECE_BOSSES, ONEPIECE_FODDER,
+    CHAR_PRICES_ONEPIECE
+)
+
+from dragonball_data import (
+    CHARACTERS_DRAGONBALL, ABILITIES_DRAGONBALL,
+    DRAGONBALL_BOSSES, DRAGONBALL_FODDER,
+    CHAR_PRICES_DRAGONBALL
+)
+
+from hxh_data import (
+    CHARACTERS_HXH, ABILITIES_HXH,
+    HXH_BOSSES, HXH_FODDER,
+    CHAR_PRICES_HXH
+)
+
+from sakamoto_data import (
+    CHARACTERS_SAKAMOTO, ABILITIES_SAKAMOTO,
+    SAKAMOTO_BOSSES, SAKAMOTO_FODDER,
+    CHAR_PRICES_SAKAMOTO
+)
+
+from sololeveling_data import (
+    CHARACTERS_SOLOLEVELING, ABILITIES_SOLOLEVELING,
+    SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER,
+    CHAR_PRICES_SOLOLEVELING
+)
+
+from mushoku_data import (
+    CHARACTERS_MUSHOKU, ABILITIES_MUSHOKU,
+    MUSHOKU_BOSSES, MUSHOKU_FODDER,
+    CHAR_PRICES_MUSHOKU
+)
+
+from codegeass_data import (
+    CHARACTERS_CODEGEASS, ABILITIES_CODEGEASS,
+    CODEGEASS_BOSSES, CODEGEASS_FODDER,
+    CHAR_PRICES_CODEGEASS
+)
+
+from tokyoghoul_data import (
+    CHARACTERS_TOKYOGHOUL, ABILITIES_TOKYOGHOUL,
+    TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER,
+    CHAR_PRICES_TOKYOGHOUL
 )
 
 # ============ EXTENDED SHOP ABILITIES ============
@@ -81,12 +122,12 @@ from shop_abilities_extended import (
     EXTENDED_SHOP_ABILITIES,
     EXTENDED_SHOP_ABILITIES_FA,
 )
-
-
 # ============================================================
-# REGISTRY — همه انیمه‌ها به صورت جداگانه
+# REGISTRY — همه ۱۸ انیمه به صورت جداگانه
 # ============================================================
 ANIME_REGISTRY = {
+
+    # ============ ۳ انیمه قدیمی ============
     "opm": {
         "name": "One Punch Man",
         "name_fa": "وان پانچ من",
@@ -128,6 +169,8 @@ ANIME_REGISTRY = {
         "has_domain": False,
         "has_bankai": True,
     },
+
+    # ============ ۷ انیمه اول ============
     "aot": {
         "name": "Attack on Titan",
         "name_fa": "اتک آن تایتان",
@@ -220,6 +263,115 @@ ANIME_REGISTRY = {
         "has_bankai": False,
     },
 }
+# ============================================================
+# 🆕 8 ANIMES NEW — اضافه به registry
+# ============================================================
+ANIME_REGISTRY.update({
+    "onepiece": {
+        "name": "One Piece",
+        "name_fa": "وان پیس",
+        "emoji": "🏴‍☠️",
+        "characters": CHARACTERS_ONEPIECE,
+        "abilities": ABILITIES_ONEPIECE,
+        "bosses": ONEPIECE_BOSSES,
+        "fodder": ONEPIECE_FODDER,
+        "prices": CHAR_PRICES_ONEPIECE,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "dragonball": {
+        "name": "Dragon Ball",
+        "name_fa": "دراگون بال",
+        "emoji": "🐉",
+        "characters": CHARACTERS_DRAGONBALL,
+        "abilities": ABILITIES_DRAGONBALL,
+        "bosses": DRAGONBALL_BOSSES,
+        "fodder": DRAGONBALL_FODDER,
+        "prices": CHAR_PRICES_DRAGONBALL,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "hxh": {
+        "name": "Hunter x Hunter",
+        "name_fa": "هانتر × هانتر",
+        "emoji": "🎯",
+        "characters": CHARACTERS_HXH,
+        "abilities": ABILITIES_HXH,
+        "bosses": HXH_BOSSES,
+        "fodder": HXH_FODDER,
+        "prices": CHAR_PRICES_HXH,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "sakamoto": {
+        "name": "Sakamoto Days",
+        "name_fa": "ساکاموتو دیز",
+        "emoji": "🍡",
+        "characters": CHARACTERS_SAKAMOTO,
+        "abilities": ABILITIES_SAKAMOTO,
+        "bosses": SAKAMOTO_BOSSES,
+        "fodder": SAKAMOTO_FODDER,
+        "prices": CHAR_PRICES_SAKAMOTO,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "sololeveling": {
+        "name": "Solo Leveling",
+        "name_fa": "سولو لولینگ",
+        "emoji": "🗡️",
+        "characters": CHARACTERS_SOLOLEVELING,
+        "abilities": ABILITIES_SOLOLEVELING,
+        "bosses": SOLOLEVELING_BOSSES,
+        "fodder": SOLOLEVELING_FODDER,
+        "prices": CHAR_PRICES_SOLOLEVELING,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "mushoku": {
+        "name": "Mushoku Tensei",
+        "name_fa": "موشوکو تنسی",
+        "emoji": "🌀",
+        "characters": CHARACTERS_MUSHOKU,
+        "abilities": ABILITIES_MUSHOKU,
+        "bosses": MUSHOKU_BOSSES,
+        "fodder": MUSHOKU_FODDER,
+        "prices": CHAR_PRICES_MUSHOKU,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "codegeass": {
+        "name": "Code Geass",
+        "name_fa": "کد گیاس",
+        "emoji": "♟️",
+        "characters": CHARACTERS_CODEGEASS,
+        "abilities": ABILITIES_CODEGEASS,
+        "bosses": CODEGEASS_BOSSES,
+        "fodder": CODEGEASS_FODDER,
+        "prices": CHAR_PRICES_CODEGEASS,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+    "tokyoghoul": {
+        "name": "Tokyo Ghoul",
+        "name_fa": "توکیو غول",
+        "emoji": "👁️",
+        "characters": CHARACTERS_TOKYOGHOUL,
+        "abilities": ABILITIES_TOKYOGHOUL,
+        "bosses": TOKYOGHOUL_BOSSES,
+        "fodder": TOKYOGHOUL_FODDER,
+        "prices": CHAR_PRICES_TOKYOGHOUL,
+        "shop_abilities": {},
+        "has_domain": False,
+        "has_bankai": False,
+    },
+})
 
 
 # ============================================================
