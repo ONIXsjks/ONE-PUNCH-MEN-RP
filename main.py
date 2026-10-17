@@ -2751,11 +2751,14 @@ def main():
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
 
-    # ============ MESSAGE HANDLERS ============
-    app.add_handler(MessageHandler(
-        filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
-        setcharimage_cmd
-    ))
+        # ============ MESSAGE HANDLERS ============
+    try:
+        app.add_handler(MessageHandler(
+            filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'),
+            setcharimage_cmd
+        ))
+    except NameError:
+        pass
 
     # ============ CALLBACK HANDLERS ============
     # Start / Profile / Select
