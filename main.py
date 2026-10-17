@@ -79,6 +79,9 @@ from anime_registry import (
 from modes import (modes_cmd, castle_cmd, castle_callback, join_castle_cmd,
                    zombie_cmd, zombie_callback, tower_cmd, tower_callback)
 
+# 🆕 ARISE
+from arise import (try_arise, show_shadows, arise_callback,
+                   shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
