@@ -1759,8 +1759,10 @@ async def post_init(app):
 def main():
     init_db()
     init_multi_table()
-    try: init_quests_table()
-    except Exception: pass
+    try:
+        init_quests_table()
+    except Exception:
+        pass
 
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
@@ -1776,6 +1778,9 @@ def main():
     app.add_handler(CommandHandler("battle", battle))
     app.add_handler(CommandHandler("pvp", pvp))
     app.add_handler(CommandHandler("joinpvp", join_pvp))
+    app.add_handler(CommandHandler("team", team))
+    app.add_handler(CommandHandler("jointeam", join_team))
+    app.add_handler(CommandHandler("startteam", start_team))
     app.add_handler(CommandHandler("coop", coop))
     app.add_handler(CommandHandler("join", join_coop))
     app.add_handler(CommandHandler("startcoop", start_coop))
@@ -1795,6 +1800,13 @@ def main():
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("gift", send_gift))
     app.add_handler(CommandHandler("help", help_cmd))
+
+    # 🆕 MODES Commands
+    app.add_handler(CommandHandler("modes", modes_cmd))
+    app.add_handler(CommandHandler("castle", castle_cmd))
+    app.add_handler(CommandHandler("joincastle", join_castle_cmd))
+    app.add_handler(CommandHandler("zombie", zombie_cmd))
+    app.add_handler(CommandHandler("tower", tower_cmd))
 
     # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
@@ -1828,6 +1840,23 @@ def main():
     
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
+
+    # 🆕 Modes Menu Callbacks
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
+
+    # Modes Game Callbacks
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^castle_"))
+    app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_"))
+    app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_"))
+
+    # Modes Back
+    app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
+
+    # 🆕 Arise
+    app.add_handler(CallbackQueryHandler(arise_callback, pattern="^arise_show$"))
+    app.add_handler(CallbackQueryHandler(shadows_back_callback, pattern="^shadows_back$"))
 
     print("🤖 Bot Started!")
     app.run_polling()
