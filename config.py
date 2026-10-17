@@ -523,3 +523,21 @@ ABILITY_MULTIPLIERS = {
 ADMIN_IDS = [
     7023690411,
 ]
+# ============ 🆕 CODE GEASS ULTIMATE GEASS ============
+ULTIMATE_GEASS = {
+    "Lelouch Lamperouge": {"name": "Geass of Absolute Command", "effect": "skip_enemy_turn", "duration": 2},
+    "Suzaku Kururugi": {"name": "Live Geass", "effect": "atk_boost", "value": 100, "duration": 3},
+    "C.C.": {"name": "Immortal Witch's Curse", "effect": "heal", "value": 50, "duration": 1},
+    "Charles zi Britannia": {"name": "Ragnarok Connection", "effect": "skip_enemy_turn", "duration": 2},
+    "V.V.": {"name": "Geass Cult's Legacy", "effect": "def_boost", "value": 100, "duration": 3},
+    "Schneizel el Britannia": {"name": "Checkmate", "effect": "atk_boost", "value": 75, "duration": 2},
+    "Bismarck Waldstein": {"name": "Knight of One's Resolve", "effect": "atk_boost", "value": 80, "duration": 2},
+    "Marianne vi Britannia": {"name": "Flash of Britannia", "effect": "dodge_boost", "value": 50, "duration": 3},
+    "Kallen Stadtfeld": {"name": "Guren's Wrath", "effect": "atk_boost", "value": 90, "duration": 2},
+    "Gino Weinberg": {"name": "Knight of Three's Charge", "effect": "atk_boost", "value": 70, "duration": 2},
+    "Rolo Lamperouge": {"name": "Time Stop Geass", "effect": "skip_enemy_turn", "duration": 1},
+    "Jeremiah Gottwald": {"name": "Orange's Loyalty", "effect": "def_boost", "value": 80, "duration": 2},
+    "Anya Alstreim": {"name": "Mordred's Memory", "effect": "atk_boost", "value": 60, "duration": 2},
+    "Cornelia li Britannia": {"name": "Witch's Command", "effect": "atk_boost", "value": 75, "duration": 2},
+    "Diethard Ried": {"name": "Truth of the World", "effect": "atk_boost", "value": 50, "duration": 2},
+}
