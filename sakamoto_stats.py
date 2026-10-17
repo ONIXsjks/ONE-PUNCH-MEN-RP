@@ -16,7 +16,7 @@ SAKAMOTO_STATS = {
         "hp": 2400, "atk": 510, "def": 205, "dodge": 38,
         "price": 4000000,
     },
-    "Nagumo": {
+    "Yoichi Nagumo": { # 🆕 از A به S منتقل شد
         "hp": 2450, "atk": 520, "def": 210, "dodge": 40,
         "price": 4000000,
     },
@@ -46,10 +46,6 @@ SAKAMOTO_STATS = {
     },
 
     # ============ A RANK ============
-    "Yoichi Nagumo": {
-        "hp": 1100, "atk": 225, "def": 82, "dodge": 26,
-        "price": 600000,
-    },
     "Piisuke": {
         "hp": 1100, "atk": 220, "def": 80, "dodge": 28,
         "price": 600000,
@@ -86,6 +82,14 @@ SAKAMOTO_STATS = {
         "hp": 1080, "atk": 220, "def": 78, "dodge": 25,
         "price": 580000,
     },
+    "Kashima": { # 🆕 از B به A منتقل شد
+        "hp": 1050, "atk": 215, "def": 75, "dodge": 28,
+        "price": 560000,
+    },
+    "Satoru Yotsumura": { # 🆕 از B به A منتقل شد
+        "hp": 1100, "atk": 225, "def": 80, "dodge": 24,
+        "price": 600000,
+    },
 
     # ============ B RANK ============
     "Hana Sakamoto": {
@@ -100,17 +104,9 @@ SAKAMOTO_STATS = {
         "hp": 700, "atk": 120, "def": 40, "dodge": 18,
         "price": 155000,
     },
-    "Satoru Yotsumura": {
-        "hp": 720, "atk": 125, "def": 42, "dodge": 16,
-        "price": 160000,
-    },
     "Amane": {
         "hp": 680, "atk": 115, "def": 38, "dodge": 18,
         "price": 150000,
-    },
-    "Kashima": {
-        "hp": 700, "atk": 120, "def": 40, "dodge": 17,
-        "price": 155000,
     },
     "Tatsu": {
         "hp": 700, "atk": 122, "def": 40, "dodge": 16,
@@ -127,5 +123,13 @@ SAKAMOTO_STATS = {
     "Tanaka": {
         "hp": 660, "atk": 115, "def": 37, "dodge": 15,
         "price": 140000,
+    },
+    "Nagumo's Shadow": { # 🆕 کاراکتر جدید
+        "hp": 720, "atk": 125, "def": 42, "dodge": 20,
+        "price": 160000,
+    },
+    "Silent Blade": { # 🆕 کاراکتر جدید
+        "hp": 700, "atk": 120, "def": 40, "dodge": 22,
+        "price": 155000,
     },
 }
