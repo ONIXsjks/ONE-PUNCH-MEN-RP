@@ -164,7 +164,7 @@ LEVEL_COST = [
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
 # ============================================================
-# 🆕 JJK CURSED ENERGY (پایه‌ها ثابت موندن)
+# 🆕 JJK CURSED ENERGY
 # ============================================================
 JJK_CE_MAX_BASE = 120
 JJK_CE_MAX_CAP = 500
@@ -172,6 +172,26 @@ JJK_CE_COST_ABILITY_1 = 20
 JJK_CE_COST_ABILITY_2 = 20
 JJK_CE_COST_ABILITY_3 = 40
 JJK_CE_COST_DOMAIN = 50
+
+# ============================================================
+# 🆕 BLEACH REIATSU
+# ============================================================
+BLEACH_REI_MAX_BASE = 120
+BLEACH_REI_MAX_CAP = 500
+BLEACH_REI_COST_ABILITY_1 = 20
+BLEACH_REI_COST_ABILITY_2 = 20
+BLEACH_REI_COST_ABILITY_3 = 40
+BLEACH_REI_COST_BANKAI = 50
+
+# ============================================================
+# 🆕 CODE GEASS GEASS
+# ============================================================
+GEASS_MAX_BASE = 120
+GEASS_MAX_CAP = 500
+GEASS_COST_ABILITY_1 = 20
+GEASS_COST_ABILITY_2 = 20
+GEASS_COST_ABILITY_3 = 40
+GEASS_COST_ULTIMATE = 50
 
 # ============================================================
 # GENERAL ABILITIES (Shop)
