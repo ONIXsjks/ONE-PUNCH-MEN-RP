@@ -1,4 +1,3 @@
-
 import sqlite3
 from config import DB_NAME
 
@@ -164,108 +163,73 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی (برای دیتابیس‌های موجود)
+    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
-        print("✅ Column spam_state added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
-        print("✅ Column goku_form added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
-        print("✅ Column luffy_form added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
-        print("✅ Column survival_wave added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET cursed_energy = 120 WHERE cursed_energy IS NULL")
-        print("✅ Column cursed_energy added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET max_cursed_energy = 120 WHERE max_cursed_energy IS NULL")
-        print("✅ Column max_cursed_energy added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET reiatsu = 120 WHERE reiatsu IS NULL")
-        print("✅ Column reiatsu added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET max_reiatsu = 120 WHERE max_reiatsu IS NULL")
-        print("✅ Column max_reiatsu added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET geass_power = 120 WHERE geass_power IS NULL")
-        print("✅ Column geass_power added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
-        c.execute("UPDATE characters SET max_geass_power = 120 WHERE max_geass_power IS NULL")
-        print("✅ Column max_geass_power added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
-    # 🆕 ستون‌های هاکی (One Piece)
     try:
         c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
-        print("✅ Column haki added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
     try:
         c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
-        print("✅ Column max_haki added")
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
 
-    # 🆕 تغییر نام King به Harley Quinn برای بازیکنان قدیمی
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-        print("✅ King renamed to Harley Quinn in DB")
     except Exception as e:
         print(f"Rename DB error: {e}")
 
     conn.commit()
     conn.close()
 # ============ USERS ============
-
 def get_user(user_id, username=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
     u = c.fetchone()
     if not u:
-        c.execute("INSERT INTO users (user_id, username, coins) VALUES (?,?,0)",
-                  (user_id, username or "Player"))
+        c.execute("INSERT INTO users (user_id, username, coins) VALUES (?,?,0)", (user_id, username or "Player"))
         conn.commit()
         c.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
         u = c.fetchone()
@@ -278,7 +242,6 @@ def get_user(user_id, username=None):
     conn.close()
     return u
 
-
 def get_username(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -289,14 +252,12 @@ def get_username(user_id):
         return f"@{row[0]}"
     return "ناشناس"
 
-
 def add_coins(user_id, amount):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("UPDATE users SET coins = coins + ? WHERE user_id=?", (amount, user_id))
     conn.commit()
     conn.close()
-
 
 def get_coins(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -306,7 +267,6 @@ def get_coins(user_id):
     conn.close()
     return r[0] if r else 0
 
-
 def spend_coins(user_id, amount):
     coins = get_coins(user_id)
     if coins < amount:
@@ -314,13 +274,10 @@ def spend_coins(user_id, amount):
     add_coins(user_id, -amount)
     return True
 
-
 # ============ ACTIVE BATTLES ============
-
 def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    
     if "Survival" in boss_name:
         c.execute("SELECT survival_wave FROM characters WHERE user_id=? AND is_active=1", (user_id,))
         row = c.fetchone()
@@ -340,7 +297,6 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn.commit()
     conn.close()
     return bid
-
 
 def get_battle(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -364,11 +320,23 @@ def get_battle(user_id):
         "goku_form": row[17] if len(row) > 17 and row[17] else 0,
         "luffy_form": row[18] if len(row) > 18 and row[18] else 0,
     }
-
-
 def update_battle(battle, status='active'):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
+    
+    # 🌟 این خط جادویی رو اضافه کردیم:
+    # اگر بازی در حال اجراست و داخل دیتابیس قبلاً فرمی ثبت شده، از اون استفاده کن
+    # تا main.py نتونه فرم‌ها رو صفر کنه!
+    c.execute("SELECT goku_form, luffy_form FROM active_battles WHERE id=?", (battle["id"],))
+    row = c.fetchone()
+    
+    goku_f = battle.get("goku_form", 0)
+    luffy_f = battle.get("luffy_form", 0)
+    
+    if row:
+        if row[0] is not None and row[0] > goku_f: goku_f = row[0]
+        if row[1] is not None and row[1] > luffy_f: luffy_f = row[1]
+
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
@@ -379,12 +347,11 @@ def update_battle(battle, status='active'):
          battle["domain_active"], battle["domain_turns"],
          battle["domain_name"], battle["domain_atk_boost"],
          battle.get("spam_state", "ability_1"),
-         battle.get("goku_form", 0),
-         battle.get("luffy_form", 0),
+         goku_f,
+         luffy_f,
          battle["id"]))
     conn.commit()
     conn.close()
-
 
 def end_battle(battle_id):
     conn = sqlite3.connect(DB_NAME)
@@ -393,27 +360,21 @@ def end_battle(battle_id):
     conn.commit()
     conn.close()
 
-
 # ============ ABILITIES & ITEMS ============
-
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT ability_name FROM abilities_owned
-                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    c.execute("SELECT ability_name FROM abilities_owned WHERE user_id=? AND char_name=?", (user_id, char_name))
     rows = c.fetchall()
     conn.close()
     return [r[0] for r in rows]
 
-
 def remove_user_ability(user_id, char_name, ability_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("DELETE FROM abilities_owned WHERE user_id=? AND char_name=? AND ability_name=?",
-              (user_id, char_name, ability_name))
+    c.execute("DELETE FROM abilities_owned WHERE user_id=? AND char_name=? AND ability_name=?", (user_id, char_name, ability_name))
     conn.commit()
     conn.close()
-
 
 def get_items(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -422,7 +383,6 @@ def get_items(user_id):
     rows = c.fetchall()
     conn.close()
     return rows
-
 
 def use_item(user_id, item_name):
     conn = sqlite3.connect(DB_NAME)
@@ -440,71 +400,55 @@ def use_item(user_id, item_name):
     conn.close()
     return True
 
-
 # ============ BUFFS ============
-
 def get_user_buffs(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT buff_name FROM buffs WHERE user_id=? AND char_name=?",
-              (user_id, char_name))
+    c.execute("SELECT buff_name FROM buffs WHERE user_id=? AND char_name=?", (user_id, char_name))
     rows = c.fetchall()
     conn.close()
     return [r[0] for r in rows]
 
-
 def remove_user_buff(user_id, char_name, buff_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("DELETE FROM buffs WHERE user_id=? AND char_name=? AND buff_name=?",
-              (user_id, char_name, buff_name))
+    c.execute("DELETE FROM buffs WHERE user_id=? AND char_name=? AND buff_name=?", (user_id, char_name, buff_name))
     conn.commit()
     conn.close()
 
-
 # ============ SHADOWS (Arise System) ============
-
 def add_shadow(user_id, char_name, shadow_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT INTO shadows (user_id, char_name, shadow_name, atk_bonus)
-                 VALUES (?,?,?,25)""", (user_id, char_name, shadow_name))
+    c.execute("INSERT INTO shadows (user_id, char_name, shadow_name, atk_bonus) VALUES (?,?,?,25)", (user_id, char_name, shadow_name))
     conn.commit()
     conn.close()
-
 
 def get_user_shadows(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT shadow_name, atk_bonus FROM shadows
-                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    c.execute("SELECT shadow_name, atk_bonus FROM shadows WHERE user_id=? AND char_name=?", (user_id, char_name))
     rows = c.fetchall()
     conn.close()
     return rows
 
-
 def get_shadows_count(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT COUNT(*) FROM shadows
-                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    c.execute("SELECT COUNT(*) FROM shadows WHERE user_id=? AND char_name=?", (user_id, char_name))
     count = c.fetchone()[0]
     conn.close()
     return count
 
-
 def get_shadows_atk_bonus(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT COALESCE(SUM(atk_bonus), 0) FROM shadows
-                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    c.execute("SELECT COALESCE(SUM(atk_bonus), 0) FROM shadows WHERE user_id=? AND char_name=?", (user_id, char_name))
     total = c.fetchone()[0]
     conn.close()
     return total
 
-
 # ============ GUILD ============
-
 def get_guild_by_name(name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -513,7 +457,6 @@ def get_guild_by_name(name):
     conn.close()
     return row
 
-
 def get_guild_by_id(guild_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -521,7 +464,6 @@ def get_guild_by_id(guild_id):
     row = c.fetchone()
     conn.close()
     return row
-
 
 def get_user_guild(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -534,40 +476,31 @@ def get_user_guild(user_id):
     conn.close()
     return row
 
-
 def get_all_guilds():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC""")
+    c.execute("SELECT id, name, leader_id, level, xp, treasury, members_count FROM guilds ORDER BY level DESC, treasury DESC")
     rows = c.fetchall()
     conn.close()
     return rows
-
 
 def search_guilds(query):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds WHERE name LIKE ? ORDER BY level DESC""",
-              (f"%{query}%",))
+    c.execute("SELECT id, name, leader_id, level, xp, treasury, members_count FROM guilds WHERE name LIKE ? ORDER BY level DESC", (f"%{query}%",))
     rows = c.fetchall()
     conn.close()
     return rows
 
-
 def create_guild(name, leader_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO guilds (name, leader_id, treasury, members_count) VALUES (?,?,0,1)",
-              (name, leader_id))
+    c.execute("INSERT INTO guilds (name, leader_id, treasury, members_count) VALUES (?,?,0,1)", (name, leader_id))
     gid = c.lastrowid
-    c.execute("INSERT INTO guild_members (guild_id, user_id, role) VALUES (?,?,?)",
-              (gid, leader_id, "leader"))
+    c.execute("INSERT INTO guild_members (guild_id, user_id, role) VALUES (?,?,?)", (gid, leader_id, "leader"))
     conn.commit()
     conn.close()
     return gid
-
 
 def join_guild(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -576,7 +509,6 @@ def join_guild(guild_id, user_id):
     c.execute("UPDATE guilds SET members_count = members_count + 1 WHERE id=?", (guild_id,))
     conn.commit()
     conn.close()
-
 
 def leave_guild(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -596,7 +528,6 @@ def leave_guild(user_id):
     conn.close()
     return True
 
-
 def get_guild_members(guild_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -605,14 +536,12 @@ def get_guild_members(guild_id):
     conn.close()
     return rows
 
-
 def donate_to_guild(guild_id, amount):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("UPDATE guilds SET treasury = treasury + ? WHERE id=?", (amount, guild_id))
     conn.commit()
     conn.close()
-
 
 def add_guild_xp(guild_id, amount):
     conn = sqlite3.connect(DB_NAME)
@@ -621,22 +550,17 @@ def add_guild_xp(guild_id, amount):
     conn.commit()
     conn.close()
 
-
 def upgrade_guild(guild_id, new_level, xp_cost, coin_cost):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""UPDATE guilds SET level=?, treasury = treasury - ?,
-                 xp = xp - ? WHERE id=?""",
-              (new_level, coin_cost, xp_cost, guild_id))
+    c.execute("UPDATE guilds SET level=?, treasury = treasury - ?, xp = xp - ? WHERE id=?", (new_level, coin_cost, xp_cost, guild_id))
     conn.commit()
     conn.close()
-
 
 def get_top_guilds(limit=10):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT id, name, leader_id, level, xp, treasury, members_count
-                 FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?""", (limit,))
+    c.execute("SELECT id, name, leader_id, level, xp, treasury, members_count FROM guilds ORDER BY level DESC, treasury DESC LIMIT ?", (limit,))
     rows = c.fetchall()
     conn.close()
     return rows
@@ -648,7 +572,6 @@ def kick_guild_member(guild_id, user_id):
     conn.commit()
     conn.close()
 
-
 def is_guild_leader(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -657,17 +580,13 @@ def is_guild_leader(guild_id, user_id):
     conn.close()
     return row and row[0] == user_id
 
-
 # ============ ADMIN ============
-
 def add_admin_db(user_id, role="admin", permissions="", added_by=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT OR REPLACE INTO admins (user_id, role, permissions, added_by)
-                 VALUES (?,?,?,?)""", (user_id, role, permissions, added_by))
+    c.execute("INSERT OR REPLACE INTO admins (user_id, role, permissions, added_by) VALUES (?,?,?,?)", (user_id, role, permissions, added_by))
     conn.commit()
     conn.close()
-
 
 def remove_admin_db(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -675,7 +594,6 @@ def remove_admin_db(user_id):
     c.execute("DELETE FROM admins WHERE user_id=?", (user_id,))
     conn.commit()
     conn.close()
-
 
 def get_admin_db(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -685,7 +603,6 @@ def get_admin_db(user_id):
     conn.close()
     return row
 
-
 def get_all_admins_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -694,7 +611,6 @@ def get_all_admins_db():
     conn.close()
     return rows
 
-
 def set_admin_perms_db(user_id, permissions):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -702,17 +618,13 @@ def set_admin_perms_db(user_id, permissions):
     conn.commit()
     conn.close()
 
-
 # ============ HELP ============
-
 def set_help_db(key, text):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT OR REPLACE INTO help_content (key, text, updated_at)
-                 VALUES (?,?,CURRENT_TIMESTAMP)""", (key, text))
+    c.execute("INSERT OR REPLACE INTO help_content (key, text, updated_at) VALUES (?,?,CURRENT_TIMESTAMP)", (key, text))
     conn.commit()
     conn.close()
-
 
 def get_help_db(key):
     conn = sqlite3.connect(DB_NAME)
@@ -722,7 +634,6 @@ def get_help_db(key):
     conn.close()
     return row[0] if row else None
 
-
 def get_all_help_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -731,17 +642,13 @@ def get_all_help_db():
     conn.close()
     return rows
 
-
 # ============ CHAR IMAGES ============
-
 def set_char_image_db(char_name, image_url):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT OR REPLACE INTO char_images (char_name, image_url, updated_at)
-                 VALUES (?,?,CURRENT_TIMESTAMP)""", (char_name, image_url))
+    c.execute("INSERT OR REPLACE INTO char_images (char_name, image_url, updated_at) VALUES (?,?,CURRENT_TIMESTAMP)", (char_name, image_url))
     conn.commit()
     conn.close()
-
 
 def get_char_image_db(char_name):
     conn = sqlite3.connect(DB_NAME)
@@ -751,21 +658,16 @@ def get_char_image_db(char_name):
     conn.close()
     return row[0] if row else None
 
-
 def get_char_image(char_name):
     return get_char_image_db(char_name)
 
-
 # ============ FORCE CHANNELS ============
-
 def add_force_channel_db(channel_id, channel_name=""):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT OR REPLACE INTO force_channels (channel_id, channel_name)
-                 VALUES (?,?)""", (channel_id, channel_name))
+    c.execute("INSERT OR REPLACE INTO force_channels (channel_id, channel_name) VALUES (?,?)", (channel_id, channel_name))
     conn.commit()
     conn.close()
-
 
 def remove_force_channel_db(channel_id):
     conn = sqlite3.connect(DB_NAME)
@@ -773,7 +675,6 @@ def remove_force_channel_db(channel_id):
     c.execute("DELETE FROM force_channels WHERE channel_id=?", (channel_id,))
     conn.commit()
     conn.close()
-
 
 def get_force_channels_db():
     conn = sqlite3.connect(DB_NAME)
@@ -783,18 +684,13 @@ def get_force_channels_db():
     conn.close()
     return rows
 
-
 # ============ CUSTOM QUESTS ============
-
 def set_custom_quest_db(key, desc_text, target, reward):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""INSERT OR REPLACE INTO custom_quests
-                 (key, desc_text, target, reward, updated_at)
-                 VALUES (?,?,?,?,CURRENT_TIMESTAMP)""", (key, desc_text, target, reward))
+    c.execute("INSERT OR REPLACE INTO custom_quests (key, desc_text, target, reward, updated_at) VALUES (?,?,?,?,CURRENT_TIMESTAMP)", (key, desc_text, target, reward))
     conn.commit()
     conn.close()
-
 
 def get_custom_quests_db():
     conn = sqlite3.connect(DB_NAME)
@@ -804,7 +700,6 @@ def get_custom_quests_db():
     conn.close()
     return rows
 
-
 def get_custom_quest_db(key):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -813,9 +708,7 @@ def get_custom_quest_db(key):
     conn.close()
     return row
 
-
 # ============ WORLD ============
-
 def get_world_progress(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -829,14 +722,12 @@ def get_world_progress(user_id):
     conn.close()
     return row
 
-
 def update_world_region(user_id, region):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("UPDATE world_progress SET current_region=? WHERE user_id=?", (region, user_id))
     conn.commit()
     conn.close()
-
 
 def unlock_world_region(user_id, region):
     progress = get_world_progress(user_id)
@@ -847,13 +738,11 @@ def unlock_world_region(user_id, region):
         new_unlocked = ",".join(regions)
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute("UPDATE world_progress SET unlocked_regions=? WHERE user_id=?",
-                  (new_unlocked, user_id))
+        c.execute("UPDATE world_progress SET unlocked_regions=? WHERE user_id=?", (new_unlocked, user_id))
         conn.commit()
         conn.close()
         return True
     return False
-
 
 def increment_world_stat(user_id, stat):
     conn = sqlite3.connect(DB_NAME)
@@ -867,15 +756,12 @@ def increment_world_stat(user_id, stat):
     conn.commit()
     conn.close()
 
-
 def add_world_treasure(user_id, treasure_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO world_treasures (user_id, treasure_name) VALUES (?,?)",
-              (user_id, treasure_name))
+    c.execute("INSERT INTO world_treasures (user_id, treasure_name) VALUES (?,?)", (user_id, treasure_name))
     conn.commit()
     conn.close()
-
 
 def get_world_treasures(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -885,30 +771,24 @@ def get_world_treasures(user_id):
     conn.close()
     return rows
 
-
 def get_world_leaderboard(limit=10):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT user_id, total_explores, treasures_found, bosses_killed
-                 FROM world_progress ORDER BY total_explores DESC LIMIT ?""", (limit,))
+    c.execute("SELECT user_id, total_explores, treasures_found, bosses_killed FROM world_progress ORDER BY total_explores DESC LIMIT ?", (limit,))
     rows = c.fetchall()
     conn.close()
     return rows
-
 
 def get_unlocked_regions(user_id):
     progress = get_world_progress(user_id)
     unlocked = progress[1] or "forest"
     return unlocked.split(",")
 
-
 def get_current_region(user_id):
     progress = get_world_progress(user_id)
     return progress[2] or "forest"
 
-
 # ============ GUILD HELPERS ============
-
 GUILD_MAX_MEMBERS = {1: 5, 2: 10, 3: 15, 4: 20, 5: 30, 6: 40, 7: 50, 8: 75, 9: 100, 10: 150}
 GUILD_UPGRADE_COST = {1: (5000, 1000000), 2: (10000, 2500000), 3: (20000, 5000000), 4: (40000, 10000000), 5: (80000, 20000000), 6: (150000, 50000000), 7: (300000, 100000000), 8: (500000, 250000000), 9: (1000000, 500000000)}
 GUILD_MAX_TREASURY = {1: 5000000, 2: 10000000, 3: 25000000, 4: 50000000, 5: 100000000, 6: 200000000, 7: 500000000, 8: 1000000000, 9: 2500000000, 10: 5000000000}
@@ -938,6 +818,7 @@ def can_upgrade_guild(guild_id):
     if guild[5] < coin_cost:
         return False, f"❌ خزانه کافی نیست!\n💰 لازم: {coin_cost:,}\n💵 داری: {guild[5]:,}"
     return True, ""
+
 PERMISSIONS_LIST = ["manage_admins", "manage_coins", "manage_chars", "manage_quests", "manage_channels", "manage_help", "manage_images", "ban_users"]
 
 def has_permission_db(user_id, permission):
@@ -958,9 +839,7 @@ def get_admin_perms_list(user_id):
         return PERMISSIONS_LIST
     return [p for p in perms.split(",") if p]
 
-
 # ============ HELP KEYS ============
-
 HELP_KEYS = ["welcome", "main_menu", "battle_help", "shop_help", "guild_help", "quest_help", "jjk_help", "opm_help", "world_help", "general"]
 
 def get_default_help(key):
@@ -978,9 +857,7 @@ def get_default_help(key):
     }
     return defaults.get(key, "")
 
-
 # ============ OWNER RESET ============
-
 def reset_all_players():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -1002,7 +879,6 @@ def reset_all_players():
     finally:
         conn.close()
 
-
 def get_total_users_count():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -1011,13 +887,10 @@ def get_total_users_count():
     conn.close()
     return count
 
-
-# 🆕 تابعی که ارور می‌داد و بهش نیاز بود
 def get_shadow_slots(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("""SELECT COUNT(*) FROM shadows
-                 WHERE user_id=? AND char_name=?""", (user_id, char_name))
+    c.execute("SELECT COUNT(*) FROM shadows WHERE user_id=? AND char_name=?", (user_id, char_name))
     count = c.fetchone()[0]
     conn.close()
     return count
