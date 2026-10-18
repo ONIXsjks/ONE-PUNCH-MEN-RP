@@ -130,12 +130,13 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
     kb = []
     if char_name:
         if battle:
-            domain_active = battle.get("domain_active", 0) == 1
-            bankai_used = battle.get("bankai_used", 0) >= 1
-            geass_used = battle.get("geass_used", 0) >= 1
-            awakening_active = domain_active or bankai_used or geass_used
+            # 🆕 چک کردن اینکه آیا توی حالت اویکن (قلمرو/بانکای/گیاس) هست یا نه
+            awakening_active = (battle.get("domain_active", 0) == 1 or 
+                                battle.get("bankai_used", 0) >= 1 or 
+                                battle.get("geass_used", 0) >= 1)
             
             if awakening_active:
+                # 🆕 دکمه‌های اویکن (هر کدوم ۱ بار)
                 if battle.get("awaken_blue_used", 0) == 0:
                     kb.append([InlineKeyboardButton(f"🔵 {get_awaken_name(char_name, 'blue')} (۳۰)", callback_data="act_awaken_blue")])
                 if battle.get("awaken_red_used", 0) == 0:
@@ -143,6 +144,7 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
                 if battle.get("awaken_purple_used", 0) == 0:
                     kb.append([InlineKeyboardButton(f"🟣 {get_awaken_name(char_name, 'purple')} (۴۰)", callback_data="act_awaken_purple")])
             else:
+                # 🆕 دکمه‌های عادی
                 abs_data = get_character_abilities(char_name)
                 if abs_data:
                     ab1 = abs_data.get("ability_1", {}).get("name", "Ability 1")
@@ -158,21 +160,37 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
     
     if char_name and battle:
         has_domain, has_bankai = get_character_domain_bankai(char_name)
-        if has_domain and battle.get("domain_used", 0) == 0: 
-            kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
-        if has_bankai and battle.get("bankai_used", 0) == 0: 
-            kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
-        if char_name == "Sung Jin-Woo": 
-            kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
-        if char_name == "Son Goku": 
-            kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
-        if char_name == "Monkey D. Luffy": 
-            kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
-        if char_name in ABILITIES_CODEGEASS and battle.get("geass_used", 0) == 0: 
-            kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
+        awakening_active = (battle.get("domain_active", 0) == 1 or 
+                            battle.get("bankai_used", 0) >= 1 or 
+                            battle.get("geass_used", 0) >= 1)
         
-        if not has_domain and not has_bankai and char_name not in ABILITIES_CODEGEASS and not awakening_active:
-            kb.append([InlineKeyboardButton("🔥 اویکن (Awakening)", callback_data="act_awakening")])
+        # 🆕 فقط اگه توی حالت اویکن نباشه، دکمه‌های قلمرو/بانکای/گیاس رو نشون بده
+        if not awakening_active:
+            if has_domain and battle.get("domain_used", 0) == 0: 
+                kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
+            if has_bankai and battle.get("bankai_used", 0) == 0: 
+                kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
+            if char_name in ABILITIES_CODEGEASS and battle.get("geass_used", 0) == 0: 
+                kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
+            
+            if char_name == "Sung Jin-Woo": 
+                kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
+            if char_name == "Son Goku": 
+                kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
+            if char_name == "Monkey D. Luffy": 
+                kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
+            
+            # 🆕 اگه کاراکتر اصلاً قلمرو/بانکای/گیاس نداشت، دکمه اویکن رو نشون بده
+            if not has_domain and not has_bankai and char_name not in ABILITIES_CODEGEASS:
+                kb.append([InlineKeyboardButton("🔥 اویکن (Awakening)", callback_data="act_awakening")])
+        else:
+            # 🆕 توی حالت اویکن، فقط دکمه‌های فرم (برای گوکو و لوفی) و Arise رو نشون بده
+            if char_name == "Sung Jin-Woo": 
+                kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
+            if char_name == "Son Goku": 
+                kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
+            if char_name == "Monkey D. Luffy": 
+                kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
 
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
@@ -741,7 +759,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         status, text, battle = player_awaken_ability(battle, char, color)
         
         if status == "won":
-            update_battle(battle) # 🆕 سیو انرژی قبل از پایان
+            update_battle(battle)
             reward = finish_battle(user_id, battle["boss_name"], True)
             end_battle(battle["id"])
             final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin"
@@ -847,7 +865,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     
     if status == "won":
-        update_battle(battle) # 🆕 سیو انرژی قبل از پایان
+        update_battle(battle)
         reward = finish_battle(user_id, battle["boss_name"], True)
         arise_text = ""
         try:
@@ -860,7 +878,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
-        update_battle(battle) # 🆕 سیو انرژی قبل از پایان
+        update_battle(battle)
         end_battle(battle["id"])
         try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
