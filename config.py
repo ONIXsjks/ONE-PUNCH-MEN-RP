@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ============================================================
-# IMPORTS — Old Animes
+# IMPORTS — Old Animes (JJK, Bleach, OPM)
 # ============================================================
 from jjk_data import (
     CHARACTERS_JJK, CHAR_PRICES_JJK, ABILITIES_JJK,
@@ -18,7 +18,7 @@ from opm_data import (
 )
 
 # ============================================================
-# IMPORTS — 7 Animes
+# IMPORTS — 7 Animes (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man, Naruto, SDS)
 # ============================================================
 from aot_data import (
     CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
@@ -50,7 +50,7 @@ from sevendeadlysins_data import (
 )
 
 # ============================================================
-# IMPORTS — 8 Animes NEW
+# IMPORTS — 🆕 8 Animes NEW
 # ============================================================
 from onepiece_data import (
     CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE, ABILITIES_ONEPIECE,
@@ -121,7 +121,7 @@ LEVEL_COST = [
 SLOT_PRICES = {4: 5000, 5: 10000, 6: 18000, 7: 28000, 8: 40000}
 
 # ============================================================
-# ENERGY COSTS
+# 🆕 ENERGY SYSTEMS
 # ============================================================
 # JJK
 JJK_CE_MAX_BASE = 120
@@ -209,8 +209,51 @@ SAKAMOTO_STAMINA_MAX_CAP = 500
 SAKAMOTO_STAMINA_COST_ABILITY_1 = 20
 SAKAMOTO_STAMINA_COST_ABILITY_2 = 20
 SAKAMOTO_STAMINA_COST_ABILITY_3 = 40
+
+# AOT
+AOT_TITAN_MAX_BASE = 120
+AOT_TITAN_MAX_CAP = 500
+AOT_TITAN_COST_ABILITY_1 = 20
+AOT_TITAN_COST_ABILITY_2 = 20
+AOT_TITAN_COST_ABILITY_3 = 40
+
+# Black Clover
+BLACKCLOVER_MANA_MAX_BASE = 120
+BLACKCLOVER_MANA_MAX_CAP = 500
+BLACKCLOVER_MANA_COST_ABILITY_1 = 20
+BLACKCLOVER_MANA_COST_ABILITY_2 = 20
+BLACKCLOVER_MANA_COST_ABILITY_3 = 40
+
+# Berserk
+BERSERK_BLOODLUST_MAX_BASE = 120
+BERSERK_BLOODLUST_MAX_CAP = 500
+BERSERK_BLOODLUST_COST_ABILITY_1 = 20
+BERSERK_BLOODLUST_COST_ABILITY_2 = 20
+BERSERK_BLOODLUST_COST_ABILITY_3 = 40
+
+# Demon Slayer
+DEMONSLAYER_BREATH_MAX_BASE = 120
+DEMONSLAYER_BREATH_MAX_CAP = 500
+DEMONSLAYER_BREATH_COST_ABILITY_1 = 20
+DEMONSLAYER_BREATH_COST_ABILITY_2 = 20
+DEMONSLAYER_BREATH_COST_ABILITY_3 = 40
+
+# Chainsaw Man
+CHAINSAWMAN_BLOOD_MAX_BASE = 120
+CHAINSAWMAN_BLOOD_MAX_CAP = 500
+CHAINSAWMAN_BLOOD_COST_ABILITY_1 = 20
+CHAINSAWMAN_BLOOD_COST_ABILITY_2 = 20
+CHAINSAWMAN_BLOOD_COST_ABILITY_3 = 40
+
+# OPM
+OPM_POWER_MAX_BASE = 120
+OPM_POWER_MAX_CAP = 500
+OPM_POWER_COST_ABILITY_1 = 20
+OPM_POWER_COST_ABILITY_2 = 20
+OPM_POWER_COST_ABILITY_3 = 40
+
 # ============================================================
-# SHOP DATA
+# 🆕 SHOP DATA
 # ============================================================
 ABILITIES = {
     "Iron Skin": {"effect": "DEF +50", "effect_fa": "دفاع +۵۰", "price": 5000},
@@ -353,3 +396,19 @@ ABILITY_MULTIPLIERS = {
 }
 
 ADMIN_IDS = [7023690411]
+
+# ============================================================
+# 🆕 تابع قیمت‌گذاری ارتقای انرژی (بالانس شده)
+# ============================================================
+def get_energy_upgrade_cost(current_level):
+    if current_level < 10: return 50000          # 50 هزار
+    elif current_level < 20: return 100000       # 100 هزار
+    elif current_level < 30: return 250000       # 250 هزار
+    elif current_level < 40: return 500000       # 500 هزار
+    elif current_level < 50: return 1000000      # 1 میلیون
+    elif current_level < 60: return 2500000      # 2.5 میلیون
+    elif current_level < 70: return 5000000      # 5 میلیون
+    elif current_level < 80: return 10000000     # 10 میلیون
+    elif current_level < 90: return 20000000     # 20 میلیون
+    elif current_level < 100: return 35000000    # 35 میلیون
+    else: return 50000000                        # 50 میلیون
