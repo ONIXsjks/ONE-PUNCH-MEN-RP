@@ -115,179 +115,175 @@ def init_db():
         awaken_purple_used INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
-c.execute("""CREATE TABLE IF NOT EXISTS guilds (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE,
-    leader_id INTEGER,
-    level INTEGER DEFAULT 1,
-    xp INTEGER DEFAULT 0,
-    treasury INTEGER DEFAULT 0,
-    members_count INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS guild_members (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    guild_id INTEGER,
-    user_id INTEGER UNIQUE,
-    role TEXT DEFAULT 'member',
-    joined_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS guilds (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE,
+        leader_id INTEGER,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0,
+        treasury INTEGER DEFAULT 0,
+        members_count INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS admins (
-    user_id INTEGER PRIMARY KEY,
-    role TEXT DEFAULT 'admin',
-    permissions TEXT DEFAULT '',
-    added_by INTEGER,
-    added_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS guild_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER,
+        user_id INTEGER UNIQUE,
+        role TEXT DEFAULT 'member',
+        joined_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS help_content (
-    key TEXT PRIMARY KEY,
-    text TEXT,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS admins (
+        user_id INTEGER PRIMARY KEY,
+        role TEXT DEFAULT 'admin',
+        permissions TEXT DEFAULT '',
+        added_by INTEGER,
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS char_images (
-    char_name TEXT PRIMARY KEY,
-    image_url TEXT,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS help_content (
+        key TEXT PRIMARY KEY,
+        text TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    channel_id TEXT UNIQUE,
-    channel_name TEXT DEFAULT '',
-    added_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS char_images (
+        char_name TEXT PRIMARY KEY,
+        image_url TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
-    key TEXT PRIMARY KEY,
-    desc_text TEXT,
-    target INTEGER,
-    reward INTEGER,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        channel_id TEXT UNIQUE,
+        channel_name TEXT DEFAULT '',
+        added_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
-    user_id INTEGER PRIMARY KEY,
-    unlocked_regions TEXT DEFAULT 'forest',
-    current_region TEXT DEFAULT 'forest',
-    total_explores INTEGER DEFAULT 0,
-    treasures_found INTEGER DEFAULT 0,
-    bosses_killed INTEGER DEFAULT 0,
-    best_region TEXT DEFAULT 'forest',
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
+        key TEXT PRIMARY KEY,
+        desc_text TEXT,
+        target INTEGER,
+        reward INTEGER,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS world_treasures (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    treasure_name TEXT,
-    found_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
+        user_id INTEGER PRIMARY KEY,
+        unlocked_regions TEXT DEFAULT 'forest',
+        current_region TEXT DEFAULT 'forest',
+        total_explores INTEGER DEFAULT 0,
+        treasures_found INTEGER DEFAULT 0,
+        bosses_killed INTEGER DEFAULT 0,
+        best_region TEXT DEFAULT 'forest',
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS shadows (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    char_name TEXT,
-    shadow_name TEXT,
-    atk_bonus INTEGER DEFAULT 25,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-)""")
-# 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
-try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_blue_used INTEGER DEFAULT 0")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_red_used INTEGER DEFAULT 0")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_purple_used INTEGER DEFAULT 0")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
-except sqlite3.OperationalError: pass
+    c.execute("""CREATE TABLE IF NOT EXISTS world_treasures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        treasure_name TEXT,
+        found_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
 
-# 🆕 ستون‌های انرژی جدید
-try: c.execute("ALTER TABLE characters ADD COLUMN naruto_chakra INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_naruto_chakra INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN dragonball_ki INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_dragonball_ki INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN sololeveling_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sololeveling_mana INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN hxh_nen INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_hxh_nen INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN mushoku_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_mushoku_mana INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN tokyoghoul_rc INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_tokyoghoul_rc INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN sds_magic INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sds_magic INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN sakamoto_stamina INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sakamoto_stamina INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN aot_titan INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_aot_titan INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN blackclover_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_blackclover_mana INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN berserk_bloodlust INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_berserk_bloodlust INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN demonslayer_breath INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_demonslayer_breath INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN chainsawman_blood INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_chainsawman_blood INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN opm_power INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_opm_power INTEGER DEFAULT 120")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN castle_wave INTEGER DEFAULT 1")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN zombie_wave INTEGER DEFAULT 1")
-except: pass
-try: c.execute("ALTER TABLE characters ADD COLUMN tower_wave INTEGER DEFAULT 1")
-except: pass
+    c.execute("""CREATE TABLE IF NOT EXISTS shadows (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        char_name TEXT,
+        shadow_name TEXT,
+        atk_bonus INTEGER DEFAULT 25,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_blue_used INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_red_used INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_purple_used INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN naruto_chakra INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_naruto_chakra INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN dragonball_ki INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_dragonball_ki INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN sololeveling_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sololeveling_mana INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN hxh_nen INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_hxh_nen INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN mushoku_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_mushoku_mana INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN tokyoghoul_rc INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_tokyoghoul_rc INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN sds_magic INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sds_magic INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN sakamoto_stamina INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sakamoto_stamina INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN aot_titan INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_aot_titan INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN blackclover_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_blackclover_mana INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN berserk_bloodlust INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_berserk_bloodlust INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN demonslayer_breath INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_demonslayer_breath INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN chainsawman_blood INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_chainsawman_blood INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN opm_power INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_opm_power INTEGER DEFAULT 120")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN castle_wave INTEGER DEFAULT 1")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN zombie_wave INTEGER DEFAULT 1")
+    except: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN tower_wave INTEGER DEFAULT 1")
+    except: pass
 
-# 🆕 محدود کردن اتک و HP برای بالانس بازی
-try:
-    c.execute("UPDATE characters SET atk = 25000 WHERE atk > 25000")
-    c.execute("UPDATE characters SET hp = 50000 WHERE hp > 50000")
-except Exception as e:
-    print(f"Balance Error: {e}")
+    try:
+        c.execute("UPDATE characters SET atk = 25000 WHERE atk > 25000")
+        c.execute("UPDATE characters SET hp = 50000 WHERE hp > 50000")
+    except Exception as e:
+        print(f"Balance Error: {e}")
 
-try:
-    c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-    c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-    c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-    c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-except Exception as e:
-    print(f"Rename DB error: {e}")
+    try:
+        c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+        c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
+    except Exception as e:
+        print(f"Rename DB error: {e}")
 
-# 🆕 ساخت جدول سیستم روح
-try:
-    from soul_system import init_soul_db
-    init_soul_db()
-except Exception as e:
-    print(f"Soul DB Init Error: {e}")
+    try:
+        from soul_system import init_soul_db
+        init_soul_db()
+    except Exception as e:
+        print(f"Soul DB Init Error: {e}")
 
-conn.commit()
-conn.close()
-# ============ USERS ============
+    conn.commit()
+    conn.close()
+
 def get_user(user_id, username=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -339,7 +335,6 @@ def spend_coins(user_id, amount):
     add_coins(user_id, -amount)
     return True
 
-# ============ ACTIVE BATTLES ============
 def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -430,8 +425,6 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
-
-# ============ ABILITIES & ITEMS ============
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -470,7 +463,7 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
-# ============ BUFFS ============
+
 def get_user_buffs(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -486,7 +479,6 @@ def remove_user_buff(user_id, char_name, buff_name):
     conn.commit()
     conn.close()
 
-# ============ SHADOWS (Arise System) ============
 def add_shadow(user_id, char_name, shadow_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -518,7 +510,6 @@ def get_shadows_atk_bonus(user_id, char_name):
     conn.close()
     return total
 
-# ============ GUILD ============
 def get_guild_by_name(name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -651,7 +642,6 @@ def is_guild_leader(guild_id, user_id):
     conn.close()
     return row and row[0] == user_id
 
-# ============ ADMIN ============
 def add_admin_db(user_id, role="admin", permissions="", added_by=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -689,7 +679,6 @@ def set_admin_perms_db(user_id, permissions):
     conn.commit()
     conn.close()
 
-# ============ HELP ============
 def set_help_db(key, text):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -713,7 +702,6 @@ def get_all_help_db():
     conn.close()
     return rows
 
-# ============ CHAR IMAGES ============
 def set_char_image_db(char_name, image_url):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -732,7 +720,6 @@ def get_char_image_db(char_name):
 def get_char_image(char_name):
     return get_char_image_db(char_name)
 
-# ============ FORCE CHANNELS ============
 def add_force_channel_db(channel_id, channel_name=""):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -755,7 +742,6 @@ def get_force_channels_db():
     conn.close()
     return rows
 
-# ============ CUSTOM QUESTS ============
 def set_custom_quest_db(key, desc_text, target, reward):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -779,7 +765,6 @@ def get_custom_quest_db(key):
     conn.close()
     return row
 
-# ============ WORLD ============
 def get_world_progress(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -859,7 +844,6 @@ def get_current_region(user_id):
     progress = get_world_progress(user_id)
     return progress[2] or "forest"
 
-# ============ GUILD HELPERS ============
 GUILD_MAX_MEMBERS = {1: 5, 2: 10, 3: 15, 4: 20, 5: 30, 6: 40, 7: 50, 8: 75, 9: 100, 10: 150}
 GUILD_UPGRADE_COST = {1: (5000, 1000000), 2: (10000, 2500000), 3: (20000, 5000000), 4: (40000, 10000000), 5: (80000, 20000000), 6: (150000, 50000000), 7: (300000, 100000000), 8: (500000, 250000000), 9: (1000000, 500000000)}
 GUILD_MAX_TREASURY = {1: 5000000, 2: 10000000, 3: 25000000, 4: 50000000, 5: 100000000, 6: 200000000, 7: 500000000, 8: 1000000000, 9: 2500000000, 10: 5000000000}
@@ -910,7 +894,6 @@ def get_admin_perms_list(user_id):
         return PERMISSIONS_LIST
     return [p for p in perms.split(",") if p]
 
-# ============ HELP KEYS ============
 HELP_KEYS = ["welcome", "main_menu", "battle_help", "shop_help", "guild_help", "quest_help", "jjk_help", "opm_help", "world_help", "general"]
 
 def get_default_help(key):
@@ -928,7 +911,6 @@ def get_default_help(key):
     }
     return defaults.get(key, "")
 
-# ============ OWNER RESET ============
 def reset_all_players():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
