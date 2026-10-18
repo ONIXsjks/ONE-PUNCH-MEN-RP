@@ -196,92 +196,98 @@ def init_db():
         atk_bonus INTEGER DEFAULT 25,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
+# 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
+try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_blue_used INTEGER DEFAULT 0")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_red_used INTEGER DEFAULT 0")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_purple_used INTEGER DEFAULT 0")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
+except sqlite3.OperationalError: pass
 
-    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_blue_used INTEGER DEFAULT 0")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_red_used INTEGER DEFAULT 0")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_purple_used INTEGER DEFAULT 0")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
+# 🆕 ستون‌های انرژی جدید
+try: c.execute("ALTER TABLE characters ADD COLUMN naruto_chakra INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_naruto_chakra INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN dragonball_ki INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_dragonball_ki INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN sololeveling_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sololeveling_mana INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN hxh_nen INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_hxh_nen INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN mushoku_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_mushoku_mana INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN tokyoghoul_rc INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_tokyoghoul_rc INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN sds_magic INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sds_magic INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN sakamoto_stamina INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sakamoto_stamina INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN aot_titan INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_aot_titan INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN blackclover_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_blackclover_mana INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN berserk_bloodlust INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_berserk_bloodlust INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN demonslayer_breath INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_demonslayer_breath INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN chainsawman_blood INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_chainsawman_blood INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN opm_power INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_opm_power INTEGER DEFAULT 120")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN castle_wave INTEGER DEFAULT 1")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN zombie_wave INTEGER DEFAULT 1")
+except: pass
+try: c.execute("ALTER TABLE characters ADD COLUMN tower_wave INTEGER DEFAULT 1")
+except: pass
 
-    # 🆕 ستون‌های انرژی جدید
-    try: c.execute("ALTER TABLE characters ADD COLUMN naruto_chakra INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_naruto_chakra INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN dragonball_ki INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_dragonball_ki INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN sololeveling_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sololeveling_mana INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN hxh_nen INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_hxh_nen INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN mushoku_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_mushoku_mana INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN tokyoghoul_rc INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_tokyoghoul_rc INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN sds_magic INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sds_magic INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN sakamoto_stamina INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sakamoto_stamina INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN aot_titan INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_aot_titan INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN blackclover_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_blackclover_mana INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN berserk_bloodlust INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_berserk_bloodlust INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN demonslayer_breath INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_demonslayer_breath INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN chainsawman_blood INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_chainsawman_blood INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN opm_power INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_opm_power INTEGER DEFAULT 120")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN castle_wave INTEGER DEFAULT 1")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN zombie_wave INTEGER DEFAULT 1")
-    except: pass
-    try: c.execute("ALTER TABLE characters ADD COLUMN tower_wave INTEGER DEFAULT 1")
-    except: pass
+# 🆕 محدود کردن اتک و HP برای بالانس بازی
+try:
+    c.execute("UPDATE characters SET atk = 25000 WHERE atk > 25000")
+    c.execute("UPDATE characters SET hp = 50000 WHERE hp > 50000")
+except Exception as e:
+    print(f"Balance Error: {e}")
 
-    # 🆕 محدود کردن اتک و HP برای بالانس بازی
-    try:
-        c.execute("UPDATE characters SET atk = 25000 WHERE atk > 25000")
-        c.execute("UPDATE characters SET hp = 50000 WHERE hp > 50000")
-    except Exception as e:
-        print(f"Balance Error: {e}")
+try:
+    c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+    c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+    c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
+    c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
+except Exception as e:
+    print(f"Rename DB error: {e}")
 
-    try:
-        c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-        c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-        c.execute("UPDATE buffs SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
-        c.execute("UPDATE active_battles SET boss_name = 'Harley Quinn' WHERE boss_name = 'King'")
-    except Exception as e:
-        print(f"Rename DB error: {e}")
+# 🆕 ساخت جدول سیستم روح
+try:
+    from soul_system import init_soul_db
+    init_soul_db()
+except Exception as e:
+    print(f"Soul DB Init Error: {e}")
 
-    conn.commit()
-    conn.close()
+conn.commit()
+conn.close()
 # ============ USERS ============
 def get_user(user_id, username=None):
     conn = sqlite3.connect(DB_NAME)
@@ -629,6 +635,7 @@ def get_top_guilds(limit=10):
     rows = c.fetchall()
     conn.close()
     return rows
+
 def kick_guild_member(guild_id, user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
