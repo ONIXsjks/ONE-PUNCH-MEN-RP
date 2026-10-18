@@ -15,20 +15,23 @@ from config import (DB_NAME, ABILITIES_3, DOMAINS, BANKAI, ABILITIES, BUFFS, ITE
                     HAKI_COST_ABILITY_1, HAKI_COST_ABILITY_2, HAKI_COST_ABILITY_3, ABILITIES_ONEPIECE)
 
 from onepiece_data import ONEPIECE_BOSSES, ONEPIECE_FODDER
-from dragonball_data import DRAGONBALL_BOSSES, DRAGONBALL_FODDER
-from hxh_data import HXH_BOSSES, HXH_FODDER
-from sakamoto_data import SAKAMOTO_BOSSES, SAKAMOTO_FODDER
-from sololeveling_data import SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER
-from mushoku_data import MUSHOKU_BOSSES, MUSHOKU_FODDER
+from dragonball_data import DRAGONBALL_BOSSES, DRAGONBALL_FODDER, ABILITIES_DRAGONBALL
+from hxh_data import HXH_BOSSES, HXH_FODDER, ABILITIES_HXH
+from sakamoto_data import SAKAMOTO_BOSSES, SAKAMOTO_FODDER, ABILITIES_SAKAMOTO
+from sololeveling_data import SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER, ABILITIES_SOLOLEVELING
+from mushoku_data import MUSHOKU_BOSSES, MUSHOKU_FODDER, ABILITIES_MUSHOKU
 from codegeass_data import CODEGEASS_BOSSES, CODEGEASS_FODDER
-from tokyoghoul_data import TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER
+from tokyoghoul_data import TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER, ABILITIES_TOKYOGHOUL
 from jjk_data import FODDER_JJK
 from bleach_data import BLEACH_FODDER
-from aot_data import AOT_FODDER
-from blackclover_data import BLACKCLOVER_FODDER
-from berserk_data import BERSERK_FODDER
-from demonslayer_data import DEMONSLAYER_FODDER
-from chainsawman_data import CHAINSAWMAN_FODDER
+from aot_data import AOT_FODDER, ABILITIES_AOT
+from blackclover_data import BLACKCLOVER_FODDER, ABILITIES_BLACKCLOVER
+from berserk_data import BERSERK_FODDER, ABILITIES_BERSERK
+from demonslayer_data import DEMONSLAYER_FODDER, ABILITIES_DEMONSLAYER
+from chainsawman_data import CHAINSAWMAN_FODDER, ABILITIES_CHAINSAWMAN
+from naruto_data import ABILITIES_NARUTO
+from sevendeadlysins_data import ABILITIES_SDS
+from opm_data import ABILITIES_OPM
 
 from database import (add_coins, get_battle, update_battle, end_battle,
                       get_coins, get_shadows_atk_bonus)
@@ -399,6 +402,12 @@ def player_ability(battle, char, ability_name):
     if char_name in ABILITIES_MUSHOKU: energy_types.append("mushoku")
     if char_name in ABILITIES_TOKYOGHOUL: energy_types.append("tg")
     if char_name in ABILITIES_SDS: energy_types.append("sds")
+    if char_name in ABILITIES_AOT: energy_types.append("aot")
+    if char_name in ABILITIES_BLACKCLOVER: energy_types.append("bc")
+    if char_name in ABILITIES_BERSERK: energy_types.append("berserk")
+    if char_name in ABILITIES_DEMONSLAYER: energy_types.append("ds")
+    if char_name in ABILITIES_CHAINSAWMAN: energy_types.append("csm")
+    if char_name in ABILITIES_OPM: energy_types.append("opm")
 
     if energy_types:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
@@ -408,43 +417,55 @@ def player_ability(battle, char, ability_name):
             elif found_key == "ability_1": cost = JJK_CE_COST_ABILITY_1
             elif found_key == "ability_2": cost = JJK_CE_COST_ABILITY_2
             elif found_key == "ability_3": cost = JJK_CE_COST_ABILITY_3
-            energy_col, max_col = "cursed_energy", "max_cursed_energy"
+            energy_col = "cursed_energy"
         elif "bleach" in energy_types:
             c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0
             if ability_name == "BANKAI": cost = BLEACH_REI_COST_BANKAI
             elif found_key == "ability_1": cost = BLEACH_REI_COST_ABILITY_1
             elif found_key == "ability_2": cost = BLEACH_REI_COST_ABILITY_2
             elif found_key == "ability_3": cost = BLEACH_REI_COST_ABILITY_3
-            energy_col, max_col = "reiatsu", "max_reiatsu"
+            energy_col = "reiatsu"
         elif "geass" in energy_types:
             c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0
             if ability_name == "ULTIMATE_GEASS": cost = GEASS_COST_ULTIMATE
             elif found_key == "ability_1": cost = GEASS_COST_ABILITY_1
             elif found_key == "ability_2": cost = GEASS_COST_ABILITY_2
             elif found_key == "ability_3": cost = GEASS_COST_ABILITY_3
-            energy_col, max_col = "geass_power", "max_geass_power"
+            energy_col = "geass_power"
         elif "op" in energy_types:
             c.execute("SELECT haki, max_haki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0
             if found_key == "ability_1": cost = HAKI_COST_ABILITY_1
             elif found_key == "ability_2": cost = HAKI_COST_ABILITY_2
             elif found_key == "ability_3": cost = HAKI_COST_ABILITY_3
-            energy_col, max_col = "haki", "max_haki"
+            energy_col = "haki"
         elif "db" in energy_types:
-            c.execute("SELECT dragonball_ki, max_dragonball_ki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "dragonball_ki", "max_dragonball_ki"
+            c.execute("SELECT dragonball_ki, max_dragonball_ki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "dragonball_ki"
         elif "hxh" in energy_types:
-            c.execute("SELECT hxh_nen, max_hxh_nen FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "hxh_nen", "max_hxh_nen"
+            c.execute("SELECT hxh_nen, max_hxh_nen FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "hxh_nen"
         elif "sakamoto" in energy_types:
-            c.execute("SELECT sakamoto_stamina, max_sakamoto_stamina FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "sakamoto_stamina", "max_sakamoto_stamina"
+            c.execute("SELECT sakamoto_stamina, max_sakamoto_stamina FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "sakamoto_stamina"
         elif "solo" in energy_types:
-            c.execute("SELECT sololeveling_mana, max_sololeveling_mana FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "sololeveling_mana", "max_sololeveling_mana"
+            c.execute("SELECT sololeveling_mana, max_sololeveling_mana FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "sololeveling_mana"
         elif "mushoku" in energy_types:
-            c.execute("SELECT mushoku_mana, max_mushoku_mana FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "mushoku_mana", "max_mushoku_mana"
+            c.execute("SELECT mushoku_mana, max_mushoku_mana FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "mushoku_mana"
         elif "tg" in energy_types:
-            c.execute("SELECT tokyoghoul_rc, max_tokyoghoul_rc FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "tokyoghoul_rc", "max_tokyoghoul_rc"
+            c.execute("SELECT tokyoghoul_rc, max_tokyoghoul_rc FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "tokyoghoul_rc"
         elif "sds" in energy_types:
-            c.execute("SELECT sds_magic, max_sds_magic FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "sds_magic", "max_sds_magic"
+            c.execute("SELECT sds_magic, max_sds_magic FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "sds_magic"
+        elif "aot" in energy_types:
+            c.execute("SELECT aot_titan, max_aot_titan FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "aot_titan"
+        elif "bc" in energy_types:
+            c.execute("SELECT blackclover_mana, max_blackclover_mana FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "blackclover_mana"
+        elif "berserk" in energy_types:
+            c.execute("SELECT berserk_bloodlust, max_berserk_bloodlust FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "berserk_bloodlust"
+        elif "ds" in energy_types:
+            c.execute("SELECT demonslayer_breath, max_demonslayer_breath FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "demonslayer_breath"
+        elif "csm" in energy_types:
+            c.execute("SELECT chainsawman_blood, max_chainsawman_blood FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "chainsawman_blood"
+        elif "opm" in energy_types:
+            c.execute("SELECT opm_power, max_opm_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "opm_power"
         else:
-            c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col, max_col = "cursed_energy", "max_cursed_energy"
+            c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "cursed_energy"
 
         char_level = char[4]; level_penalty = (char_level // 10) * 2; cost += level_penalty
             
@@ -675,44 +696,39 @@ def build_battle_message(battle, char):
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
         if shadow_bonus > 0: text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
-    if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
-        try:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); conn.close()
-            if row: text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[1]}"
-        except: pass
-    elif char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH:
-        try:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); conn.close()
-            if row: text += f"\n\n👻 ریستو: {row[0]}/{row[1]}"
-        except: pass
-    elif char[2] in ABILITIES_CODEGEASS:
-        try:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); conn.close()
-            if row: text += f"\n\n👁️ گیاس: {row[0]}/{row[1]}"
-        except: pass
-    elif char[2] in ABILITIES_ONEPIECE:
-        try:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT haki, max_haki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); conn.close()
-            if row: text += f"\n\n🌊 هاکی: {row[0]}/{row[1]}"
-        except: pass
-    else:
-        try:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT naruto_chakra, max_naruto_chakra, dragonball_ki, max_dragonball_ki, sololeveling_mana, max_sololeveling_mana, hxh_nen, max_hxh_nen, mushoku_mana, max_mushoku_mana, tokyoghoul_rc, max_tokyoghoul_rc, sds_magic, max_sds_magic, sakamoto_stamina, max_sakamoto_stamina FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); conn.close()
-            if row:
-                if char[2] in ABILITIES_NARUTO: text += f"\n\n🍥 چاکرا: {row[0]}/{row[1]}"
-                elif char[2] in ABILITIES_DRAGONBALL: text += f"\n\n🐉 کی: {row[2]}/{row[3]}"
-                elif char[2] in ABILITIES_SOLOLEVELING: text += f"\n\n🗡️ مانا: {row[4]}/{row[5]}"
-                elif char[2] in ABILITIES_HXH: text += f"\n\n🎯 نن: {row[6]}/{row[7]}"
-                elif char[2] in ABILITIES_MUSHOKU: text += f"\n\n🌀 مانا: {row[8]}/{row[9]}"
-                elif char[2] in ABILITIES_TOKYOGHOUL: text += f"\n\n👁️ RC: {row[10]}/{row[11]}"
-                elif char[2] in ABILITIES_SDS: text += f"\n\n⚔️ جادو: {row[12]}/{row[13]}"
-                elif char[2] in ABILITIES_SAKAMOTO: text += f"\n\n🍡 استقامت: {row[14]}/{row[15]}"
-        except: pass
+    
+    # 🆕 نمایش انرژی‌ها در نبرد
+    try:
+        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+        c.execute("""SELECT cursed_energy, max_cursed_energy, reiatsu, max_reiatsu, geass_power, max_geass_power, haki, max_haki, 
+                            naruto_chakra, max_naruto_chakra, dragonball_ki, max_dragonball_ki, sololeveling_mana, max_sololeveling_mana, 
+                            hxh_nen, max_hxh_nen, mushoku_mana, max_mushoku_mana, tokyoghoul_rc, max_tokyoghoul_rc, sds_magic, max_sds_magic, 
+                            sakamoto_stamina, max_sakamoto_stamina, aot_titan, max_aot_titan, blackclover_mana, max_blackclover_mana, 
+                            berserk_bloodlust, max_berserk_bloodlust, demonslayer_breath, max_demonslayer_breath, chainsawman_blood, max_chainsawman_blood, 
+                            opm_power, max_opm_power 
+                     FROM characters WHERE user_id=? AND is_active=1""", (battle["uid"],))
+        row = c.fetchone(); conn.close()
+        if row:
+            if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[1]}"
+            elif char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: text += f"\n\n👻 ریستو: {row[2]}/{row[3]}"
+            elif char[2] in ABILITIES_CODEGEASS: text += f"\n\n👁️ گیاس: {row[4]}/{row[5]}"
+            elif char[2] in ABILITIES_ONEPIECE: text += f"\n\n🌊 هاکی: {row[6]}/{row[7]}"
+            elif char[2] in ABILITIES_NARUTO: text += f"\n\n🍥 چاکرا: {row[8]}/{row[9]}"
+            elif char[2] in ABILITIES_DRAGONBALL: text += f"\n\n🐉 کی: {row[10]}/{row[11]}"
+            elif char[2] in ABILITIES_SOLOLEVELING: text += f"\n\n🗡️ مانا: {row[12]}/{row[13]}"
+            elif char[2] in ABILITIES_HXH: text += f"\n\n🎯 نن: {row[14]}/{row[15]}"
+            elif char[2] in ABILITIES_MUSHOKU: text += f"\n\n🌀 مانا: {row[16]}/{row[17]}"
+            elif char[2] in ABILITIES_TOKYOGHOUL: text += f"\n\n👁️ RC: {row[18]}/{row[19]}"
+            elif char[2] in ABILITIES_SDS: text += f"\n\n⚔️ جادو: {row[20]}/{row[21]}"
+            elif char[2] in ABILITIES_SAKAMOTO: text += f"\n\n🍡 استقامت: {row[22]}/{row[23]}"
+            elif char[2] in ABILITIES_AOT: text += f"\n\n⚡ قدرت تایتان: {row[24]}/{row[25]}"
+            elif char[2] in ABILITIES_BLACKCLOVER: text += f"\n\n🍀 مانا: {row[26]}/{row[27]}"
+            elif char[2] in ABILITIES_BERSERK: text += f"\n\n🩸 خون‌آشامی: {row[28]}/{row[29]}"
+            elif char[2] in ABILITIES_DEMONSLAYER: text += f"\n\n🌸 نفس: {row[30]}/{row[31]}"
+            elif char[2] in ABILITIES_CHAINSAWMAN: text += f"\n\n🪚 خون: {row[32]}/{row[33]}"
+            elif char[2] in ABILITIES_OPM: text += f"\n\n💪 قدرت مطلق: {row[34]}/{row[35]}"
+    except: pass
+
     if battle.get("domain_active", 0) == 1: text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
     if battle.get("bankai_used", 0) >= 1:
         bankai = battle.get("bankai_data", {}); text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
@@ -752,6 +768,12 @@ def finish_battle(uid, boss_name, won):
         c.execute("UPDATE characters SET tokyoghoul_rc = max_tokyoghoul_rc WHERE user_id=? AND is_active=1", (uid,))
         c.execute("UPDATE characters SET sds_magic = max_sds_magic WHERE user_id=? AND is_active=1", (uid,))
         c.execute("UPDATE characters SET sakamoto_stamina = max_sakamoto_stamina WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET aot_titan = max_aot_titan WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET blackclover_mana = max_blackclover_mana WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET berserk_bloodlust = max_berserk_bloodlust WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET demonslayer_breath = max_demonslayer_breath WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET chainsawman_blood = max_chainsawman_blood WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
         conn.commit(); conn.close()
         try:
             from quests import update_quest_progress; update_quest_progress(uid, "win_3_bosses"); update_quest_progress(uid, "win_5_bosses")
@@ -781,5 +803,11 @@ def finish_battle(uid, boss_name, won):
         c.execute("UPDATE characters SET tokyoghoul_rc = max_tokyoghoul_rc WHERE user_id=? AND is_active=1", (uid,))
         c.execute("UPDATE characters SET sds_magic = max_sds_magic WHERE user_id=? AND is_active=1", (uid,))
         c.execute("UPDATE characters SET sakamoto_stamina = max_sakamoto_stamina WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET aot_titan = max_aot_titan WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET blackclover_mana = max_blackclover_mana WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET berserk_bloodlust = max_berserk_bloodlust WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET demonslayer_breath = max_demonslayer_breath WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET chainsawman_blood = max_chainsawman_blood WHERE user_id=? AND is_active=1", (uid,))
+        c.execute("UPDATE characters SET opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
         conn.commit(); conn.close()
         return 0
