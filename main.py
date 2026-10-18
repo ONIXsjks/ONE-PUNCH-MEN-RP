@@ -96,7 +96,7 @@ from modes import (modes_cmd, castle_cmd, castle_callback, zombie_cmd, zombie_ca
 from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 from gift import send_gift, get_gift_history, get_top_givers
 
-# 🆕 تابع کمکی برای ساخت کادر (برای دکمه اویکن در main.py)
+# 🆕 تابع کمکی برای ساخت کادر
 def box_title(text, width=26):
     pad = width - len(text)
     if pad < 0: text = text[:width]; pad = 0
@@ -270,6 +270,11 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = get_user(user_id)
     username = user[1] if user and user[1] else "ناشناس"
     char_name, rank, level, hp, atk, dfn, dodge, slots = char[2], char[3], char[4], char[5], char[6], char[7], char[8], char[9]
+    
+    # 🆕 سقف HP و اتک در پروفایل
+    hp = min(hp, 50000)
+    atk = min(atk, 25000)
+    
     has_domain, has_bankai = get_character_domain_bankai(char_name)
     domain_name = f" - {DOMAINS_JJK[char_name]['name']}" if has_domain else ""
     bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}" if has_bankai else ""
