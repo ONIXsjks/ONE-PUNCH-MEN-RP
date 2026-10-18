@@ -36,6 +36,36 @@ from opm_data import ABILITIES_OPM
 from database import (add_coins, get_battle, update_battle, end_battle,
                       get_coins, get_shadows_atk_bonus)
 
+# 🆕 اسم‌های مخصوص اویکن برای هر کاراکتر
+AWAKEN_NAMES = {
+    "Gojo Satoru": {"blue": "Blue", "red": "Black Flash", "purple": "Hollow Purple (200%)"},
+    "Sukuna": {"blue": "Dismantle", "red": "Cleave", "purple": "Malevolent Shrine"},
+    "Yuji Itadori": {"blue": "Divergent Fist", "red": "Black Flash", "purple": "Sukuna's Vessel"},
+    "Megumi Fushiguro": {"blue": "Divine Dogs", "red": "Mahoraga", "purple": "Chimera Shadow Garden"},
+    "Mahito": {"blue": "Idle Transfiguration", "red": "Soul Multiplicity", "purple": "Self-Embodiment of Perfection"},
+    "Ichigo Kurosaki": {"blue": "Getsuga Tensho", "red": "Mugetsu", "purple": "True Bankai"},
+    "Sosuke Aizen": {"blue": "Kyoka Suigetsu", "red": "Hogyoku Fusion", "purple": "Final Getsuga Tensho"},
+    "Byakuya Kuchiki": {"blue": "Senbonzakura", "red": "Senbonzakura Kageyoshi", "purple": "Ikka Senjinka"},
+    "Monkey D. Luffy": {"blue": "Gum-Gum Red Roc", "red": "Gum-Gum Bajrang Gun", "purple": "Sun God Nika (200%)"},
+    "Roronoa Zoro": {"blue": "Three-Sword Style", "red": "King of Hell", "purple": "Asura"},
+    "Naruto Uzumaki": {"blue": "Rasengan", "red": "Rasen-Shuriken", "purple": "Baryon Mode"},
+    "Sasuke Uchiha": {"blue": "Chidori", "red": "Amaterasu", "purple": "Indra's Arrow"},
+    "Son Goku": {"blue": "Kamehameha", "red": "Spirit Bomb", "purple": "Ultra Instinct"},
+    "Vegeta": {"blue": "Final Flash", "red": "Big Bang Attack", "purple": "Ultra Ego"},
+    "Sung Jin-Woo": {"blue": "Shadow Exchange", "red": "Ruler's Authority", "purple": "Shadow Monarch (200%)"},
+    "Eren Yeager": {"blue": "Attack Titan", "red": "Founding Titan", "purple": "Rumbling"},
+    "Levi Ackerman": {"blue": "Spinning Slash", "red": "Thunder Spear", "purple": "Humanity's Strongest"},
+    "Asta": {"blue": "Black Hurricane", "red": "Black Slash", "purple": "Devil Union"},
+    "Tanjiro Kamado": {"blue": "Water Breathing", "red": "Hinokami Kagura", "purple": "Sun Breathing 13th Form"},
+    "Lelouch Lamperouge": {"blue": "Absolute Command", "red": "Geass of the King", "purple": "Ragnarok Connection"},
+}
+
+def get_awaken_name(char_name, color):
+    names = AWAKEN_NAMES.get(char_name)
+    if names:
+        return names.get(color, f"Awaken {color.capitalize()}")
+    return f"Awaken {color.capitalize()}"
+
 # 🆕 تابع جایزه مودهای بقا
 def get_reward_by_wave(wave):
     if wave <= 10: return 20000
@@ -278,7 +308,6 @@ def player_attack(battle, char):
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    # 🆕 ضریب حمله ساده 1.5 برای همه، مگر اینکه کاراکتر خاصی باشه
     mult = 1.5
     if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: mult = 1.2
     elif char[2] == "Sung Jin-Woo": mult = 1.5
