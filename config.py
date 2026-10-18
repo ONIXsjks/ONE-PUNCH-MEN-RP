@@ -412,3 +412,7 @@ def get_energy_upgrade_cost(current_level):
     elif current_level < 90: return 20000000     # 20 میلیون
     elif current_level < 100: return 35000000    # 35 میلیون
     else: return 50000000                        # 50 میلیون
+
+# 🆕 هزینه فرم گوکو و لوفی
+FORM_COST_GOKU = 30
+FORM_COST_LUFFY = 30
