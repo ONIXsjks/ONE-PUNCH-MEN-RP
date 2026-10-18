@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMe
 from telegram.ext import (Application, CommandHandler, ContextTypes,
                           CallbackQueryHandler, MessageHandler, filters)
 from config import *
-from database import (init_db, get_user, add_coins, get_coins,
+from database import (init_db, get_user, add_coins, get_coins, spend_coins,
                       create_battle, get_battle, update_battle, end_battle,
                       get_abilities, get_items, use_item, get_username,
                       get_user_guild, get_top_guilds,
@@ -171,7 +171,6 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
 
-# 🆕 قفل منوها
 def save_menu_owner(ctx, menu_name, user_id):
     ctx.user_data[f"owner_{menu_name}"] = user_id
 
@@ -235,30 +234,30 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
             c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
             if row: energy_text = f"\n🔮 **انرژی نفرینی:** {row[0]}/{row[1]}\n"
-        except: pass
+        except Exception: pass
     elif char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH:
         try:
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
             c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
             if row: energy_text = f"\n👻 **ریستو:** {row[0]}/{row[1]}\n"
-        except: pass
+        except Exception: pass
     elif char_name in ABILITIES_CODEGEASS:
         try:
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
             c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
             if row: energy_text = f"\n👁️ **گیاس:** {row[0]}/{row[1]}\n"
-        except: pass
+        except Exception: pass
     elif char_name in ABILITIES_ONEPIECE:
         try:
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
             c.execute("SELECT haki, max_haki FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
             if row: energy_text = f"\n🌊 **هاکی:** {row[0]}/{row[1]}\n"
-        except: pass
+        except Exception: pass
     else:
         # 🆕 نمایش انرژی‌های جدید
         try:
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute("SELECT naruto_chakra, max_naruto_chakra, dragonball_ki, max_dragonball_ki, sololeveling_mana, max_sololeveling_mana, hxh_nen, max_hxh_nen, mushoku_mana, max_mushoku_mana, tokyoghoul_rc, max_tokyoghoul_rc, sds_magic, max_sds_magic, sakamoto_stamina, max_sakamoto_stamina FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
+            c.execute("SELECT naruto_chakra, max_naruto_chakra, dragonball_ki, max_dragonball_ki, sololeveling_mana, max_sololeveling_mana, hxh_nen, max_hxh_nen, mushoku_mana, max_mushoku_mana, tokyoghoul_rc, max_tokyoghoul_rc, sds_magic, max_sds_magic, sakamoto_stamina, max_sakamoto_stamina, aot_titan, max_aot_titan, blackclover_mana, max_blackclover_mana, berserk_bloodlust, max_berserk_bloodlust, demonslayer_breath, max_demonslayer_breath, chainsawman_blood, max_chainsawman_blood, opm_power, max_opm_power FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone(); conn.close()
             if row:
                 if char_name in ABILITIES_NARUTO: energy_text += f"\n🍥 **چاکرا:** {row[0]}/{row[1]}"
                 elif char_name in ABILITIES_DRAGONBALL: energy_text += f"\n🐉 **کی:** {row[2]}/{row[3]}"
@@ -268,7 +267,13 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 elif char_name in ABILITIES_TOKYOGHOUL: energy_text += f"\n👁️ **RC:** {row[10]}/{row[11]}"
                 elif char_name in ABILITIES_SDS: energy_text += f"\n⚔️ **جادو:** {row[12]}/{row[13]}"
                 elif char_name in ABILITIES_SAKAMOTO: energy_text += f"\n🍡 **استقامت:** {row[14]}/{row[15]}"
-        except: pass
+                elif char_name in ABILITIES_AOT: energy_text += f"\n⚡ **قدرت تایتان:** {row[16]}/{row[17]}"
+                elif char_name in ABILITIES_BLACKCLOVER: energy_text += f"\n🍀 **مانا:** {row[18]}/{row[19]}"
+                elif char_name in ABILITIES_BERSERK: energy_text += f"\n🩸 **خون‌آشامی:** {row[20]}/{row[21]}"
+                elif char_name in ABILITIES_DEMONSLAYER: energy_text += f"\n🌸 **نفس:** {row[22]}/{row[23]}"
+                elif char_name in ABILITIES_CHAINSAWMAN: energy_text += f"\n🪚 **خون:** {row[24]}/{row[25]}"
+                elif char_name in ABILITIES_OPM: energy_text += f"\n💪 **قدرت مطلق:** {row[26]}/{row[27]}"
+        except Exception: pass
     
     text = (
         f"╔══════════════════════════╗\n║      👤 @{username[:14].center(14)} ║\n╚══════════════════════════╝\n\n"
@@ -357,262 +362,74 @@ async def edit_shop_msg(q, caption, keyboard):
                 await q.edit_message_text(caption, reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception:
                 await q.message.reply_photo(photo=SHOP_IMAGE, caption=caption, reply_markup=InlineKeyboardMarkup(keyboard))
-
-# 🆕 دستور ارتقای انرژی نفرینی (JJK)
-async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+# 🆕 تابع ارتقای هوشمند انرژی‌ها
+async def smart_upgrade(update, ctx, energy_col, max_col, energy_name, abilities_dict):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in DOMAINS_JJK and char[2] not in ABILITIES_JJK:
-        await update.message.reply_text("❌ این کاراکتر انرژی نفرینی نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+    if not char or char[2] not in abilities_dict:
+        return await update.message.reply_text(f"❌ این کاراکتر {energy_name} نداره!")
+    
+    amount = 10
+    if ctx.args:
+        try: amount = int(ctx.args[0])
+        except ValueError: return await update.message.reply_text("❌ عدد معتبر بده!")
+    if amount <= 0: return await update.message.reply_text("❌ عدد باید مثبت باشه!")
+
+    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+    c.execute(f"SELECT {energy_col}, {max_col} FROM characters WHERE user_id=? AND is_active=1", (user_id,))
     row = c.fetchone()
-    if not row:
+    if not row: 
         conn.close()
         return
-        
-    ce, max_ce = row[0], row[1]
+
+    current_energy, current_max = row[0], row[1]
+    if current_max >= 500:
+        conn.close()
+        return await update.message.reply_text(f"❌ {energy_name} به حداکثر (۵۰۰) رسیده!")
+
+    from config import get_energy_upgrade_cost
+    total_cost = 0
+    temp_level = current_max
+    for i in range(amount):
+        if temp_level >= 500: break
+        total_cost += get_energy_upgrade_cost(temp_level)
+        temp_level += 10
+
+    if get_coins(user_id) < total_cost:
+        conn.close()
+        return await update.message.reply_text(f"❌ پول کافی نداری!\n💰 هزینه این ارتقا: {total_cost:,}\n💵 موجودی: {get_coins(user_id):,}")
+
+    if not spend_coins(user_id, total_cost):
+        conn.close()
+        return await update.message.reply_text("❌ خطا در پرداخت!")
+
+    new_max = min(500, current_max + (amount * 10))
+    diff = new_max - current_max
+    c.execute(f"UPDATE characters SET {max_col} = {max_col} + ?, {energy_col} = {energy_col} + ? WHERE user_id=? AND is_active=1", (diff, diff, user_id))
+    conn.commit(); conn.close()
     
-    if max_ce >= 500:
-        conn.close()
-        await update.message.reply_text("❌ انرژی نفرینی به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_cursed_energy = max_cursed_energy + 10, cursed_energy = cursed_energy + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ انرژی نفرینی +۱۰ (حداکثر جدید: {min(max_ce + 10, 500)})")
+    await update.message.reply_text(f"✅ {energy_name} +{diff} (حداکثر جدید: {new_max})\n💰 هزینه: {total_cost:,}")
 
-# 🆕 دستور ارتقای ریستو (Bleach)
-async def upgrade_rei(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in BLEACH_BANKAI and char[2] not in ABILITIES_BLEACH:
-        await update.message.reply_text("❌ این کاراکتر ریستو نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT reiatsu, max_reiatsu FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    rei, max_rei = row[0], row[1]
-    
-    if max_rei >= 500:
-        conn.close()
-        await update.message.reply_text("❌ ریستو به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_reiatsu = max_reiatsu + 10, reiatsu = reiatsu + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ ریستو +۱۰ (حداکثر جدید: {min(max_rei + 10, 500)})")
-
-# 🆕 دستور ارتقای گیاس (Code Geass)
-async def upgrade_geass(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in ABILITIES_CODEGEASS:
-        await update.message.reply_text("❌ این کاراکتر گیاس نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT geass_power, max_geass_power FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    geass, max_geass = row[0], row[1]
-    
-    if max_geass >= 500:
-        conn.close()
-        await update.message.reply_text("❌ گیاس به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_geass_power = max_geass_power + 10, geass_power = geass_power + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ گیاس +۱۰ (حداکثر جدید: {min(max_geass + 10, 500)})")
-# 🆕 دستور ارتقای هاکی (One Piece)
-async def upgrade_haki(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    char = get_active_character(user_id)
-    if not char:
-        await update.message.reply_text("❌ کاراکتر فعال نداری.")
-        return
-        
-    if char[2] not in ABILITIES_ONEPIECE:
-        await update.message.reply_text("❌ این کاراکتر هاکی نداره!")
-        return
-        
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT haki, max_haki FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
-        return
-        
-    haki, max_haki = row[0], row[1]
-    
-    if max_haki >= 500:
-        conn.close()
-        await update.message.reply_text("❌ هاکی به حداکثر (۵۰۰) رسیده!")
-        return
-        
-    cost = 10000
-    from database import spend_coins
-    if not spend_coins(user_id, cost):
-        conn.close()
-        await update.message.reply_text(f"❌ پولت کمه! هزینه: {cost:,}")
-        return
-        
-    c.execute("UPDATE characters SET max_haki = max_haki + 10, haki = haki + 10 WHERE user_id=? AND is_active=1", (user_id,))
-    conn.commit()
-    conn.close()
-    
-    await update.message.reply_text(f"✅ هاکی +۱۰ (حداکثر جدید: {min(max_haki + 10, 500)})")
-
-# 🆕 دستورات انرژی‌های جدید
-async def upgrade_chakra(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_NARUTO: return await update.message.reply_text("❌ این کاراکتر چاکرا نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT naruto_chakra, max_naruto_chakra FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_naruto_chakra = max_naruto_chakra + 10, naruto_chakra = naruto_chakra + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ چاکرا +۱۰")
-
-async def upgrade_ki(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_DRAGONBALL: return await update.message.reply_text("❌ این کاراکتر کی نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT dragonball_ki, max_dragonball_ki FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_dragonball_ki = max_dragonball_ki + 10, dragonball_ki = dragonball_ki + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ کی +۱۰")
-
-async def upgrade_mana(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_SOLOLEVELING: return await update.message.reply_text("❌ این کاراکتر مانا نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT sololeveling_mana, max_sololeveling_mana FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_sololeveling_mana = max_sololeveling_mana + 10, sololeveling_mana = sololeveling_mana + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ مانا +۱۰")
-
-async def upgrade_nen(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_HXH: return await update.message.reply_text("❌ این کاراکتر نن نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT hxh_nen, max_hxh_nen FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_hxh_nen = max_hxh_nen + 10, hxh_nen = hxh_nen + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ نن +۱۰")
-
-async def upgrade_mushoku_mana(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_MUSHOKU: return await update.message.reply_text("❌ این کاراکتر مانا نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT mushoku_mana, max_mushoku_mana FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_mushoku_mana = max_mushoku_mana + 10, mushoku_mana = mushoku_mana + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ مانا +۱۰")
-
-async def upgrade_rc(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_TOKYOGHOUL: return await update.message.reply_text("❌ این کاراکتر RC نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT tokyoghoul_rc, max_tokyoghoul_rc FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_tokyoghoul_rc = max_tokyoghoul_rc + 10, tokyoghoul_rc = tokyoghoul_rc + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ RC +۱۰")
-
-async def upgrade_magic(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_SDS: return await update.message.reply_text("❌ این کاراکتر جادو نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT sds_magic, max_sds_magic FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_sds_magic = max_sds_magic + 10, sds_magic = sds_magic + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ جادو +۱۰")
-
-async def upgrade_stamina(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id; char = get_active_character(user_id)
-    if not char or char[2] not in ABILITIES_SAKAMOTO: return await update.message.reply_text("❌ این کاراکتر استقامت نداره!")
-    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-    c.execute("SELECT sakamoto_stamina, max_sakamoto_stamina FROM characters WHERE user_id=? AND is_active=1", (user_id,)); row = c.fetchone()
-    if not row: return conn.close()
-    if row[1] >= 500: return await update.message.reply_text("❌ به حداکثر رسیده!")
-    from database import spend_coins
-    if not spend_coins(user_id, 10000): return await update.message.reply_text("❌ پولت کمه!")
-    c.execute("UPDATE characters SET max_sakamoto_stamina = max_sakamoto_stamina + 10, sakamoto_stamina = sakamoto_stamina + 10 WHERE user_id=? AND is_active=1", (user_id,)); conn.commit(); conn.close()
-    await update.message.reply_text("✅ استقامت +۱۰")
+# 🆕 دستورات انرژی
+async def upgrade_ce(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "cursed_energy", "max_cursed_energy", "انرژی نفرینی", ABILITIES_JJK)
+async def upgrade_rei(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "reiatsu", "max_reiatsu", "ریستو", ABILITIES_BLEACH)
+async def upgrade_geass(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "geass_power", "max_geass_power", "گیاس", ABILITIES_CODEGEASS)
+async def upgrade_haki(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "haki", "max_haki", "هاکی", ABILITIES_ONEPIECE)
+async def upgrade_chakra(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "naruto_chakra", "max_naruto_chakra", "چاکرا", ABILITIES_NARUTO)
+async def upgrade_ki(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "dragonball_ki", "max_dragonball_ki", "کی", ABILITIES_DRAGONBALL)
+async def upgrade_mana(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "sololeveling_mana", "max_sololeveling_mana", "مانا", ABILITIES_SOLOLEVELING)
+async def upgrade_nen(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "hxh_nen", "max_hxh_nen", "نن", ABILITIES_HXH)
+async def upgrade_mushoku_mana(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "mushoku_mana", "max_mushoku_mana", "مانا", ABILITIES_MUSHOKU)
+async def upgrade_rc(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "tokyoghoul_rc", "max_tokyoghoul_rc", "RC", ABILITIES_TOKYOGHOUL)
+async def upgrade_magic(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "sds_magic", "max_sds_magic", "جادو", ABILITIES_SDS)
+async def upgrade_stamina(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "sakamoto_stamina", "max_sakamoto_stamina", "استقامت", ABILITIES_SAKAMOTO)
+# ۵ انیمه جدید + وان‌پانچ من
+async def upgrade_titan(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "aot_titan", "max_aot_titan", "قدرت تایتان", ABILITIES_AOT)
+async def upgrade_bcmana(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "blackclover_mana", "max_blackclover_mana", "مانا", ABILITIES_BLACKCLOVER)
+async def upgrade_bloodlust(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "berserk_bloodlust", "max_berserk_bloodlust", "خون‌آشامی", ABILITIES_BERSERK)
+async def upgrade_breath(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "demonslayer_breath", "max_demonslayer_breath", "نفس", ABILITIES_DEMONSLAYER)
+async def upgrade_blood(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "chainsawman_blood", "max_chainsawman_blood", "خون", ABILITIES_CHAINSAWMAN)
+async def upgrade_opm(update: Update, ctx: ContextTypes.DEFAULT_TYPE): await smart_upgrade(update, ctx, "opm_power", "max_opm_power", "قدرت مطلق", ABILITIES_OPM)
 async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -1485,7 +1302,6 @@ async def multi_action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     next_player, _ = get_player(battle, battle["current_turn"])
     kb = get_multi_kb(session_id, next_player["name"] if next_player else None, battle["current_turn"], battle["current_turn"])
     await q.edit_message_text(f"{log}\n\n{view}"[:3500], reply_markup=InlineKeyboardMarkup(kb))
-
 async def setcharimage_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id):
         await update.message.reply_text("❌ تو ادمین نیستی!")
@@ -1538,19 +1354,26 @@ async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "📜 /quests - کوئست روزانه\n"
         "🗺️ /world - دنیای آزاد\n"
         "🏆 /leaderboard - لیدربورد\n"
-        "🎁 /gift - هدیه دادن\n"
-        "🔮 /upgradece - ارتقای انرژی نفرینی (JJK)\n"
-        "👻 /upgraderei - ارتقای ریستو (Bleach)\n"
-        "👁️ /upgradegeass - ارتقای گیاس (Code Geass)\n"
-        "🌊 /upgradehaki - ارتقای هاکی (One Piece)\n"
-        "🍥 /upgradechakra - ارتقای چاکرا (Naruto)\n"
-        "🐉 /upgradeki - ارتقای کی (Dragon Ball)\n"
-        "🗡️ /upgrademana - ارتقای مانا (Solo Leveling)\n"
-        "🎯 /upgradenen - ارتقای نن (Hunter x Hunter)\n"
-        "🌀 /upgrademushoku - ارتقای مانا (Mushoku)\n"
-        "👁️ /upgraderc - ارتقای RC (Tokyo Ghoul)\n"
-        "⚔️ /upgrademagic - ارتقای جادو (SDS)\n"
-        "🍡 /upgradestamina - ارتقای استقامت (Sakamoto)\n\n"
+        "🎁 /gift - هدیه دادن\n\n"
+        "🔮 **دستورات ارتقای انرژی:**\n"
+        "/upgradece - انرژی نفرینی (JJK)\n"
+        "/upgraderei - ریستو (Bleach)\n"
+        "/upgradegeass - گیاس (Code Geass)\n"
+        "/upgradehaki - هاکی (One Piece)\n"
+        "/upgradechakra - چاکرا (Naruto)\n"
+        "/upgradeki - کی (Dragon Ball)\n"
+        "/upgrademana - مانا (Solo Leveling)\n"
+        "/upgradenen - نن (Hunter x Hunter)\n"
+        "/upgrademushoku - مانا (Mushoku)\n"
+        "/upgraderc - RC (Tokyo Ghoul)\n"
+        "/upgrademagic - جادو (SDS)\n"
+        "/upgradestamina - استقامت (Sakamoto)\n"
+        "/upgradetitan - قدرت تایتان (AOT)\n"
+        "/upgradebcmana - مانا (Black Clover)\n"
+        "/upgradebloodlust - خون‌آشامی (Berserk)\n"
+        "/upgradebreath - نفس (Demon Slayer)\n"
+        "/upgradeblood - خون (Chainsaw Man)\n"
+        "/upgradeopm - قدرت مطلق (OPM)\n\n"
         "🔧 /admin - پنل ادمین"
     )
     await update.message.reply_text(text)
@@ -1573,6 +1396,7 @@ async def admin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text += "📢 /addchannel /removechannel /listchannels\n"
         text += "\n👑 /ownerpanel\n"
     await update.message.reply_text(text)
+
 async def give_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not has_permission(update.effective_user.id, "manage_coins"): return
     if len(ctx.args) < 2: return await update.message.reply_text("Usage: /give <user_id> <amount>")
@@ -1590,7 +1414,6 @@ async def take_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"✅ {amount:,} coin از {target_id} گرفتی.")
     else:
         await update.message.reply_text("❌ کاربر Coin کافی نداره.")
-
 async def userinfo_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id): return
     if not ctx.args: return await update.message.reply_text("Usage: /userinfo <user_id>")
@@ -1704,18 +1527,15 @@ async def post_init(app):
         BotCommand("world", "دنیای آزاد"), BotCommand("quests", "کوئست روزانه"),
         BotCommand("leaderboard", "لیدربورد"), BotCommand("guild", "کلن"),
         BotCommand("gift", "هدیه دادن"), BotCommand("modes", "مودها"),
-        BotCommand("upgradece", "ارتقای انرژی نفرینی"),
-        BotCommand("upgraderei", "ارتقای ریستو"),
-        BotCommand("upgradegeass", "ارتقای گیاس"),
-        BotCommand("upgradehaki", "ارتقای هاکی"),
-        BotCommand("upgradechakra", "ارتقای چاکرا (ناروتو)"),
-        BotCommand("upgradeki", "ارتقای کی (دراگون بال)"),
-        BotCommand("upgrademana", "ارتقای مانا (سولو)"),
-        BotCommand("upgradenen", "ارتقای نن (هانتر)"),
-        BotCommand("upgrademushoku", "ارتقای مانا (مشوکو)"),
-        BotCommand("upgraderc", "ارتقای RC (توکیو غول)"),
-        BotCommand("upgrademagic", "ارتقای جادو (هفت گناه)"),
-        BotCommand("upgradestamina", "ارتقای استقامت (ساکاموتو)"),
+        BotCommand("upgradece", "انرژی نفرینی (JJK)"), BotCommand("upgraderei", "ریستو (Bleach)"),
+        BotCommand("upgradegeass", "گیاس (Code Geass)"), BotCommand("upgradehaki", "هاکی (One Piece)"),
+        BotCommand("upgradechakra", "چاکرا (Naruto)"), BotCommand("upgradeki", "کی (Dragon Ball)"),
+        BotCommand("upgrademana", "مانا (Solo)"), BotCommand("upgradenen", "نن (Hunter)"),
+        BotCommand("upgrademushoku", "مانا (Mushoku)"), BotCommand("upgraderc", "RC (Tokyo Ghoul)"),
+        BotCommand("upgrademagic", "جادو (SDS)"), BotCommand("upgradestamina", "استقامت (Sakamoto)"),
+        BotCommand("upgradetitan", "قدرت تایتان (AOT)"), BotCommand("upgradebcmana", "مانا (Black Clover)"),
+        BotCommand("upgradebloodlust", "خون‌آشامی (Berserk)"), BotCommand("upgradebreath", "نفس (Demon Slayer)"),
+        BotCommand("upgradeblood", "خون (Chainsaw Man)"), BotCommand("upgradeopm", "قدرت مطلق (OPM)"),
         BotCommand("help", "راهنما"),
     ]
     await app.bot.set_my_commands(commands_list)
@@ -1781,6 +1601,12 @@ def main():
     app.add_handler(CommandHandler("upgraderc", upgrade_rc))
     app.add_handler(CommandHandler("upgrademagic", upgrade_magic))
     app.add_handler(CommandHandler("upgradestamina", upgrade_stamina))
+    app.add_handler(CommandHandler("upgradetitan", upgrade_titan))
+    app.add_handler(CommandHandler("upgradebcmana", upgrade_bcmana))
+    app.add_handler(CommandHandler("upgradebloodlust", upgrade_bloodlust))
+    app.add_handler(CommandHandler("upgradebreath", upgrade_breath))
+    app.add_handler(CommandHandler("upgradeblood", upgrade_blood))
+    app.add_handler(CommandHandler("upgradeopm", upgrade_opm))
 
     # 🆕 Admin & Owner Commands
     app.add_handler(CommandHandler("admin", admin))
