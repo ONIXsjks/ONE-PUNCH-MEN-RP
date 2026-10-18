@@ -542,7 +542,6 @@ if action in ("awaken_blue", "awaken_red", "awaken_purple"):
         try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
         return
-    async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     action = q.data.replace("act_", "")
