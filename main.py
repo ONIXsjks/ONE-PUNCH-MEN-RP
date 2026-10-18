@@ -920,7 +920,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if len(full_text) > 3500: full_text = full_text[:3500] + "..."
     try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
-            return
+            
         status, text, battle = goku_transform(battle, char)
     elif action == "luffy_form":
         if char[2] != "Monkey D. Luffy":
