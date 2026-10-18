@@ -275,15 +275,10 @@ def init_db():
     except Exception as e:
         print(f"Rename DB error: {e}")
 
-    try:
-        from soul_system import init_soul_db
-        init_soul_db()
-    except Exception as e:
-        print(f"Soul DB Init Error: {e}")
-
     conn.commit()
     conn.close()
 
+# ============ USERS ============
 def get_user(user_id, username=None):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -335,6 +330,7 @@ def spend_coins(user_id, amount):
     add_coins(user_id, -amount)
     return True
 
+# ============ ACTIVE BATTLES ============
 def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -361,7 +357,6 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     conn.commit()
     conn.close()
     return bid
-
 def get_battle(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -425,6 +420,8 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
+
+# ============ ABILITIES & ITEMS ============
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
