@@ -724,7 +724,7 @@ if action in ("awaken_blue", "awaken_red", "awaken_purple"):
         update_battle(battle); reward = finish_battle(user_id, battle["boss_name"], True); end_battle(battle["id"])
         final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin"
     try: await q.edit_message_text(final_text)
-        except Exception: await q.message.reply_text(final_text)
+except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
         update_battle(battle); end_battle(battle["id"])
