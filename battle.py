@@ -66,7 +66,6 @@ def get_awaken_name(char_name, color):
         return names.get(color, f"Awaken {color.capitalize()}")
     return f"Awaken {color.capitalize()}"
 
-# 🆕 تابع جایزه مودهای بقا
 def get_reward_by_wave(wave):
     if wave <= 10: return 20000
     elif wave <= 20: return 40000
