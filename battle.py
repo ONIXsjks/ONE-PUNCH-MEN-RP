@@ -823,9 +823,9 @@ def finish_battle(uid, boss_name, won):
                 "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
                 "chainsawman_blood", "opm_power"]
 
-    # 🆕 صفر کردن انرژی‌ها بعد از مچ (تا مچ بعدی از اول پر بشه)
-    set_query = ", ".join([f"{e} = 0" for e in energies])
-    reset_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
+    # دستور پر کردن همه انرژی‌ها
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    fill_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
 
     if won:
         boss = get_boss_data(boss_name)
@@ -845,9 +845,9 @@ def finish_battle(uid, boss_name, won):
 
         add_coins(uid, reward)
         
-        # صفر کردن انرژی‌ها
+        # پر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(reset_query, (uid,))
+        c.execute(fill_query, (uid,))
         conn.commit(); conn.close()
 
         try:
@@ -868,8 +868,8 @@ def finish_battle(uid, boss_name, won):
             c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,))
             conn.commit(); conn.close()
         
-        # صفر کردن انرژی‌ها
+        # پر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(reset_query, (uid,))
+        c.execute(fill_query, (uid,))
         conn.commit(); conn.close()
         return 0
