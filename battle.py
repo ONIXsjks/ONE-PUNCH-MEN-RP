@@ -277,22 +277,41 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         return php, bhp, text
 
     action = boss_ai(battle["boss_name"], bhp, bmax)
+    
     if action == "attack":
         php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, defense_flag)
         text += f"\n\n{boss_text}"
+        
     elif action == "special":
-        base_dmg, _ = roll_damage(boss["atk"] * 2, 0, 0)
+        boss_name = battle["boss_name"]
+        is_jjk = boss_name in BOSSES_JJK or boss_name in FODDER_JJK
+        is_bleach = boss_name in BLEACH_BOSSES or boss_name in BLEACH_FODDER
+        is_geass = boss_name in CODEGEASS_BOSSES or boss_name in CODEGEASS_FODDER
+        
+        special_name = "Awaken"
+        if is_jjk: special_name = "Domain Expansion"
+        elif is_bleach: special_name = "Bankai"
+        elif is_geass: special_name = "Geass"
+        
+        if bmax <= 1000: mult = 2; energy_str = "200"
+        elif bmax <= 10000: mult = 3; energy_str = "300"
+        elif bmax <= 30000: mult = 4; energy_str = "400"
+        else: mult = 6; energy_str = "550"
+            
+        base_dmg, _ = roll_damage(boss["atk"] * mult, 0, 0)
+        
         if defense_flag:
             php, def_log = apply_defense_check(base_dmg, php, defense_flag.capitalize())
-            text += f"\n\n{box_simple('💥 حمله ویژه باس! (قلمرو/بانکای)')}"
+            text += f"\n\n{box_simple(f'💥 {special_name} باس! (انرژی: {energy_str})')}"
             text += f"\n\n💢 آسیب پایه: {format_num(base_dmg)}"
             text += f"\n{def_log}"
             text += f"\n\n👤 {hp_bar(php, pmax)}"
         else:
             php = max(0, php - base_dmg)
-            text += f"\n\n{box_simple('💥 حمله ویژه باس! (قلمرو/بانکای)')}"
+            text += f"\n\n{box_simple(f'💥 {special_name} باس! (انرژی: {energy_str})')}"
             text += f"\n\n💢 {format_num(base_dmg)} آسیب!"
             text += f"\n\n👤 {hp_bar(php, pmax)}"
+            
     elif action == "defend":
         text += f"\n\n🛡️ باس دفاع گرفت."
         battle["boss_defending"] = 1
@@ -310,8 +329,14 @@ def player_attack(battle, char):
     mult = 1.5
     if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: mult = 1.2
     elif char[2] == "Sung Jin-Woo": mult = 1.5
+
+    # 🆕 سقف اتک برای لول‌های ۳۰۰ تا ۵۰۰ (حداکثر ۲۰,۰۰۰)
+    char_level = char[4]
+    attack_power = char[6]
+    if char_level >= 300:
+        attack_power = min(attack_power, 20000)
     
-    base_dmg, crit = roll_damage(char[6] * mult, 0, 0)
+    base_dmg, crit = roll_damage(attack_power * mult, 0, 0)
         
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
