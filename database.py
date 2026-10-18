@@ -431,6 +431,7 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
+
 # ============ ABILITIES & ITEMS ============
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
@@ -470,7 +471,6 @@ def use_item(user_id, item_name):
     conn.commit()
     conn.close()
     return True
-
 # ============ BUFFS ============
 def get_user_buffs(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
