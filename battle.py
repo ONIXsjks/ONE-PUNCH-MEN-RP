@@ -816,16 +816,16 @@ def build_battle_message(battle, char):
     return text
 
 def finish_battle(uid, boss_name, won):
-    # ۱. لیست تمام انرژی‌ها
+    # لیست تمام انرژی‌ها
     energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
                 "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
                 "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
                 "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
                 "chainsawman_blood", "opm_power"]
 
-    # ۲. ساختن دستور پر کردن برای همه انرژی‌ها
-    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
-    update_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
+    # 🆕 صفر کردن انرژی‌ها بعد از مچ (تا مچ بعدی از اول پر بشه)
+    set_query = ", ".join([f"{e} = 0" for e in energies])
+    reset_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
 
     if won:
         boss = get_boss_data(boss_name)
@@ -845,9 +845,9 @@ def finish_battle(uid, boss_name, won):
 
         add_coins(uid, reward)
         
-        # ۳. پر کردن انرژی‌ها
+        # صفر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(update_query, (uid,))
+        c.execute(reset_query, (uid,))
         conn.commit(); conn.close()
 
         try:
@@ -868,8 +868,8 @@ def finish_battle(uid, boss_name, won):
             c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,))
             conn.commit(); conn.close()
         
-        # ۴. پر کردن انرژی‌ها
+        # صفر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(update_query, (uid,))
+        c.execute(reset_query, (uid,))
         conn.commit(); conn.close()
         return 0
