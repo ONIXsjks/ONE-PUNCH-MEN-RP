@@ -288,7 +288,6 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n\n💚 باس درمان: +{format_num(heal)}"
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
-
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -520,19 +519,99 @@ def player_ability(battle, char, ability_name):
             conn.close()
             extra_text = ""
         battle["php"] = php
-if ability_name == "DOMAIN":
-    domain = DOMAINS.get(char_name) or DOMAINS_JJK.get(char_name)
-    if not domain: return "active", "❌ این کاراکتر Domain نداره!", battle
-    battle["domain_used"] = 1; battle["domain_active"] = 1; battle["domain_turns"] = domain.get("duration", 2)
-    battle["domain_name"] = domain["name"]; effects = domain.get("effects", {}); battle["domain_atk_boost"] = effects.get("atk_boost", 0)
-    dmg = int(char[6] * 2.5); bhp = max(0, bhp - dmg)
-    text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
-    if "freeze" in effects:
-        battle["boss_frozen"] = effects["freeze"]; text += f"\n❄️ باس فریز شد! ({effects['freeze']} نوبت)"
-    if "atk_boost" in effects: text += f"\n⚔️ ATK +{effects['atk_boost']}٪"
-    if "heal" in effects:
-        heal = int(pmax * effects["heal"] / 100); php = min(pmax, php + heal); text += f"\n💚 +{format_num(heal)} HP"
-    text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
+    if ability_name == "DOMAIN":
+        domain = DOMAINS.get(char_name) or DOMAINS_JJK.get(char_name)
+        if not domain:
+            return "active", "❌ این کاراکتر Domain نداره!", battle
+        battle["domain_used"] = 1
+        battle["domain_active"] = 1
+        battle["domain_turns"] = domain.get("duration", 2)
+        battle["domain_name"] = domain["name"]
+        effects = domain.get("effects", {})
+        battle["domain_atk_boost"] = effects.get("atk_boost", 0)
+        dmg = int(char[6] * 2.5); bhp = max(0, bhp - dmg)
+        text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26)
+        text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
+        if "freeze" in effects:
+            battle["boss_frozen"] = effects["freeze"]
+            text += f"\n❄️ باس فریز شد! ({effects['freeze']} نوبت)"
+        if "atk_boost" in effects:
+            text += f"\n⚔️ ATK +{effects['atk_boost']}٪"
+        if "heal" in effects:
+            heal = int(pmax * effects["heal"] / 100); php = min(pmax, php + heal)
+            text += f"\n💚 +{format_num(heal)} HP"
+        text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
+        if bhp <= 0:
+            battle["php"] = php
+            battle["bhp"] = bhp
+            return "won", text, battle
+        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
+        battle = apply_bankai_round(battle)
+        php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+        if bt: text += f"\n{bt}"
+        battle = apply_domain_round(battle)
+        battle["php"] = php; battle["bhp"] = bhp
+        if bhp <= 0: return "won", text, battle
+        if php <= 0: return "lost", text, battle
+        return "active", text, battle
+
+    if ability_name == "BANKAI":
+        bankai = BANKAI.get(char_name) or BLEACH_BANKAI.get(char_name)
+        if not bankai: return "active", "❌ این کاراکتر Bankai نداره!", battle
+        battle["bankai_used"] = 1; battle["bankai_data"] = bankai; battle["bankai_atk_current"] = 0; battle["bankai_dodge_current"] = 0
+        battle["bankai_heal_current"] = 0; battle["bankai_bleed_current"] = 0; battle["bankai_enemy_debuff_current"] = 0; battle["bankai_self_dmg_current"] = 0
+        dmg = int(char[6] * 6); bhp = max(0, bhp - dmg)
+        text = extra_text + box_title(f"⚔️ {bankai['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۶)"
+        text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
+        if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
+        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
+        battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+        if bt: text += f"\n{bt}"
+        battle = apply_domain_round(battle)
+        battle["php"] = php; battle["bhp"] = bhp
+        if bhp <= 0: return "won", text, battle
+        if php <= 0: return "lost", text, battle
+        return "active", text, battle
+
+    if ability_name == "ULTIMATE_GEASS":
+        if char_name not in ABILITIES_CODEGEASS: return "active", "❌ این کاراکتر گیاس دوم نداره!", battle
+        geass = ULTIMATE_GEASS.get(char_name)
+        if not geass: return "active", "❌ گیاس دوم تعریف نشده!", battle
+        battle["geass_used"] = 1; effect = geass.get("effect", "")
+        dmg = int(char[6] * 4); bhp = max(0, bhp - dmg)
+        text = extra_text + box_title(f"👁️ {geass['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۴)"
+        if effect == "skip_enemy_turn":
+            battle["boss_frozen"] = geass.get("duration", 2); text += f"\n❄️ باس {geass.get('duration', 2)} نوبت محروم شد!"
+        elif effect == "atk_boost":
+            battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + geass.get("value", 100); text += f"\n⚔️ ATK +{geass.get('value', 100)}٪"
+        elif effect == "def_boost": text += f"\n🛡️ DEF +{geass.get('value', 100)}٪"
+        elif effect == "dodge_boost": text += f"\n💨 DODGE +{geass.get('value', 50)}٪"
+        elif effect == "heal":
+            heal = int(pmax * geass.get("value", 50) / 100); php = min(pmax, php + heal); text += f"\n💚 +{format_num(heal)} HP"
+        text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
+        if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
+        php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
+        battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+        if bt: text += f"\n{bt}"
+        battle["php"] = php; battle["bhp"] = bhp
+        if bhp <= 0: return "won", text, battle
+        if php <= 0: return "lost", text, battle
+        return "active", text, battle
+
+    if not abilities: return "active", "❌ Ability پیدا نشد.", battle
+    found_ab = None
+    for key in ["ability_1", "ability_2", "ability_3"]:
+        if key in abilities and abilities[key]["name"] == ability_name: found_ab = abilities[key]; break
+    if not found_ab: return "active", "❌ Ability پیدا نشد.", battle
+    mult = found_ab.get("mult", 3); dmg = int(char[6] * mult)
+    if char_name == "Sung Jin-Woo":
+        shadow_bonus = get_shadows_atk_bonus(battle["uid"], char_name); dmg += shadow_bonus
+    bhp = max(0, bhp - dmg)
+    if found_key == "ability_3":
+        text = extra_text + box_title(f"🟣 {ability_name[:20]}!", 26); battle["spam_state"] = "purple_used"
+    elif found_key == "ability_1": text = extra_text + box_simple(f"🔵 {ability_name[:18]}!")
+    else: text = extra_text + box_simple(f"🔴 {ability_name[:18]}!")
+    text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"; text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
     if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
     php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
     battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
@@ -543,72 +622,6 @@ if ability_name == "DOMAIN":
     if php <= 0: return "lost", text, battle
     return "active", text, battle
 
-if ability_name == "BANKAI":
-    bankai = BANKAI.get(char_name) or BLEACH_BANKAI.get(char_name)
-    if not bankai: return "active", "❌ این کاراکتر Bankai نداره!", battle
-    battle["bankai_used"] = 1; battle["bankai_data"] = bankai; battle["bankai_atk_current"] = 0; battle["bankai_dodge_current"] = 0
-    battle["bankai_heal_current"] = 0; battle["bankai_bleed_current"] = 0; battle["bankai_enemy_debuff_current"] = 0; battle["bankai_self_dmg_current"] = 0
-    dmg = int(char[6] * 6); bhp = max(0, bhp - dmg)
-    text = extra_text + box_title(f"⚔️ {bankai['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۶)"
-    text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
-    if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-    battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt: text += f"\n{bt}"
-    battle = apply_domain_round(battle)
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0: return "won", text, battle
-    if php <= 0: return "lost", text, battle
-    return "active", text, battle
-
-if ability_name == "ULTIMATE_GEASS":
-    if char_name not in ABILITIES_CODEGEASS: return "active", "❌ این کاراکتر گیاس دوم نداره!", battle
-    geass = ULTIMATE_GEASS.get(char_name)
-    if not geass: return "active", "❌ گیاس دوم تعریف نشده!", battle
-    battle["geass_used"] = 1; effect = geass.get("effect", "")
-    dmg = int(char[6] * 4); bhp = max(0, bhp - dmg)
-    text = extra_text + box_title(f"👁️ {geass['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۴)"
-    if effect == "skip_enemy_turn":
-        battle["boss_frozen"] = geass.get("duration", 2); text += f"\n❄️ باس {geass.get('duration', 2)} نوبت محروم شد!"
-    elif effect == "atk_boost":
-        battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + geass.get("value", 100); text += f"\n⚔️ ATK +{geass.get('value', 100)}٪"
-    elif effect == "def_boost": text += f"\n🛡️ DEF +{geass.get('value', 100)}٪"
-    elif effect == "dodge_boost": text += f"\n💨 DODGE +{geass.get('value', 50)}٪"
-    elif effect == "heal":
-        heal = int(pmax * geass.get("value", 50) / 100); php = min(pmax, php + heal); text += f"\n💚 +{format_num(heal)} HP"
-    text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
-    if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-    battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt: text += f"\n{bt}"
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0: return "won", text, battle
-    if php <= 0: return "lost", text, battle
-    return "active", text, battle
-
-if not abilities: return "active", "❌ Ability پیدا نشد.", battle
-found_ab = None
-for key in ["ability_1", "ability_2", "ability_3"]:
-    if key in abilities and abilities[key]["name"] == ability_name: found_ab = abilities[key]; break
-if not found_ab: return "active", "❌ Ability پیدا نشد.", battle
-mult = found_ab.get("mult", 3); dmg = int(char[6] * mult)
-if char_name == "Sung Jin-Woo":
-    shadow_bonus = get_shadows_atk_bonus(battle["uid"], char_name); dmg += shadow_bonus
-bhp = max(0, bhp - dmg)
-if found_key == "ability_3":
-    text = extra_text + box_title(f"🟣 {ability_name[:20]}!", 26); battle["spam_state"] = "purple_used"
-elif found_key == "ability_1": text = extra_text + box_simple(f"🔵 {ability_name[:18]}!")
-else: text = extra_text + box_simple(f"🔴 {ability_name[:18]}!")
-text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)"; text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
-if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
-php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-if bt: text += f"\n{bt}"
-battle = apply_domain_round(battle)
-battle["php"] = php; battle["bhp"] = bhp
-if bhp <= 0: return "won", text, battle
-if php <= 0: return "lost", text, battle
-return "active", text, battle
 def player_ability_v2(battle, char, action):
     char_name = char[2]
     if action == "domain": return player_ability(battle, char, "DOMAIN")
@@ -671,7 +684,6 @@ def player_awaken_ability(battle, char, color):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
-
 def player_ability_shop(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
