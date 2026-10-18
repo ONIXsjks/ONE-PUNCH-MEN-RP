@@ -720,7 +720,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
 
-    # 🆕 منطق اویکن
     if action == "awakening":
         if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
             await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
@@ -737,90 +736,34 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if action in ("awaken_blue", "awaken_red", "awaken_purple"):
-        if action == "awaken_blue":
-            if battle.get("awaken_blue_used", 0) == 1:
-                await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
-                return
-            mult, cost, color = 5, 30, "blue"
-            battle["awaken_blue_used"] = 1
-        elif action == "awaken_red":
-            if battle.get("awaken_red_used", 0) == 1:
-                await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
-                return
-            mult, cost, color = 5, 35, "red"
-            battle["awaken_red_used"] = 1
-        else:
-            if battle.get("awaken_purple_used", 0) == 1:
-                await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
-                return
-            mult, cost, color = 6, 40, "purple"
-            battle["awaken_purple_used"] = 1
-
-        # 🆕 ذخیره وضعیت مصرف اویکن در دیتابیس
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(f"UPDATE active_battles SET awaken_{color}_used = 1 WHERE id = ?", (battle["id"],))
-        conn.commit(); conn.close()
-
-        ability_name = get_awaken_name(char[2], color)
-
-        # کم کردن انرژی
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        energy_col = "cursed_energy"
-        if char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: energy_col = "reiatsu"
-        elif char[2] in ABILITIES_CODEGEASS: energy_col = "geass_power"
-        elif char[2] in ABILITIES_ONEPIECE: energy_col = "haki"
-        elif char[2] in ABILITIES_NARUTO: energy_col = "naruto_chakra"
-        elif char[2] in ABILITIES_DRAGONBALL: energy_col = "dragonball_ki"
-        elif char[2] in ABILITIES_SOLOLEVELING: energy_col = "sololeveling_mana"
-        elif char[2] in ABILITIES_HXH: energy_col = "hxh_nen"
-        elif char[2] in ABILITIES_MUSHOKU: energy_col = "mushoku_mana"
-        elif char[2] in ABILITIES_TOKYOGHOUL: energy_col = "tokyoghoul_rc"
-        elif char[2] in ABILITIES_SDS: energy_col = "sds_magic"
-        elif char[2] in ABILITIES_SAKAMOTO: energy_col = "sakamoto_stamina"
-        elif char[2] in ABILITIES_AOT: energy_col = "aot_titan"
-        elif char[2] in ABILITIES_BLACKCLOVER: energy_col = "blackclover_mana"
-        elif char[2] in ABILITIES_BERSERK: energy_col = "berserk_bloodlust"
-        elif char[2] in ABILITIES_DEMONSLAYER: energy_col = "demonslayer_breath"
-        elif char[2] in ABILITIES_CHAINSAWMAN: energy_col = "chainsawman_blood"
-        elif char[2] in ABILITIES_OPM: energy_col = "opm_power"
-
-        c.execute(f"SELECT {energy_col} FROM characters WHERE user_id=? AND is_active=1", (user_id,))
-        row = c.fetchone()
-        energy = row[0] if row else 0
-        if energy < cost:
-            conn.close()
-            await q.answer(f"❌ انرژی کافی نداری! (نیاز: {cost})", show_alert=True)
-            return
-        c.execute(f"UPDATE characters SET {energy_col} = {energy_col} - ? WHERE user_id=? AND is_active=1", (cost, user_id))
-        conn.commit(); conn.close()
-
-        # اعمال دمیج
-        dmg = int(char[6] * mult)
-        battle["bhp"] = max(0, battle["bhp"] - dmg)
-        text = box_title(f"🔥 {ability_name}!", 26)
-        text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)\n⚡ انرژی مصرفی: {cost}"
-        text += f"\n\n👹 باس: {hp_bar(battle['bhp'], battle['bmax'])}"
+        color = action.replace("awaken_", "")
+        from battle import player_awaken_ability
+        status, text, battle = player_awaken_ability(battle, char, color)
         
-        if battle["bhp"] <= 0:
+        if status == "won":
+            update_battle(battle) # 🆕 سیو انرژی قبل از پایان
             reward = finish_battle(user_id, battle["boss_name"], True)
             end_battle(battle["id"])
             final_text = f"{text}\n\n🏆 بردی!\n💰 +{reward:,} coin"
             try: await q.edit_message_text(final_text)
             except Exception: await q.message.reply_text(final_text)
             return
-            
-        # نوبت باس
-        from battle import boss_turn, get_boss_data
-        boss = get_boss_data(battle["boss_name"])
-        php, bhp, text = boss_turn(battle, boss, battle["php"], battle["pmax"], battle["bhp"], battle["bmax"], text)
-        battle["php"] = php; battle["bhp"] = bhp
+        elif status == "lost":
+            update_battle(battle)
+            end_battle(battle["id"])
+            try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
+            except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
+            return
+        elif status == "active" and "❌" in text:
+            await q.answer(text, show_alert=True)
+            return
+        
         update_battle(battle)
         full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
         try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
         except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
         return
 
-    # بقیه دکمه‌ها
     if action in ("ability_1", "ability_2", "ability_3"):
         status, text, battle = player_ability_v2(battle, char, action)
     elif action == "attack":
@@ -904,6 +847,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     
     if status == "won":
+        update_battle(battle) # 🆕 سیو انرژی قبل از پایان
         reward = finish_battle(user_id, battle["boss_name"], True)
         arise_text = ""
         try:
@@ -916,6 +860,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text(final_text)
         return
     elif status == "lost":
+        update_battle(battle) # 🆕 سیو انرژی قبل از پایان
         end_battle(battle["id"])
         try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
         except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
