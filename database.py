@@ -265,6 +265,13 @@ def init_db():
     try: c.execute("ALTER TABLE characters ADD COLUMN tower_wave INTEGER DEFAULT 1")
     except: pass
 
+    # 🆕 محدود کردن اتک و HP برای بالانس بازی
+    try:
+        c.execute("UPDATE characters SET atk = 25000 WHERE atk > 25000")
+        c.execute("UPDATE characters SET hp = 50000 WHERE hp > 50000")
+    except Exception as e:
+        print(f"Balance Error: {e}")
+
     try:
         c.execute("UPDATE characters SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
         c.execute("UPDATE abilities_owned SET char_name = 'Harley Quinn' WHERE char_name = 'King'")
