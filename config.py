@@ -18,7 +18,7 @@ from opm_data import (
 )
 
 # ============================================================
-# IMPORTS — 7 Animes (AOT, Black Clover, Berserk, Demon Slayer, Chainsaw Man, Naruto, SDS)
+# IMPORTS — 7 Animes
 # ============================================================
 from aot_data import (
     CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT,
@@ -50,7 +50,7 @@ from sevendeadlysins_data import (
 )
 
 # ============================================================
-# IMPORTS — 🆕 8 Animes NEW
+# IMPORTS — 8 Animes NEW
 # ============================================================
 from onepiece_data import (
     CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE, ABILITIES_ONEPIECE,
@@ -252,8 +252,11 @@ OPM_POWER_COST_ABILITY_1 = 20
 OPM_POWER_COST_ABILITY_2 = 20
 OPM_POWER_COST_ABILITY_3 = 40
 
+# 🆕 هزینه فرم گوکو و لوفی
+FORM_COST_GOKU = 30
+FORM_COST_LUFFY = 30
 # ============================================================
-# 🆕 SHOP DATA
+# SHOP DATA
 # ============================================================
 ABILITIES = {
     "Iron Skin": {"effect": "DEF +50", "effect_fa": "دفاع +۵۰", "price": 5000},
@@ -314,7 +317,7 @@ ABILITY_FA = {
     "Heal Pulse": "پالس درمان", "Critical Eye": "چشم کریتیکال", "Time Slow": "کندی زمان",
     "Berserker": "برزرکر", "One Punch Dodge": "جاخالی یک‌ضربه‌ای", "Mana Shield": "سپر مانا",
     "Speed Boost": "افزایش سرعت", "Vampire": "خون‌آشام", "Double Strike": "ضربه دوگانه",
-    "Phoenix Reborn": "تولد دوباره ققنوس", "Dragon Fist": "مشت اژدها",
+    "Phoenix Reborn": "تولد دوباره ققنوس", "Dragon Fist": "مشت اژدا",
 }
 ITEM_FA = {
     "Health Potion": "معجون کوچک", "Mega Potion": "معجون بزرگ", "Revive Stone": "سنگ احیا",
@@ -398,21 +401,17 @@ ABILITY_MULTIPLIERS = {
 ADMIN_IDS = [7023690411]
 
 # ============================================================
-# 🆕 تابع قیمت‌گذاری ارتقای انرژی (بالانس شده)
+# 🆕 تابع قیمت‌گذاری ارتقای انرژی (ارزان و اقتصادی)
 # ============================================================
 def get_energy_upgrade_cost(current_level):
-    if current_level < 10: return 50000          # 50 هزار
-    elif current_level < 20: return 100000       # 100 هزار
-    elif current_level < 30: return 250000       # 250 هزار
-    elif current_level < 40: return 500000       # 500 هزار
-    elif current_level < 50: return 1000000      # 1 میلیون
-    elif current_level < 60: return 2500000      # 2.5 میلیون
-    elif current_level < 70: return 5000000      # 5 میلیون
-    elif current_level < 80: return 10000000     # 10 میلیون
-    elif current_level < 90: return 20000000     # 20 میلیون
-    elif current_level < 100: return 35000000    # 35 میلیون
-    else: return 50000000                        # 50 میلیون
-
-# 🆕 هزینه فرم گوکو و لوفی
-FORM_COST_GOKU = 30
-FORM_COST_LUFFY = 30
+    if current_level < 10: return 5000           # 5 هزار
+    elif current_level < 20: return 10000        # 10 هزار
+    elif current_level < 30: return 25000        # 25 هزار
+    elif current_level < 40: return 50000        # 50 هزار
+    elif current_level < 50: return 100000       # 100 هزار
+    elif current_level < 60: return 250000       # 250 هزار
+    elif current_level < 70: return 500000       # 500 هزار
+    elif current_level < 80: return 1000000      # 1 میلیون
+    elif current_level < 90: return 2500000      # 2.5 میلیون
+    elif current_level < 100: return 5000000     # 5 میلیون
+    else: return 10000000                        # 10 میلیون (سقف)
