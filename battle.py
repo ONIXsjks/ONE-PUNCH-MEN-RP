@@ -13,6 +13,24 @@ from config import (DB_NAME, ABILITIES_3, DOMAINS, BANKAI, ABILITIES, BUFFS, ITE
                     GEASS_COST_ABILITY_3, GEASS_COST_ULTIMATE, ABILITIES_CODEGEASS,
                     ULTIMATE_GEASS,
                     HAKI_COST_ABILITY_1, HAKI_COST_ABILITY_2, HAKI_COST_ABILITY_3, ABILITIES_ONEPIECE)
+
+# 🆕 ایمپورت کردن لیست باس‌های جدید برای جلوگیری از خطا و اتک 0
+from onepiece_data import ONEPIECE_BOSSES, ONEPIECE_FODDER
+from dragonball_data import DRAGONBALL_BOSSES, DRAGONBALL_FODDER
+from hxh_data import HXH_BOSSES, HXH_FODDER
+from sakamoto_data import SAKAMOTO_BOSSES, SAKAMOTO_FODDER
+from sololeveling_data import SOLOLEVELING_BOSSES, SOLOLEVELING_FODDER
+from mushoku_data import MUSHOKU_BOSSES, MUSHOKU_FODDER
+from codegeass_data import CODEGEASS_BOSSES, CODEGEASS_FODDER
+from tokyoghoul_data import TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER
+from jjk_data import FODDER_JJK
+from bleach_data import BLEACH_FODDER
+from aot_data import AOT_FODDER
+from blackclover_data import BLACKCLOVER_FODDER
+from berserk_data import BERSERK_FODDER
+from demonslayer_data import DEMONSLAYER_FODDER
+from chainsawman_data import CHAINSAWMAN_FODDER
+
 from database import (add_coins, get_battle, update_battle, end_battle,
                       get_coins, get_shadows_atk_bonus)
 
@@ -24,24 +42,44 @@ def get_boss_data(boss_name):
     if "Survival" in boss_name:
         return {"display_name": boss_name, "atk": 150, "hp": 10000, "reward": 1000}
         
-    for bosses in [BLEACH_BOSSES, BOSSES_JJK, BOSSES_OPM, BOSSES,
-                   AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
-                   DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES]:
+    # 🆕 لیست کامل تمام باس‌های تمام انیمه‌ها
+    all_boss_lists = [
+        BOSSES_JJK, BLEACH_BOSSES, BOSSES_OPM, BOSSES, AOT_BOSSES, 
+        BLACKCLOVER_BOSSES, BERSERK_BOSSES, DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES,
+        ONEPIECE_BOSSES, DRAGONBALL_BOSSES, HXH_BOSSES, SAKAMOTO_BOSSES, 
+        SOLOLEVELING_BOSSES, MUSHOKU_BOSSES, CODEGEASS_BOSSES, TOKYOGHOUL_BOSSES
+    ]
+    
+    # لیست فادرها (دشمنان ضعیف)
+    all_fodder_lists = [
+        FODDER_JJK, BLEACH_FODDER, AOT_FODDER, BLACKCLOVER_FODDER, BERSERK_FODDER,
+        DEMONSLAYER_FODDER, CHAINSAWMAN_FODDER, ONEPIECE_FODDER, DRAGONBALL_FODDER,
+        HXH_FODDER, SAKAMOTO_FODDER, SOLOLEVELING_FODDER, MUSHOKU_FODDER,
+        CODEGEASS_FODDER, TOKYOGHOUL_FODDER
+    ]
+    
+    # اول باس‌ها رو چک میکنیم
+    for bosses in all_boss_lists:
         if boss_name in bosses:
             boss = bosses[boss_name].copy()
-            
-            # 🆕 سیستم هوشمند: اگر باس اتک نداشت، یه اتک پایه بهش بده
             if boss.get("atk", 0) <= 0:
-                boss["atk"] = 250  # اتک پایه برای جلوگیری از 0 شدن
-                
-            # 🆕 اگر باس HP نداشت، یه HP پایه بده
+                boss["atk"] = 250  # اتک پایه برای باس
             if boss.get("hp", 0) <= 0:
-                boss["hp"] = 5000
-                
-            # 🆕 اگر اسم نمایشی نداشت
+                boss["hp"] = 5000  # HP پایه
             if "display_name" not in boss:
                 boss["display_name"] = boss_name
-                
+            return boss
+            
+    # اگر توی باس‌ها نبود، فادرها رو چک میکنیم
+    for fodder in all_fodder_lists:
+        if boss_name in fodder:
+            boss = fodder[boss_name].copy()
+            if boss.get("atk", 0) <= 0:
+                boss["atk"] = 150  # اتک پایه برای فادرها
+            if boss.get("hp", 0) <= 0:
+                boss["hp"] = 1000  # HP پایه برای فادرها
+            if "display_name" not in boss:
+                boss["display_name"] = boss_name
             return boss
             
     return None
@@ -867,8 +905,6 @@ def player_item(battle, char, item_name):
     if new_php <= 0:
         return "lost", text, battle
     return "active", text, battle
-
-
 def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
