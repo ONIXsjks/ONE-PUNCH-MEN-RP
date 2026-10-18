@@ -96,6 +96,14 @@ from modes import (modes_cmd, castle_cmd, castle_callback, zombie_cmd, zombie_ca
 from arise import (try_arise, show_shadows, arise_callback, shadows_back_callback, MAX_SHADOWS, ATK_PER_SHADOW)
 from gift import send_gift, get_gift_history, get_top_givers
 
+# 🆕 تابع کمکی برای ساخت کادر (برای دکمه اویکن در main.py)
+def box_title(text, width=26):
+    pad = width - len(text)
+    if pad < 0: text = text[:width]; pad = 0
+    left = pad // 2
+    right = pad - left
+    return f"╔{'═' * width}╗\n║{' ' * left}{text}{' ' * right}║\n╚{'═' * width}╝"
+
 PVP_SESSIONS = {}
 TEAM_SESSIONS = {}
 COOP_SESSIONS = {}
