@@ -142,7 +142,7 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
         if r < 0.25:
             return "attack"
         if r < 0.85: 
-            return "special" # استفاده از قلمرو
+            return "special"
         return "defend"
         
     elif boss_name in bleach_bosses:
@@ -151,7 +151,7 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
         if r < 0.3:
             return "attack"
         if r < 0.8:
-            return "special" # استفاده از بانکای
+            return "special"
         return "defend"
 
     if boss_hp < boss_max_hp * 0.25 and r < 0.3:
@@ -163,8 +163,7 @@ def boss_ai(boss_name, boss_hp, boss_max_hp):
     return "defend"
 
 def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
-    # 🆕 شانس‌های دقیق طبق درخواست شما
-    if defense_type == "دفاع" or defense_type == "Defend":
+    if defense_type == "دفاع":
         roll = random.randint(1, 3)
         if roll == 1:
             return php, f"✅ دفاع کامل! (۰ آسیب)"
@@ -176,14 +175,13 @@ def apply_defense_check(base_dmg, php, defense_type, char_dodge=0):
             php = max(0, php - base_dmg)
             return php, f"❌ دفاع ناموفق! ({format_num(base_dmg)} آسیب کامل)"
             
-    elif defense_type == "جاخالی" or defense_type == "Dodge":
+    elif defense_type == "جاخالی":
         roll = random.randint(1, 100)
         if roll <= 30:
             return php, f"✅ جاخالی کامل! (۰ آسیب)"
         else:
             php = max(0, php - base_dmg)
             return php, f"❌ جاخالی ناموفق! ({format_num(base_dmg)} آسیب کامل)"
-            
     else:
         roll = random.randint(1, 100)
         if roll <= 33:
@@ -324,7 +322,6 @@ def player_attack(battle, char):
     php = battle["php"]; bhp = battle["bhp"]
     pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    # 🆕 محاسبه آسیب پایه بازیکن
     if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
         base_dmg, crit = roll_damage(char[6] * 0.8, 0, 0)
     else:
@@ -341,23 +338,29 @@ def player_attack(battle, char):
     if bankai_atk:
         base_dmg = int(base_dmg * (1 + bankai_atk / 100))
 
-    # 🆕 سیستم واکنش باس به حمله تو (۳۳٪ / ۳۳٪ / ۳۳٪)
-    boss_reaction_roll = random.randint(1, 3)
+    # 🆕 بررسی دفاع باس از نوبت قبل
+    boss_defended_last_turn = battle.get("boss_defending", 0) == 1
+    if boss_defended_last_turn:
+        battle["boss_defending"] = 0 # ریست میکنیم
+
+    # 🆕 شانس‌های دقیق برای حمله بازیکن (جاخالی باس ۳۰٪ / دفاع باس ۳۰٪ / کامل ۴۰٪)
+    boss_reaction_roll = random.randint(1, 100)
     final_dmg = base_dmg
     boss_reaction_text = ""
 
-    if boss_reaction_roll == 1:
-        # ۳۳٪ کل دمیج بخوره (یعنی دفاع ناموفق)
-        final_dmg = base_dmg
-        boss_reaction_text = "\n\n❌ **دفاع باس ناموفق بود!** (آسیب کامل)"
-    elif boss_reaction_roll == 2:
-        # ۳۳٪ کامل دف کنه
+    if boss_reaction_roll <= 30:
         final_dmg = 0
-        boss_reaction_text = "\n\n🛡️ **باس کامل دفاع کرد!** (۰ آسیب)"
-    else:
-        # ۳۳٪ نصفش رو بخوره (دفاع جزئی)
+        boss_reaction_text = "\n\n💨 **باس جاخالی داد!** (۰ آسیب)"
+    elif boss_reaction_roll <= 60:
         final_dmg = int(base_dmg * 0.5)
-        boss_reaction_text = f"\n\n🛡️ **باس دفاع جزئی کرد!** (نصف دمیج: {format_num(final_dmg)})"
+        boss_reaction_text = f"\n\n🛡️ **باس دفاع کرد!** (نصف دمیج: {format_num(final_dmg)})"
+    else:
+        if boss_defended_last_turn:
+            final_dmg = int(base_dmg * 0.5)
+            boss_reaction_text = f"\n\n🛡️ **باس در نوبت قبل دفاع کرده بود!** (نصف دمیج: {format_num(final_dmg)})"
+        else:
+            final_dmg = base_dmg
+            boss_reaction_text = "\n\n❌ **دفاع باس ناموفق بود!** (آسیب کامل)"
 
     bhp = max(0, bhp - final_dmg)
 
@@ -375,7 +378,6 @@ def player_attack(battle, char):
         battle["php"] = php; battle["bhp"] = bhp
         return "won", text, battle
 
-    # نوبت باس
     php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
 
     battle = apply_bankai_round(battle)
