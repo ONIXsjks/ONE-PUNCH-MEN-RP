@@ -219,6 +219,7 @@ def boss_attack_player(boss, php, pmax, battle, defense_flag=None, char_dodge=0)
         php = max(0, php - base_dmg)
     text += f"\n\n👤 {hp_bar(php, pmax)}"
     return php, text, base_dmg
+
 def apply_bankai_round(battle):
     if battle.get("bankai_used", 0) < 1: return battle
     bankai = battle.get("bankai_data", {})
@@ -276,39 +277,43 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += "\n\n❄️ باس فریزه! (نوبت از دست داد)"
         return php, bhp, text
 
-    # 🆕 مدیریت انرژی مجازی باس
-    boss_energy = battle.get("boss_energy", 5000) # انرژی اولیه باس
-    if boss_energy < 500:
-        boss_energy = 5000 # شارژ مجدد
+    # 🆕 انرژی باس فقط خونده میشه — هیچ شارژ خودکاری نیست
+    boss_energy = battle.get("boss_energy", 1000)
+    if boss_energy > 1000:
+        boss_energy = 1000
     battle["boss_energy"] = boss_energy
 
     action = boss_ai(battle["boss_name"], bhp, bmax)
-    
+
+    # 🆕 اگه انرژی باس کم بود، نمی‌تونه حمله ویژه بزنه
+    if action == "special" and boss_energy < 100:
+        action = "attack"
+
     if action == "attack":
         php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, defense_flag)
         text += f"\n\n{boss_text}"
-        
+
     elif action == "special":
         boss_name = battle["boss_name"]
         is_jjk = boss_name in BOSSES_JJK or boss_name in FODDER_JJK
         is_bleach = boss_name in BLEACH_BOSSES or boss_name in BLEACH_FODDER
         is_geass = boss_name in CODEGEASS_BOSSES or boss_name in CODEGEASS_FODDER
-        
+
         special_name = "Awaken"
         if is_jjk: special_name = "Domain Expansion"
         elif is_bleach: special_name = "Bankai"
         elif is_geass: special_name = "Geass"
-        
+
         if bmax <= 1000: mult = 2; energy_cost = 200
         elif bmax <= 10000: mult = 3; energy_cost = 300
         elif bmax <= 30000: mult = 4; energy_cost = 400
         else: mult = 6; energy_cost = 550
-        
-        # 🆕 کم کردن انرژی باس
+
+        # 🆕 کم کردن انرژی باس (فقط کم میشه، شارژ نمیشه)
         battle["boss_energy"] = max(0, boss_energy - energy_cost)
-            
+
         base_dmg, _ = roll_damage(boss["atk"] * mult, 0, 0)
-        
+
         if defense_flag:
             php, def_log = apply_defense_check(base_dmg, php, defense_flag.capitalize())
             text += f"\n\n{box_simple(f'💥 {special_name} باس!')}"
@@ -322,7 +327,7 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
             text += f"\n\n💢 {format_num(base_dmg)} آسیب!"
             text += f"\n⚡ انرژی باس: {energy_cost}-"
             text += f"\n\n👤 {hp_bar(php, pmax)}"
-            
+
     elif action == "defend":
         text += f"\n\n🛡️ باس دفاع گرفت."
         battle["boss_defending"] = 1
@@ -330,9 +335,8 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         heal = int(bmax * 0.1); bhp = min(bmax, bhp + heal)
         text += f"\n\n💚 باس درمان: +{format_num(heal)}"
         text += f"\n👹 {hp_bar(bhp, bmax)}"
-        
-    return php, bhp, text
 
+    return php, bhp, text
 def player_attack(battle, char):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -681,6 +685,7 @@ def player_ability(battle, char, ability_name):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
+
 def player_ability_v2(battle, char, action):
     char_name = char[2]
     if action == "domain": return player_ability(battle, char, "DOMAIN")
@@ -769,76 +774,21 @@ def player_ability_shop(battle, char, ability_name):
     else: dmg = int(char[6] * 2)
     bhp = max(0, bhp - dmg); text += f"\n\n💥 {format_num(dmg)} آسیب"; text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
     if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-    battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt: text += f"\n{bt}"
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0: return "won", text, battle
-    if php <= 0: return "lost", text, battle
-    return "active", text, battle
-
-def player_buff_shop(battle, char, buff_name):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss: return "active", "❌ باس پیدا نشد.", battle
-    php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
-    info = BUFFS.get(buff_name)
-    if not info: return "active", "❌ باف پیدا نشد.", battle
-    eff = info.get("effect", ""); text = box_simple(f"✨ {buff_name}!")
-    if "Max HP" in eff: heal = 500; php = min(pmax, php + heal); text += f"\n\n💚 +{format_num(heal)} HP"
-    elif "ATK" in eff and "150" in eff: battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 15; text += "\n\n⚔️ ATK +۱۵٪"
-    elif "DEF" in eff: text += "\n\n🛡️ DEF +۸۰"
-    elif "DODGE" in eff: text += "\n\n💨 دوج +۱۰٪"
-    elif "all +20" in eff: battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 20; text += "\n\n🔥 همه +۲۰٪"
-    elif "all +50" in eff: battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 50; text += "\n\n🔥 همه +۵۰٪"
-    text += f"\n\n👤 {hp_bar(php, pmax)}"
-    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-    battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
-    if bt: text += f"\n{bt}"
-    battle["php"] = php; battle["bhp"] = bhp
-    if bhp <= 0: return "won", text, battle
-    if php <= 0: return "lost", text, battle
-    return "active", text, battle
-
-def player_item(battle, char, item_name):
-    boss = get_boss_data(battle["boss_name"])
-    if not boss: return "active", "❌ باس پیدا نشد.", battle
-    info = ITEMS.get(item_name)
-    if not info: return "active", "❌ آیتم نداری.", battle
-    php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
-    text = box_simple(f"💊 {item_name}!"); new_php = php; new_bhp = bhp
-    if item_name == "Health Potion": new_php = min(pmax, php + 500); text += "\n\n💚 HP +۵۰۰"
-    elif item_name == "Mega Potion": new_php = min(pmax, php + 1500); text += "\n\n💚 HP +۱,۵۰۰"
-    elif item_name == "Damage Boost":
-        dmg, _ = roll_damage(char[6] * 2); new_bhp = max(0, bhp - dmg); text += f"\n\n💥 ATK x2 → {format_num(dmg)}"
-    elif item_name == "Bomb": new_bhp = max(0, bhp - 500); text += "\n\n💥 ۵۰۰ آسیب"
-    elif item_name == "Jinwoo Sword": battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 50; text += "\n\n🗡️ شمشیر جین‌وو! ATK +۵۰٪"
-    elif item_name == "Magic Bean": new_php = pmax; text += "\n\n🫘 لوبیای جادویی! HP کامل"
-    elif item_name == "Saiyan Crystal": battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + 100; text += "\n\n💠 کریستال سایان! ATK +۱۰۰٪"
-    elif item_name == "Sea Meat": heal = int(pmax * 0.7); new_php = min(pmax, php + heal); text += f"\n\n🍖 گوشت دریایی! +{format_num(heal)} HP"
-    else: text += f"\n\n{info.get('effect_fa', info.get('effect', ''))}"
-    if new_bhp <= 0: battle["php"] = new_php; battle["bhp"] = new_bhp; return "won", text, battle
-    new_php, new_bhp, text = boss_turn(battle, boss, new_php, pmax, new_bhp, bmax, text)
-    battle = apply_bankai_round(battle); new_php, new_bhp, bt = apply_bankai_effects(battle, new_php, pmax, new_bhp, bmax)
-    if bt: text += f"\n{bt}"
-    battle["php"] = new_php; battle["bhp"] = new_bhp
-    if new_bhp <= 0: return "won", text, battle
-    if new_php <= 0: return "lost", text, battle
-    return "active", text, battle
-
+    php, bh
 def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
     boss_display = boss["display_name"] if boss else battle["boss_name"]
     
-    # 🆕 گرفتن انرژی باس از دیتابیس
-    boss_energy = battle.get("boss_energy", 5000)
+    # 🆕 انرژی باس فقط از مقدار ذخیره‌شده — سقف ۱۰۰۰
+    boss_energy = battle.get("boss_energy", 1000)
 
     text = f"╔══════════════════════════╗\n"
     text += f"║  👹 {boss_display[:20].center(20)} ║\n"
     text += f"╚══════════════════════════╝\n\n"
     text += f"{hp_bar(battle['bhp'], battle['bmax'])}\n"
     text += f"⚔️ ATK: {format_num(boss_atk)}\n"
-    text += f"⚡ انرژی: {format_num(boss_energy)} 🔋\n" # 🆕 نمایش انرژی باس
+    text += f"⚡ انرژی: {format_num(boss_energy)}/۱۰۰۰ 🔋\n"
 
     text += f"\n╭───── 👤 {char[2][:16]} ─────╮\n"
     text += f"│ ⭐ {char[3]} Rank{' ' * (14 - len(char[3]))}│\n"
