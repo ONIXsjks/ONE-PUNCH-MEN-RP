@@ -572,6 +572,73 @@ if action in ("awaken_blue", "awaken_red", "awaken_purple"):
         if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
             await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
             return
+async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    action = q.data.replace("act_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    battle = get_battle(user_id)
+    if not battle:
+        await q.message.reply_text("❌ نبرد فعالی نداری. /battle بزن.")
+        return
+    
+    # 🆕 SOUL SYSTEM CHECK
+    rebel_text = ""
+    if action in ("attack", "defend", "dodge"):
+        soul_data = get_soul(user_id, char[2])
+        obeyed, final_action, rebel_msg, trust_change = check_obedience(user_id, char[2], action, battle["php"], battle["pmax"])
+        if not obeyed:
+            action = final_action
+            rebel_text = rebel_msg
+            update_trust(user_id, char[2], trust_change)
+    
+    if action == "surrender":
+        end_battle(battle["id"])
+        try: await q.edit_message_text("🏳️ تسلیم شدی!")
+        except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
+        return
+
+    if action == "awakening":
+        if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
+            await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
+            return
+        battle["domain_active"] = 1
+        battle["domain_turns"] = 3
+        battle["domain_name"] = "Awakening"
+        update_battle(battle)
+        text = box_title("🔥 اویکن فعال شد!", 26)
+async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    action = q.data.replace("act_", "")
+    user_id = q.from_user.id
+    char = get_active_character(user_id)
+    battle = get_battle(user_id)
+    if not battle:
+        await q.message.reply_text("❌ نبرد فعالی نداری. /battle بزن.")
+        return
+    
+    # 🆕 SOUL SYSTEM CHECK
+    rebel_text = ""
+    if action in ("attack", "defend", "dodge"):
+        soul_data = get_soul(user_id, char[2])
+        obeyed, final_action, rebel_msg, trust_change = check_obedience(user_id, char[2], action, battle["php"], battle["pmax"])
+        if not obeyed:
+            action = final_action
+            rebel_text = rebel_msg
+            update_trust(user_id, char[2], trust_change)
+    
+    if action == "surrender":
+        end_battle(battle["id"])
+        try: await q.edit_message_text("🏳️ تسلیم شدی!")
+        except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
+        return
+
+    if action == "awakening":
+        if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
+            await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
+            return
         battle["domain_active"] = 1
         battle["domain_turns"] = 3
         battle["domain_name"] = "Awakening"
@@ -623,6 +690,236 @@ if action in ("awaken_blue", "awaken_red", "awaken_purple"):
     elif action == "goku_form":
         if char[2] != "Son Goku":
             await q.answer("❌ فقط گوکو می‌تونه تغییر فرم بده!", show_alert=True)
+            return
+        status, text, battle = goku_transform(battle, char)
+    elif action == "luffy_form":
+        if char[2] != "Monkey D. Luffy":
+            await q.answer("❌ فقط لوفی می‌تونه تغییر فرم بده!", show_alert=True)
+            return
+        status, text, battle = luffy_transform(battle, char)
+    elif action == "ultimate_geass":
+        if char[2] not in ABILITIES_CODEGEASS:
+            await q.answer("❌ این کاراکتر گیاس دوم نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "ultimate_geass")
+    elif action == "item":
+        items = get_items(user_id)
+        if not items:
+            await q.answer("❌ آیتم نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(f"{ITEM_FA.get(n, n)} (x{c})", callback_data=f"it_{n}")] for n, c in items]
+        await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "shop_ability":
+        abilities = get_abilities(user_id, char[2])
+        if not abilities:
+            await q.answer("❌ Ability خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(ABILITY_FA.get(a, a), callback_data=f"shopab_{a}")] for a in abilities]
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("🔥 Ability خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "shop_buff":
+        buffs = get_user_buffs(user_id, char[2])
+        if not buffs:
+            await q.answer("❌ باف خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(BUFF_FA.get(b, b), callback_data=f"shopbf_{b}")] for b in buffs]
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("✨ باف خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "back":
+        text = build_battle_message(battle, char)
+        try: await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+        except Exception: await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+        return
+    elif action == "domain":
+        if char[2] not in DOMAINS_JJK:
+            await q.answer("❌ این کاراکتر Domain نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "domain")
+    elif action == "bankai":
+        if char[2] not in BLEACH_BANKAI:
+            await q.answer("❌ این کاراکتر Bankai نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "bankai")
+    elif action == "arise":
+        if char[2] != "Sung Jin-Woo":
+            await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
+            return
+        shadows = get_user_shadows(user_id, char[2])
+        if not shadows:
+            await q.answer("❌ هیچ سایه‌ای نداری! اول باس بکش.", show_alert=True)
+            return
+        shadows_text = "💀 **سایه‌های تو:**\n\n"
+        for i, (sname, atk_bonus) in enumerate(shadows, 1):
+            shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
+        shadows_text += f"\n⚔️ مجموع ATK: +{sum(s[1] for s in shadows)}"
+        try: await q.edit_message_text(shadows_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")]]))
+        except Exception: await q.message.reply_text(shadows_text)
+        return
+    else:
+        return
+    
+    if status == "won":
+        update_battle(battle)
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        arise_text = ""
+        try:
+            success, msg = try_arise(user_id, char[2], battle["boss_name"])
+            if success: arise_text = msg
+        except Exception: pass
+        end_battle(battle["id"])
+        final_text = f"{rebel_text}{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
+        return
+    elif status == "lost":
+        update_battle(battle)
+        end_battle(battle["id"])
+        try: await q.edit_message_text(f"{rebel_text}{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{rebel_text}{text}\n\n💀 باختی!")
+        return
+    
+    if char[2] == "Son Goku":
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE active_battles SET goku_form = ? WHERE id = ?", (battle.get("goku_form", 0), battle["id"]))
+        conn.commit()
+        conn.close()
+    elif char[2] == "Monkey D. Luffy":
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE active_battles SET luffy_form = ? WHERE id = ?", (battle.get("luffy_form", 0), battle["id"]))
+        conn.commit()
+        conn.close()
+        
+    update_battle(battle)
+    full_text = rebel_text + text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+
+    if action in ("ability_1", "ability_2", "ability_3"):
+        status, text, battle = player_ability_v2(battle, char, action)
+    elif action == "attack":
+        status, text, battle = player_attack(battle, char)
+    elif action == "defend":
+        status, text, battle = player_defend(battle, char)
+    elif action == "dodge":
+        status, text, battle = player_dodge(battle, char)
+    elif action == "goku_form":
+        if char[2] != "Son Goku":
+            await q.answer("❌ فقط گوکو می‌تونه تغییر فرم بده!", show_alert=True)
+            return
+        status, text, battle = goku_transform(battle, char)
+    elif action == "luffy_form":
+        if char[2] != "Monkey D. Luffy":
+            await q.answer("❌ فقط لوفی می‌تونه تغییر فرم بده!", show_alert=True)
+            return
+        status, text, battle = luffy_transform(battle, char)
+    elif action == "ultimate_geass":
+        if char[2] not in ABILITIES_CODEGEASS:
+            await q.answer("❌ این کاراکتر گیاس دوم نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "ultimate_geass")
+    elif action == "item":
+        items = get_items(user_id)
+        if not items:
+            await q.answer("❌ آیتم نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(f"{ITEM_FA.get(n, n)} (x{c})", callback_data=f"it_{n}")] for n, c in items]
+        await q.message.reply_text("💊 آیتم انتخاب کن:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "shop_ability":
+        abilities = get_abilities(user_id, char[2])
+        if not abilities:
+            await q.answer("❌ Ability خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(ABILITY_FA.get(a, a), callback_data=f"shopab_{a}")] for a in abilities]
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("🔥 Ability خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "shop_buff":
+        buffs = get_user_buffs(user_id, char[2])
+        if not buffs:
+            await q.answer("❌ باف خریداری‌شده نداری.", show_alert=True)
+            return
+        kb = [[InlineKeyboardButton(BUFF_FA.get(b, b), callback_data=f"shopbf_{b}")] for b in buffs]
+        kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")])
+        await q.message.reply_text("✨ باف خریداری‌شده:", reply_markup=InlineKeyboardMarkup(kb))
+        return
+    elif action == "back":
+        text = build_battle_message(battle, char)
+        try: await q.edit_message_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+        except Exception: await q.message.reply_text(text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+        return
+    elif action == "domain":
+        if char[2] not in DOMAINS_JJK:
+            await q.answer("❌ این کاراکتر Domain نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "domain")
+    elif action == "bankai":
+        if char[2] not in BLEACH_BANKAI:
+            await q.answer("❌ این کاراکتر Bankai نداره!", show_alert=True)
+            return
+        status, text, battle = player_ability_v2(battle, char, "bankai")
+    elif action == "arise":
+        if char[2] != "Sung Jin-Woo":
+            await q.answer("❌ این کاراکتر Arise نداره!", show_alert=True)
+            return
+        shadows = get_user_shadows(user_id, char[2])
+        if not shadows:
+            await q.answer("❌ هیچ سایه‌ای نداری! اول باس بکش.", show_alert=True)
+            return
+        shadows_text = "💀 **سایه‌های تو:**\n\n"
+        for i, (sname, atk_bonus) in enumerate(shadows, 1):
+            shadows_text += f"{i}. {sname} (+{atk_bonus} ATK)\n"
+        shadows_text += f"\n⚔️ مجموع ATK: +{sum(s[1] for s in shadows)}"
+        try: await q.edit_message_text(shadows_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data="act_back")]]))
+        except Exception: await q.message.reply_text(shadows_text)
+        return
+    else:
+        return
+    
+    if status == "won":
+        update_battle(battle)
+        reward = finish_battle(user_id, battle["boss_name"], True)
+        arise_text = ""
+        try:
+            success, msg = try_arise(user_id, char[2], battle["boss_name"])
+            if success: arise_text = msg
+        except Exception: pass
+        end_battle(battle["id"])
+        final_text = f"{rebel_text}{text}\n\n🏆 بردی!\n💰 +{reward:,} coin{arise_text}"
+        try: await q.edit_message_text(final_text)
+        except Exception: await q.message.reply_text(final_text)
+        return
+    elif status == "lost":
+        update_battle(battle)
+        end_battle(battle["id"])
+        try: await q.edit_message_text(f"{rebel_text}{text}\n\n💀 باختی!")
+        except Exception: await q.message.reply_text(f"{rebel_text}{text}\n\n💀 باختی!")
+        return
+    
+    if char[2] == "Son Goku":
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE active_battles SET goku_form = ? WHERE id = ?", (battle.get("goku_form", 0), battle["id"]))
+        conn.commit()
+        conn.close()
+    elif char[2] == "Monkey D. Luffy":
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("UPDATE active_battles SET luffy_form = ? WHERE id = ?", (battle.get("luffy_form", 0), battle["id"]))
+        conn.commit()
+        conn.close()
+        
+    update_battle(battle)
+    full_text = rebel_text + text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
+    if len(full_text) > 3500: full_text = full_text[:3500] + "..."
+    try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
+    except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
             return
         status, text, battle = goku_transform(battle, char)
     elif action == "luffy_form":
