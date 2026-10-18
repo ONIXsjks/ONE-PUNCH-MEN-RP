@@ -28,7 +28,22 @@ def get_boss_data(boss_name):
                    AOT_BOSSES, BLACKCLOVER_BOSSES, BERSERK_BOSSES,
                    DEMONSLAYER_BOSSES, CHAINSAWMAN_BOSSES]:
         if boss_name in bosses:
-            return bosses[boss_name]
+            boss = bosses[boss_name].copy()
+            
+            # 🆕 سیستم هوشمند: اگر باس اتک نداشت، یه اتک پایه بهش بده
+            if boss.get("atk", 0) <= 0:
+                boss["atk"] = 250  # اتک پایه برای جلوگیری از 0 شدن
+                
+            # 🆕 اگر باس HP نداشت، یه HP پایه بده
+            if boss.get("hp", 0) <= 0:
+                boss["hp"] = 5000
+                
+            # 🆕 اگر اسم نمایشی نداشت
+            if "display_name" not in boss:
+                boss["display_name"] = boss_name
+                
+            return boss
+            
     return None
 
 
@@ -648,8 +663,9 @@ def goku_transform(battle, char):
 # 🆕 فرم لوفی (One Piece)
 def luffy_transform(battle, char):
     current_form = battle.get("luffy_form", 0)
+    
     if current_form >= 4:
-        return "active", "🔥 لوفی به حداکثر قدرت رسیده! (Gear 5)", battle
+        return "active", "🔥 لوفی در فرم **Gear 5 (Sun God Nika)** است و به حداکثر قدرت رسیده!", battle
     
     new_form = current_form + 1
     
@@ -658,9 +674,9 @@ def luffy_transform(battle, char):
     elif new_form == 2:
         atk_boost, dodge_boost, form_name = 25, 15, "Gear 3"
     elif new_form == 3:
-        atk_boost, dodge_boost, form_name = 40, 20, "Gear 4"
+        atk_boost, dodge_boost, form_name = 40, 20, "Gear 4 (Bounceman)"
     else:
-        atk_boost, dodge_boost, form_name = 60, 30, "Gear 5"
+        atk_boost, dodge_boost, form_name = 60, 30, "Gear 5 (Sun God Nika)"
     
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost
     battle["luffy_form"] = new_form
