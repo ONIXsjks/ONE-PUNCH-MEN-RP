@@ -276,6 +276,12 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += "\n\n❄️ باس فریزه! (نوبت از دست داد)"
         return php, bhp, text
 
+    # 🆕 مدیریت انرژی مجازی باس
+    boss_energy = battle.get("boss_energy", 5000) # انرژی اولیه باس
+    if boss_energy < 500:
+        boss_energy = 5000 # شارژ مجدد
+    battle["boss_energy"] = boss_energy
+
     action = boss_ai(battle["boss_name"], bhp, bmax)
     
     if action == "attack":
@@ -293,23 +299,28 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         elif is_bleach: special_name = "Bankai"
         elif is_geass: special_name = "Geass"
         
-        if bmax <= 1000: mult = 2; energy_str = "200"
-        elif bmax <= 10000: mult = 3; energy_str = "300"
-        elif bmax <= 30000: mult = 4; energy_str = "400"
-        else: mult = 6; energy_str = "550"
+        if bmax <= 1000: mult = 2; energy_cost = 200
+        elif bmax <= 10000: mult = 3; energy_cost = 300
+        elif bmax <= 30000: mult = 4; energy_cost = 400
+        else: mult = 6; energy_cost = 550
+        
+        # 🆕 کم کردن انرژی باس
+        battle["boss_energy"] = max(0, boss_energy - energy_cost)
             
         base_dmg, _ = roll_damage(boss["atk"] * mult, 0, 0)
         
         if defense_flag:
             php, def_log = apply_defense_check(base_dmg, php, defense_flag.capitalize())
-            text += f"\n\n{box_simple(f'💥 {special_name} باس! (انرژی: {energy_str})')}"
+            text += f"\n\n{box_simple(f'💥 {special_name} باس!')}"
             text += f"\n\n💢 آسیب پایه: {format_num(base_dmg)}"
             text += f"\n{def_log}"
+            text += f"\n⚡ انرژی باس: {energy_cost}-"
             text += f"\n\n👤 {hp_bar(php, pmax)}"
         else:
             php = max(0, php - base_dmg)
-            text += f"\n\n{box_simple(f'💥 {special_name} باس! (انرژی: {energy_str})')}"
+            text += f"\n\n{box_simple(f'💥 {special_name} باس!')}"
             text += f"\n\n💢 {format_num(base_dmg)} آسیب!"
+            text += f"\n⚡ انرژی باس: {energy_cost}-"
             text += f"\n\n👤 {hp_bar(php, pmax)}"
             
     elif action == "defend":
@@ -319,6 +330,7 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         heal = int(bmax * 0.1); bhp = min(bmax, bhp + heal)
         text += f"\n\n💚 باس درمان: +{format_num(heal)}"
         text += f"\n👹 {hp_bar(bhp, bmax)}"
+        
     return php, bhp, text
 
 def player_attack(battle, char):
@@ -817,15 +829,31 @@ def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
     boss_display = boss["display_name"] if boss else battle["boss_name"]
-    text = f"╔══════════════════════════╗\n║  👹 {boss_display[:20].center(20)} ║\n╚══════════════════════════╝\n\n"
-    text += f"{hp_bar(battle['bhp'], battle['bmax'])}\n⚔️ ATK: {format_num(boss_atk)}\n"
-    text += f"\n╭───── 👤 {char[2][:16]} ─────╮\n│ ⭐ {char[3]} Rank{' ' * (14 - len(char[3]))}│\n│ {hp_bar(battle['php'], battle['pmax'])} │\n"
-    text += f"│ ⚔️ ATK: {format_num(char[6])}{' ' * (13 - len(format_num(char[6])))}│\n│ 🛡️ DEF: {format_num(char[7])}{' ' * (13 - len(format_num(char[7])))}│\n"
-    text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n╰{'─' * 25}╯"
+    
+    # 🆕 گرفتن انرژی باس از دیتابیس
+    boss_energy = battle.get("boss_energy", 5000)
+
+    text = f"╔══════════════════════════╗\n"
+    text += f"║  👹 {boss_display[:20].center(20)} ║\n"
+    text += f"╚══════════════════════════╝\n\n"
+    text += f"{hp_bar(battle['bhp'], battle['bmax'])}\n"
+    text += f"⚔️ ATK: {format_num(boss_atk)}\n"
+    text += f"⚡ انرژی: {format_num(boss_energy)} 🔋\n" # 🆕 نمایش انرژی باس
+
+    text += f"\n╭───── 👤 {char[2][:16]} ─────╮\n"
+    text += f"│ ⭐ {char[3]} Rank{' ' * (14 - len(char[3]))}│\n"
+    text += f"│ {hp_bar(battle['php'], battle['pmax'])} │\n"
+    text += f"│ ⚔️ ATK: {format_num(char[6])}{' ' * (13 - len(format_num(char[6])))}│\n"
+    text += f"│ 🛡️ DEF: {format_num(char[7])}{' ' * (13 - len(format_num(char[7])))}│\n"
+    text += f"│ 💨 DODGE: {char[8]}%{' ' * (10 - len(str(char[8])))}│\n"
+    text += f"╰{'─' * 25}╯"
+
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
-        if shadow_bonus > 0: text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
-    
+        if shadow_bonus > 0:
+            text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
+
+    # 🆕 نمایش انرژی‌های پلیر
     try:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         c.execute("""SELECT cursed_energy, max_cursed_energy, reiatsu, max_reiatsu, geass_power, max_geass_power, haki, max_haki, 
@@ -861,6 +889,7 @@ def build_battle_message(battle, char):
     if battle.get("bankai_used", 0) >= 1:
         bankai = battle.get("bankai_data", {}); text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
     if battle.get("boss_frozen", 0) > 0: text += f"\n❄️ باس فریز است ({battle['boss_frozen']} نوبت)"
+
     text += f"\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 نوبت توئه!"
     return text
 
