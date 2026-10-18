@@ -640,6 +640,77 @@ def player_ability_v2(battle, char, action):
         ab_name = abilities[action]["name"]; return player_ability(battle, char, ab_name)
     return "active", "❌ Ability نامعتبر.", battle
 
+# 🆕 تابع جدید برای پردازش دکمه‌های اویکن
+def player_awaken_ability(battle, char, color):
+    boss = get_boss_data(battle["boss_name"])
+    if not boss: return "active", "❌ باس پیدا نشد.", battle
+    php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
+
+    if color == "blue":
+        if battle.get("awaken_blue_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
+        mult, cost = 5, 30
+        battle["awaken_blue_used"] = 1
+    elif color == "red":
+        if battle.get("awaken_red_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
+        mult, cost = 5, 35
+        battle["awaken_red_used"] = 1
+    else:
+        if battle.get("awaken_purple_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
+        mult, cost = 6, 40
+        battle["awaken_purple_used"] = 1
+
+    ability_name = get_awaken_name(char[2], color)
+    
+    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+    energy_col = "cursed_energy"
+    if char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: energy_col = "reiatsu"
+    elif char[2] in ABILITIES_CODEGEASS: energy_col = "geass_power"
+    elif char[2] in ABILITIES_ONEPIECE: energy_col = "haki"
+    elif char[2] in ABILITIES_NARUTO: energy_col = "naruto_chakra"
+    elif char[2] in ABILITIES_DRAGONBALL: energy_col = "dragonball_ki"
+    elif char[2] in ABILITIES_SOLOLEVELING: energy_col = "sololeveling_mana"
+    elif char[2] in ABILITIES_HXH: energy_col = "hxh_nen"
+    elif char[2] in ABILITIES_MUSHOKU: energy_col = "mushoku_mana"
+    elif char[2] in ABILITIES_TOKYOGHOUL: energy_col = "tokyoghoul_rc"
+    elif char[2] in ABILITIES_SDS: energy_col = "sds_magic"
+    elif char[2] in ABILITIES_SAKAMOTO: energy_col = "sakamoto_stamina"
+    elif char[2] in ABILITIES_AOT: energy_col = "aot_titan"
+    elif char[2] in ABILITIES_BLACKCLOVER: energy_col = "blackclover_mana"
+    elif char[2] in ABILITIES_BERSERK: energy_col = "berserk_bloodlust"
+    elif char[2] in ABILITIES_DEMONSLAYER: energy_col = "demonslayer_breath"
+    elif char[2] in ABILITIES_CHAINSAWMAN: energy_col = "chainsawman_blood"
+    elif char[2] in ABILITIES_OPM: energy_col = "opm_power"
+
+    c.execute(f"SELECT {energy_col} FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+    row = c.fetchone()
+    energy = row[0] if row else 0
+    if energy < cost:
+        conn.close()
+        return "active", f"❌ انرژی کافی نداری! (نیاز: {cost})", battle
+    c.execute(f"UPDATE characters SET {energy_col} = {energy_col} - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
+    conn.commit(); conn.close()
+
+    dmg = int(char[6] * mult)
+    bhp = max(0, bhp - dmg)
+    text = box_title(f"🔥 {ability_name}!", 26)
+    text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)\n⚡ انرژی مصرفی: {cost}"
+    text += f"\n\n👹 {boss['display_name']}"
+    text += f"\n{hp_bar(bhp, bmax)}"
+
+    if bhp <= 0:
+        battle["php"] = php; battle["bhp"] = bhp
+        return "won", text, battle
+
+    php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
+    battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+    if bt: text += f"\n{bt}"
+    battle = apply_domain_round(battle)
+
+    battle["php"] = php; battle["bhp"] = bhp
+    if bhp <= 0: return "won", text, battle
+    if php <= 0: return "lost", text, battle
+    return "active", text, battle
+
 def player_ability_shop(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
