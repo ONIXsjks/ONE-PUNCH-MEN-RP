@@ -26,7 +26,8 @@ from guild import (create_new_guild, join_existing_guild, leave_current_guild,
 from battle import (player_attack, player_defend, player_dodge,
                     player_ability, player_item, build_battle_message,
                     finish_battle, player_ability_v2,
-                    player_ability_shop, player_buff_shop, goku_transform, luffy_transform)
+                    player_ability_shop, player_buff_shop, goku_transform, luffy_transform,
+                    get_awaken_name)
 from multi_battle import (init_multi_table, create_multi_battle, get_multi_battle,
                           update_multi_battle, end_multi_battle, player_action,
                           finish_multi_battle, build_battle_view, get_player,
@@ -125,18 +126,9 @@ def get_character_abilities(char_name):
 def get_character_domain_bankai(char_name):
     return char_name in DOMAINS_JJK, char_name in BLEACH_BANKAI
 
-def save_menu_owner(ctx, menu_name, user_id):
-    ctx.user_data[f"owner_{menu_name}"] = user_id
-
-async def check_menu_owner(q, ctx, menu_name):
-    if ctx.user_data.get(f"owner_{menu_name}") != q.from_user.id:
-        await q.answer("❌ این منو برای شما نیست! لطفاً خودتان دستور مربوطه را بزنید.", show_alert=True)
-        return False
-    return True
 def get_battle_kb(char_name=None, user_id=None, battle=None):
     kb = []
     if char_name:
-        # 🆕 سیستم دکمه‌های اویکن/بانکای/قلمرو
         if battle:
             domain_active = battle.get("domain_active", 0) == 1
             bankai_used = battle.get("bankai_used", 0) >= 1
@@ -144,23 +136,21 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
             awakening_active = domain_active or bankai_used or geass_used
             
             if awakening_active:
-                # دکمه‌های جدید اویکن (فقط ۱ بار)
                 if battle.get("awaken_blue_used", 0) == 0:
-                    kb.append([InlineKeyboardButton("🔵 Ability اویکن (۳۰ انرژی)", callback_data="act_awaken_blue")])
+                    kb.append([InlineKeyboardButton(f"🔵 {get_awaken_name(char_name, 'blue')} (۳۰)", callback_data="act_awaken_blue")])
                 if battle.get("awaken_red_used", 0) == 0:
-                    kb.append([InlineKeyboardButton("🔴 ضربه ویژه اویکن (۳۵ انرژی)", callback_data="act_awaken_red")])
+                    kb.append([InlineKeyboardButton(f"🔴 {get_awaken_name(char_name, 'red')} (۳۵)", callback_data="act_awaken_red")])
                 if battle.get("awaken_purple_used", 0) == 0:
-                    kb.append([InlineKeyboardButton("🟣 ترکیب اویکن (۴۰ انرژی)", callback_data="act_awaken_purple")])
+                    kb.append([InlineKeyboardButton(f"🟣 {get_awaken_name(char_name, 'purple')} (۴۰)", callback_data="act_awaken_purple")])
             else:
-                # دکمه‌های عادی
                 abs_data = get_character_abilities(char_name)
                 if abs_data:
                     ab1 = abs_data.get("ability_1", {}).get("name", "Ability 1")
                     ab2 = abs_data.get("ability_2", {}).get("name", "Ability 2")
                     ab3 = abs_data.get("ability_3", {}).get("name", "Ultimate")
-                    kb.append([InlineKeyboardButton(f"🔵 {ab1} (۳x)", callback_data="act_ability_1")])
-                    kb.append([InlineKeyboardButton(f"🔴 {ab2} (۳.۵x)", callback_data="act_ability_2")])
-                    kb.append([InlineKeyboardButton(f"🟣 {ab3} (۵x)", callback_data="act_ability_3")])
+                    kb.append([InlineKeyboardButton(f"🔵 {ab1}", callback_data="act_ability_1")])
+                    kb.append([InlineKeyboardButton(f"🔴 {ab2}", callback_data="act_ability_2")])
+                    kb.append([InlineKeyboardButton(f"🟣 {ab3} (۱ بار)", callback_data="act_ability_3")])
     
     kb.append([InlineKeyboardButton("⚔️ حمله", callback_data="act_attack"), InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")])
     kb.append([InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"), InlineKeyboardButton("💊 آیتم", callback_data="act_item")])
@@ -181,7 +171,6 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
         if char_name in ABILITIES_CODEGEASS and battle.get("geass_used", 0) == 0: 
             kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
         
-        # 🆕 اگر کاراکتر اویکن نداشت (نه قلمرو، نه بانکای، نه گیاس)
         if not has_domain and not has_bankai and char_name not in ABILITIES_CODEGEASS and not awakening_active:
             kb.append([InlineKeyboardButton("🔥 اویکن (Awakening)", callback_data="act_awakening")])
 
@@ -208,6 +197,15 @@ def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
         if char_name == "Sung Jin-Woo": kb.append([InlineKeyboardButton("💀 Arise", callback_data=f"mb_arise_{session_id}")])
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data=f"mb_surrender_{session_id}")])
     return kb
+
+def save_menu_owner(ctx, menu_name, user_id):
+    ctx.user_data[f"owner_{menu_name}"] = user_id
+
+async def check_menu_owner(q, ctx, menu_name):
+    if ctx.user_data.get(f"owner_{menu_name}") != q.from_user.id:
+        await q.answer("❌ این منو برای شما نیست! لطفاً خودتان دستور مربوطه را بزنید.", show_alert=True)
+        return False
+    return True
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
@@ -722,7 +720,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
 
-    # 🆕 منطق اویکن
     if action == "awakening":
         if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
             await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
@@ -732,7 +729,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle["domain_name"] = "Awakening"
         text = box_title("🔥 اویکن فعال شد!", 26)
         text += "\n\n۳ تا Ability جدید باز شد (هر کدوم ۱ بار)"
-        battle["php"] = battle["php"]
         update_battle(battle)
         full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
         try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
@@ -744,43 +740,47 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             if battle.get("awaken_blue_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost, name = 5, 30, "ضربه آبی اویکن"
+            mult, cost = 5, 30
+            color = "blue"
             battle["awaken_blue_used"] = 1
         elif action == "awaken_red":
             if battle.get("awaken_red_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost, name = 5, 35, "ضربه قرمز اویکن"
+            mult, cost = 5, 35
+            color = "red"
             battle["awaken_red_used"] = 1
         else:
             if battle.get("awaken_purple_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost, name = 6, 40, "ترکیب اویکن"
+            mult, cost = 6, 40
+            color = "purple"
             battle["awaken_purple_used"] = 1
 
-        # کم کردن انرژی
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        energy_col, max_col = "cursed_energy", "max_cursed_energy"
-        if char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: energy_col, max_col = "reiatsu", "max_reiatsu"
-        elif char[2] in ABILITIES_CODEGEASS: energy_col, max_col = "geass_power", "max_geass_power"
-        elif char[2] in ABILITIES_ONEPIECE: energy_col, max_col = "haki", "max_haki"
-        elif char[2] in ABILITIES_NARUTO: energy_col, max_col = "naruto_chakra", "max_naruto_chakra"
-        elif char[2] in ABILITIES_DRAGONBALL: energy_col, max_col = "dragonball_ki", "max_dragonball_ki"
-        elif char[2] in ABILITIES_SOLOLEVELING: energy_col, max_col = "sololeveling_mana", "max_sololeveling_mana"
-        elif char[2] in ABILITIES_HXH: energy_col, max_col = "hxh_nen", "max_hxh_nen"
-        elif char[2] in ABILITIES_MUSHOKU: energy_col, max_col = "mushoku_mana", "max_mushoku_mana"
-        elif char[2] in ABILITIES_TOKYOGHOUL: energy_col, max_col = "tokyoghoul_rc", "max_tokyoghoul_rc"
-        elif char[2] in ABILITIES_SDS: energy_col, max_col = "sds_magic", "max_sds_magic"
-        elif char[2] in ABILITIES_SAKAMOTO: energy_col, max_col = "sakamoto_stamina", "max_sakamoto_stamina"
-        elif char[2] in ABILITIES_AOT: energy_col, max_col = "aot_titan", "max_aot_titan"
-        elif char[2] in ABILITIES_BLACKCLOVER: energy_col, max_col = "blackclover_mana", "max_blackclover_mana"
-        elif char[2] in ABILITIES_BERSERK: energy_col, max_col = "berserk_bloodlust", "max_berserk_bloodlust"
-        elif char[2] in ABILITIES_DEMONSLAYER: energy_col, max_col = "demonslayer_breath", "max_demonslayer_breath"
-        elif char[2] in ABILITIES_CHAINSAWMAN: energy_col, max_col = "chainsawman_blood", "max_chainsawman_blood"
-        elif char[2] in ABILITIES_OPM: energy_col, max_col = "opm_power", "max_opm_power"
+        ability_name = get_awaken_name(char[2], color)
 
-        c.execute(f"SELECT {energy_col}, {max_col} FROM characters WHERE user_id=? AND is_active=1", (user_id,))
+        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+        energy_col = "cursed_energy"
+        if char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: energy_col = "reiatsu"
+        elif char[2] in ABILITIES_CODEGEASS: energy_col = "geass_power"
+        elif char[2] in ABILITIES_ONEPIECE: energy_col = "haki"
+        elif char[2] in ABILITIES_NARUTO: energy_col = "naruto_chakra"
+        elif char[2] in ABILITIES_DRAGONBALL: energy_col = "dragonball_ki"
+        elif char[2] in ABILITIES_SOLOLEVELING: energy_col = "sololeveling_mana"
+        elif char[2] in ABILITIES_HXH: energy_col = "hxh_nen"
+        elif char[2] in ABILITIES_MUSHOKU: energy_col = "mushoku_mana"
+        elif char[2] in ABILITIES_TOKYOGHOUL: energy_col = "tokyoghoul_rc"
+        elif char[2] in ABILITIES_SDS: energy_col = "sds_magic"
+        elif char[2] in ABILITIES_SAKAMOTO: energy_col = "sakamoto_stamina"
+        elif char[2] in ABILITIES_AOT: energy_col = "aot_titan"
+        elif char[2] in ABILITIES_BLACKCLOVER: energy_col = "blackclover_mana"
+        elif char[2] in ABILITIES_BERSERK: energy_col = "berserk_bloodlust"
+        elif char[2] in ABILITIES_DEMONSLAYER: energy_col = "demonslayer_breath"
+        elif char[2] in ABILITIES_CHAINSAWMAN: energy_col = "chainsawman_blood"
+        elif char[2] in ABILITIES_OPM: energy_col = "opm_power"
+
+        c.execute(f"SELECT {energy_col} FROM characters WHERE user_id=? AND is_active=1", (user_id,))
         row = c.fetchone()
         energy = row[0] if row else 0
         if energy < cost:
@@ -792,7 +792,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         dmg = int(char[6] * mult)
         battle["bhp"] = max(0, battle["bhp"] - dmg)
-        text = box_title(f"🔥 {name}!", 26)
+        text = box_title(f"🔥 {ability_name}!", 26)
         text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)\n⚡ انرژی مصرفی: {cost}"
         text += f"\n\n👹 باس: {hp_bar(battle['bhp'], battle['bmax'])}"
         
@@ -814,7 +814,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
         return
 
-    # بقیه دکمه‌ها
     if action in ("ability_1", "ability_2", "ability_3"):
         status, text, battle = player_ability_v2(battle, char, action)
     elif action == "attack":
@@ -1598,6 +1597,7 @@ async def resetall_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id): return await update.message.reply_text("❌ فقط مالک!")
     total = reset_all_players()
     await update.message.reply_text(f"♻️ همه پلیرها ریست شدن! ({total} کاربر)")
+
 async def post_init(app):
     commands_list = [
         BotCommand("start", "شروع بازی"), BotCommand("profile", "پروفایل"),
