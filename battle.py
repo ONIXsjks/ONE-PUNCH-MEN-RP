@@ -627,21 +627,21 @@ def goku_transform(battle, char):
     
     new_form = current_form + 1
     
-    boosts = {
-        1: {"atk": 10, "dodge": 5, "name": "Super Saiyan 2"},
-        2: {"atk": 20, "dodge": 10, "name": "Super Saiyan 3"},
-        3: {"atk": 35, "dodge": 15, "name": "Super Saiyan God"},
-        4: {"atk": 50, "dodge": 25, "name": "Super Saiyan Blue"},
-    }
+    if new_form == 1:
+        atk_boost, dodge_boost, form_name = 10, 5, "Super Saiyan 2"
+    elif new_form == 2:
+        atk_boost, dodge_boost, form_name = 20, 10, "Super Saiyan 3"
+    elif new_form == 3:
+        atk_boost, dodge_boost, form_name = 35, 15, "Super Saiyan God"
+    else:
+        atk_boost, dodge_boost, form_name = 50, 25, "Super Saiyan Blue"
     
-    boost = boosts.get(new_form, {"atk": 0, "dodge": 0, "name": "Unknown"})
-    
-    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost
     battle["goku_form"] = new_form
     
-    text = f"⚡ **گوکو به فرم {boost['name']} رفت!**\n\n"
-    text += f"⚔️ ATK: +{boost['atk']}٪\n"
-    text += f"💨 DODGE: +{boost['dodge']}٪\n"
+    text = f"⚡ **گوکو به فرم {form_name} رفت!**\n\n"
+    text += f"⚔️ ATK: +{atk_boost}٪\n"
+    text += f"💨 DODGE: +{dodge_boost}٪\n"
     
     return "active", text, battle
 
@@ -653,21 +653,21 @@ def luffy_transform(battle, char):
     
     new_form = current_form + 1
     
-    boosts = {
-        1: {"atk": 15, "dodge": 10, "name": "Gear 2"},
-        2: {"atk": 25, "dodge": 15, "name": "Gear 3"},
-        3: {"atk": 40, "dodge": 20, "name": "Gear 4"},
-        4: {"atk": 60, "dodge": 30, "name": "Gear 5"},
-    }
+    if new_form == 1:
+        atk_boost, dodge_boost, form_name = 15, 10, "Gear 2"
+    elif new_form == 2:
+        atk_boost, dodge_boost, form_name = 25, 15, "Gear 3"
+    elif new_form == 3:
+        atk_boost, dodge_boost, form_name = 40, 20, "Gear 4"
+    else:
+        atk_boost, dodge_boost, form_name = 60, 30, "Gear 5"
     
-    boost = boosts.get(new_form, {"atk": 0, "dodge": 0, "name": "Unknown"})
-    
-    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost
     battle["luffy_form"] = new_form
     
-    text = f"⚡ **لوفی به فرم {boost['name']} رفت!**\n\n"
-    text += f"⚔️ ATK: +{boost['atk']}٪\n"
-    text += f"💨 DODGE: +{boost['dodge']}٪\n"
+    text = f"⚡ **لوفی به فرم {form_name} رفت!**\n\n"
+    text += f"⚔️ ATK: +{atk_boost}٪\n"
+    text += f"💨 DODGE: +{dodge_boost}٪\n"
     
     return "active", text, battle
 def player_ability_v2(battle, char, action):
@@ -851,6 +851,8 @@ def player_item(battle, char, item_name):
     if new_php <= 0:
         return "lost", text, battle
     return "active", text, battle
+
+
 def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
