@@ -720,6 +720,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
 
+    # 🆕 منطق اویکن
     if action == "awakening":
         if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
             await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
@@ -727,9 +728,9 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         battle["domain_active"] = 1
         battle["domain_turns"] = 3
         battle["domain_name"] = "Awakening"
+        update_battle(battle)
         text = box_title("🔥 اویکن فعال شد!", 26)
         text += "\n\n۳ تا Ability جدید باز شد (هر کدوم ۱ بار)"
-        update_battle(battle)
         full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
         try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
         except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
@@ -740,26 +741,29 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             if battle.get("awaken_blue_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost = 5, 30
-            color = "blue"
+            mult, cost, color = 5, 30, "blue"
             battle["awaken_blue_used"] = 1
         elif action == "awaken_red":
             if battle.get("awaken_red_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost = 5, 35
-            color = "red"
+            mult, cost, color = 5, 35, "red"
             battle["awaken_red_used"] = 1
         else:
             if battle.get("awaken_purple_used", 0) == 1:
                 await q.answer("❌ این Ability رو قبلاً استفاده کردی!", show_alert=True)
                 return
-            mult, cost = 6, 40
-            color = "purple"
+            mult, cost, color = 6, 40, "purple"
             battle["awaken_purple_used"] = 1
+
+        # 🆕 ذخیره وضعیت مصرف اویکن در دیتابیس
+        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+        c.execute(f"UPDATE active_battles SET awaken_{color}_used = 1 WHERE id = ?", (battle["id"],))
+        conn.commit(); conn.close()
 
         ability_name = get_awaken_name(char[2], color)
 
+        # کم کردن انرژی
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         energy_col = "cursed_energy"
         if char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: energy_col = "reiatsu"
@@ -790,6 +794,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         c.execute(f"UPDATE characters SET {energy_col} = {energy_col} - ? WHERE user_id=? AND is_active=1", (cost, user_id))
         conn.commit(); conn.close()
 
+        # اعمال دمیج
         dmg = int(char[6] * mult)
         battle["bhp"] = max(0, battle["bhp"] - dmg)
         text = box_title(f"🔥 {ability_name}!", 26)
@@ -804,6 +809,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception: await q.message.reply_text(final_text)
             return
             
+        # نوبت باس
         from battle import boss_turn, get_boss_data
         boss = get_boss_data(battle["boss_name"])
         php, bhp, text = boss_turn(battle, boss, battle["php"], battle["pmax"], battle["bhp"], battle["bmax"], text)
@@ -814,6 +820,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
         return
 
+    # بقیه دکمه‌ها
     if action in ("ability_1", "ability_2", "ability_3"):
         status, text, battle = player_ability_v2(battle, char, action)
     elif action == "attack":
