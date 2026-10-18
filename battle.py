@@ -276,17 +276,13 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += "\n\n❄️ باس فریزه! (نوبت از دست داد)"
         return php, bhp, text
 
-    # 🆕 مدیریت انرژی باس (حداکثر 1000)
-    boss_energy = battle.get("boss_energy", 1000)
-    if boss_energy > 1000:
-        boss_energy = 1000
+    # 🆕 مدیریت انرژی مجازی باس
+    boss_energy = battle.get("boss_energy", 5000) # انرژی اولیه باس
+    if boss_energy < 500:
+        boss_energy = 5000 # شارژ مجدد
     battle["boss_energy"] = boss_energy
 
     action = boss_ai(battle["boss_name"], bhp, bmax)
-    
-    # 🆕 اگه انرژی باس کم بود، نمی‌تونه حمله ویژه بزنه
-    if action == "special" and boss_energy < 100:
-        action = "attack"
     
     if action == "attack":
         php, boss_text, _ = boss_attack_player(boss, php, pmax, battle, defense_flag)
@@ -303,7 +299,6 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         elif is_bleach: special_name = "Bankai"
         elif is_geass: special_name = "Geass"
         
-        # 🆕 هزینه انرژی بر اساس HP باس
         if bmax <= 1000: mult = 2; energy_cost = 200
         elif bmax <= 10000: mult = 3; energy_cost = 300
         elif bmax <= 30000: mult = 4; energy_cost = 400
