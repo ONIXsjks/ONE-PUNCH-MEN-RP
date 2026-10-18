@@ -115,87 +115,86 @@ def init_db():
         awaken_purple_used INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
+c.execute("""CREATE TABLE IF NOT EXISTS guilds (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE,
+    leader_id INTEGER,
+    level INTEGER DEFAULT 1,
+    xp INTEGER DEFAULT 0,
+    treasury INTEGER DEFAULT 0,
+    members_count INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS guilds (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE,
-        leader_id INTEGER,
-        level INTEGER DEFAULT 1,
-        xp INTEGER DEFAULT 0,
-        treasury INTEGER DEFAULT 0,
-        members_count INTEGER DEFAULT 1,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS guild_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id INTEGER,
+    user_id INTEGER UNIQUE,
+    role TEXT DEFAULT 'member',
+    joined_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS guild_members (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        guild_id INTEGER,
-        user_id INTEGER UNIQUE,
-        role TEXT DEFAULT 'member',
-        joined_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS admins (
+    user_id INTEGER PRIMARY KEY,
+    role TEXT DEFAULT 'admin',
+    permissions TEXT DEFAULT '',
+    added_by INTEGER,
+    added_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS admins (
-        user_id INTEGER PRIMARY KEY,
-        role TEXT DEFAULT 'admin',
-        permissions TEXT DEFAULT '',
-        added_by INTEGER,
-        added_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS help_content (
+    key TEXT PRIMARY KEY,
+    text TEXT,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS help_content (
-        key TEXT PRIMARY KEY,
-        text TEXT,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS char_images (
+    char_name TEXT PRIMARY KEY,
+    image_url TEXT,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS char_images (
-        char_name TEXT PRIMARY KEY,
-        image_url TEXT,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    channel_id TEXT UNIQUE,
+    channel_name TEXT DEFAULT '',
+    added_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS force_channels (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        channel_id TEXT UNIQUE,
-        channel_name TEXT DEFAULT '',
-        added_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
+    key TEXT PRIMARY KEY,
+    desc_text TEXT,
+    target INTEGER,
+    reward INTEGER,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS custom_quests (
-        key TEXT PRIMARY KEY,
-        desc_text TEXT,
-        target INTEGER,
-        reward INTEGER,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
+    user_id INTEGER PRIMARY KEY,
+    unlocked_regions TEXT DEFAULT 'forest',
+    current_region TEXT DEFAULT 'forest',
+    total_explores INTEGER DEFAULT 0,
+    treasures_found INTEGER DEFAULT 0,
+    bosses_killed INTEGER DEFAULT 0,
+    best_region TEXT DEFAULT 'forest',
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS world_progress (
-        user_id INTEGER PRIMARY KEY,
-        unlocked_regions TEXT DEFAULT 'forest',
-        current_region TEXT DEFAULT 'forest',
-        total_explores INTEGER DEFAULT 0,
-        treasures_found INTEGER DEFAULT 0,
-        bosses_killed INTEGER DEFAULT 0,
-        best_region TEXT DEFAULT 'forest',
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS world_treasures (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    treasure_name TEXT,
+    found_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS world_treasures (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        treasure_name TEXT,
-        found_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
-
-    c.execute("""CREATE TABLE IF NOT EXISTS shadows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        char_name TEXT,
-        shadow_name TEXT,
-        atk_bonus INTEGER DEFAULT 25,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )""")
+c.execute("""CREATE TABLE IF NOT EXISTS shadows (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    char_name TEXT,
+    shadow_name TEXT,
+    atk_bonus INTEGER DEFAULT 25,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+)""")
 # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
 try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
 except sqlite3.OperationalError: pass
