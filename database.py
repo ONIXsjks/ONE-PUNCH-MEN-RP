@@ -34,7 +34,23 @@ def init_db():
         geass_power INTEGER DEFAULT 120,
         max_geass_power INTEGER DEFAULT 120,
         haki INTEGER DEFAULT 120,
-        max_haki INTEGER DEFAULT 120
+        max_haki INTEGER DEFAULT 120,
+        naruto_chakra INTEGER DEFAULT 120,
+        max_naruto_chakra INTEGER DEFAULT 120,
+        dragonball_ki INTEGER DEFAULT 120,
+        max_dragonball_ki INTEGER DEFAULT 120,
+        sololeveling_mana INTEGER DEFAULT 120,
+        max_sololeveling_mana INTEGER DEFAULT 120,
+        hxh_nen INTEGER DEFAULT 120,
+        max_hxh_nen INTEGER DEFAULT 120,
+        mushoku_mana INTEGER DEFAULT 120,
+        max_mushoku_mana INTEGER DEFAULT 120,
+        tokyoghoul_rc INTEGER DEFAULT 120,
+        max_tokyoghoul_rc INTEGER DEFAULT 120,
+        sds_magic INTEGER DEFAULT 120,
+        max_sds_magic INTEGER DEFAULT 120,
+        sakamoto_stamina INTEGER DEFAULT 120,
+        max_sakamoto_stamina INTEGER DEFAULT 120
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS abilities_owned (
@@ -164,52 +180,47 @@ def init_db():
     )""")
 
     # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
-    try:
-        c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
 
-    try:
-        c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
+    # 🆕 ستون‌های انرژی جدید
+    try: c.execute("ALTER TABLE characters ADD COLUMN naruto_chakra INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_naruto_chakra INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+    try: c.execute("ALTER TABLE characters ADD COLUMN dragonball_ki INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_dragonball_ki INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
+    try: c.execute("ALTER TABLE characters ADD COLUMN sololeveling_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sololeveling_mana INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN cursed_energy INTEGER DEFAULT 120")
+    try: c.execute("ALTER TABLE characters ADD COLUMN hxh_nen INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_hxh_nen INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN max_cursed_energy INTEGER DEFAULT 120")
+    try: c.execute("ALTER TABLE characters ADD COLUMN mushoku_mana INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_mushoku_mana INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN reiatsu INTEGER DEFAULT 120")
+    try: c.execute("ALTER TABLE characters ADD COLUMN tokyoghoul_rc INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_tokyoghoul_rc INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN max_reiatsu INTEGER DEFAULT 120")
+    try: c.execute("ALTER TABLE characters ADD COLUMN sds_magic INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sds_magic INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN geass_power INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN max_geass_power INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN haki INTEGER DEFAULT 120")
-    except sqlite3.OperationalError: pass
-
-    try:
-        c.execute("ALTER TABLE characters ADD COLUMN max_haki INTEGER DEFAULT 120")
+    try: c.execute("ALTER TABLE characters ADD COLUMN sakamoto_stamina INTEGER DEFAULT 120"); c.execute("ALTER TABLE characters ADD COLUMN max_sakamoto_stamina INTEGER DEFAULT 120")
     except sqlite3.OperationalError: pass
 
     try:
@@ -320,23 +331,17 @@ def get_battle(user_id):
         "goku_form": row[17] if len(row) > 17 and row[17] else 0,
         "luffy_form": row[18] if len(row) > 18 and row[18] else 0,
     }
+
 def update_battle(battle, status='active'):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    
-    # 🌟 این خط جادویی رو اضافه کردیم:
-    # اگر بازی در حال اجراست و داخل دیتابیس قبلاً فرمی ثبت شده، از اون استفاده کن
-    # تا main.py نتونه فرم‌ها رو صفر کنه!
     c.execute("SELECT goku_form, luffy_form FROM active_battles WHERE id=?", (battle["id"],))
     row = c.fetchone()
-    
     goku_f = battle.get("goku_form", 0)
     luffy_f = battle.get("luffy_form", 0)
-    
     if row:
         if row[0] is not None and row[0] > goku_f: goku_f = row[0]
         if row[1] is not None and row[1] > luffy_f: luffy_f = row[1]
-
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
@@ -347,9 +352,7 @@ def update_battle(battle, status='active'):
          battle["domain_active"], battle["domain_turns"],
          battle["domain_name"], battle["domain_atk_boost"],
          battle.get("spam_state", "ability_1"),
-         goku_f,
-         luffy_f,
-         battle["id"]))
+         goku_f, luffy_f, battle["id"]))
     conn.commit()
     conn.close()
 
@@ -359,7 +362,6 @@ def end_battle(battle_id):
     c.execute("DELETE FROM active_battles WHERE id=?", (battle_id,))
     conn.commit()
     conn.close()
-
 # ============ ABILITIES & ITEMS ============
 def get_abilities(user_id, char_name):
     conn = sqlite3.connect(DB_NAME)
