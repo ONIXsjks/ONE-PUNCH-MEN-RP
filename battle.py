@@ -278,10 +278,12 @@ def player_attack(battle, char):
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
 
-    if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK:
-        base_dmg, crit = roll_damage(char[6] * 0.8, 0, 0)
-    else:
-        base_dmg, crit = roll_damage(char[6], 0, 0)
+    # 🆕 ضریب حمله ساده 1.5 برای همه، مگر اینکه کاراکتر خاصی باشه
+    mult = 1.5
+    if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: mult = 1.2
+    elif char[2] == "Sung Jin-Woo": mult = 1.5
+    
+    base_dmg, crit = roll_damage(char[6] * mult, 0, 0)
         
     if char[2] == "Sung Jin-Woo":
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
@@ -697,7 +699,6 @@ def build_battle_message(battle, char):
         shadow_bonus = get_shadows_atk_bonus(battle["uid"], char[2])
         if shadow_bonus > 0: text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
     
-    # 🆕 نمایش انرژی‌ها در نبرد
     try:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         c.execute("""SELECT cursed_energy, max_cursed_energy, reiatsu, max_reiatsu, geass_power, max_geass_power, haki, max_haki, 
