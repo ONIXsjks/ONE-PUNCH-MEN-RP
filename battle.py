@@ -515,7 +515,7 @@ def player_ability(battle, char, ability_name):
             return "lost", text, battle
         return "active", text, battle
 
-    # ========== ULTIMATE GEASS (فقط Code Geass) ==========
+    # ========== ULTIMATE GEASS ==========
     if ability_name == "ULTIMATE_GEASS":
         if char_name not in ABILITIES_CODEGEASS:
             return "active", "❌ این کاراکتر گیاس دوم نداره!", battle
@@ -634,7 +634,8 @@ def goku_transform(battle, char):
         4: {"atk": 50, "dodge": 25, "name": "Super Saiyan Blue"},
     }
     
-    boost = boosts[new_form]
+    boost = boosts.get(new_form, {"atk": 0, "dodge": 0, "name": "Unknown"})
+    
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
     battle["goku_form"] = new_form
     
@@ -659,7 +660,8 @@ def luffy_transform(battle, char):
         4: {"atk": 60, "dodge": 30, "name": "Gear 5"},
     }
     
-    boost = boosts[new_form]
+    boost = boosts.get(new_form, {"atk": 0, "dodge": 0, "name": "Unknown"})
+    
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + boost["atk"]
     battle["luffy_form"] = new_form
     
@@ -849,8 +851,6 @@ def player_item(battle, char, item_name):
     if new_php <= 0:
         return "lost", text, battle
     return "active", text, battle
-
-
 def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
