@@ -110,6 +110,9 @@ def init_db():
         spam_state TEXT DEFAULT 'ability_1',
         goku_form INTEGER DEFAULT 0,
         luffy_form INTEGER DEFAULT 0,
+        awaken_blue_used INTEGER DEFAULT 0,
+        awaken_red_used INTEGER DEFAULT 0,
+        awaken_purple_used INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
@@ -194,12 +197,18 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
 
-    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی (برای جلوگیری از ارور)
+    # 🆕 اضافه کردن ستون‌ها به جدول‌های قدیمی
     try: c.execute("ALTER TABLE active_battles ADD COLUMN spam_state TEXT DEFAULT 'ability_1'")
     except sqlite3.OperationalError: pass
     try: c.execute("ALTER TABLE active_battles ADD COLUMN goku_form INTEGER DEFAULT 0")
     except sqlite3.OperationalError: pass
     try: c.execute("ALTER TABLE active_battles ADD COLUMN luffy_form INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_blue_used INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_red_used INTEGER DEFAULT 0")
+    except sqlite3.OperationalError: pass
+    try: c.execute("ALTER TABLE active_battles ADD COLUMN awaken_purple_used INTEGER DEFAULT 0")
     except sqlite3.OperationalError: pass
     try: c.execute("ALTER TABLE characters ADD COLUMN survival_wave INTEGER DEFAULT 1")
     except sqlite3.OperationalError: pass
@@ -338,8 +347,8 @@ def create_battle(user_id, boss_name, player_hp, boss_hp):
     c.execute("""INSERT INTO active_battles
         (user_id, boss_name, player_hp, player_max_hp, boss_hp, boss_max_hp,
          turn, status, domain_used, boss_frozen, domain_active, domain_turns,
-         domain_name, domain_atk_boost, spam_state, goku_form, luffy_form)
-        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1',0,0)""",
+         domain_name, domain_atk_boost, spam_state, goku_form, luffy_form, awaken_blue_used, awaken_red_used, awaken_purple_used)
+        VALUES (?,?,?,?,?,?,0,'active',0,0,0,0,'',0,'ability_1',0,0,0,0,0)""",
         (user_id, boss_name, player_hp, player_hp, boss_hp, boss_hp))
     bid = c.lastrowid
     conn.commit()
@@ -352,7 +361,8 @@ def get_battle(user_id):
     c.execute("""SELECT id, user_id, boss_name, player_hp, player_max_hp,
                         boss_hp, boss_max_hp, player_defending, turn, status,
                         domain_used, boss_frozen, domain_active, domain_turns,
-                        domain_name, domain_atk_boost, spam_state, goku_form, luffy_form
+                        domain_name, domain_atk_boost, spam_state, goku_form, luffy_form,
+                        awaken_blue_used, awaken_red_used, awaken_purple_used
                  FROM active_battles WHERE user_id=? AND status='active'""", (user_id,))
     row = c.fetchone()
     conn.close()
@@ -367,29 +377,38 @@ def get_battle(user_id):
         "spam_state": row[16] if len(row) > 16 and row[16] else "ability_1",
         "goku_form": row[17] if len(row) > 17 and row[17] else 0,
         "luffy_form": row[18] if len(row) > 18 and row[18] else 0,
+        "awaken_blue_used": row[19] if len(row) > 19 and row[19] else 0,
+        "awaken_red_used": row[20] if len(row) > 20 and row[20] else 0,
+        "awaken_purple_used": row[21] if len(row) > 21 and row[21] else 0,
     }
 
 def update_battle(battle, status='active'):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT goku_form, luffy_form FROM active_battles WHERE id=?", (battle["id"],))
+    c.execute("SELECT goku_form, luffy_form, awaken_blue_used, awaken_red_used, awaken_purple_used FROM active_battles WHERE id=?", (battle["id"],))
     row = c.fetchone()
     goku_f = battle.get("goku_form", 0)
     luffy_f = battle.get("luffy_form", 0)
+    blue_u = battle.get("awaken_blue_used", 0)
+    red_u = battle.get("awaken_red_used", 0)
+    purple_u = battle.get("awaken_purple_used", 0)
     if row:
         if row[0] is not None and row[0] > goku_f: goku_f = row[0]
         if row[1] is not None and row[1] > luffy_f: luffy_f = row[1]
+        if row[2] is not None and row[2] > blue_u: blue_u = row[2]
+        if row[3] is not None and row[3] > red_u: red_u = row[3]
+        if row[4] is not None and row[4] > purple_u: purple_u = row[4]
     c.execute("""UPDATE active_battles SET
         player_hp=?, boss_hp=?, turn=?, player_defending=?, status=?,
         domain_used=?, boss_frozen=?, domain_active=?, domain_turns=?,
-        domain_name=?, domain_atk_boost=?, spam_state=?, goku_form=?, luffy_form=? WHERE id=?""",
+        domain_name=?, domain_atk_boost=?, spam_state=?, goku_form=?, luffy_form=?, awaken_blue_used=?, awaken_red_used=?, awaken_purple_used=? WHERE id=?""",
         (battle["php"], battle["bhp"], battle["turn"],
          battle["defending"], status,
          battle["domain_used"], battle["boss_frozen"],
          battle["domain_active"], battle["domain_turns"],
          battle["domain_name"], battle["domain_atk_boost"],
          battle.get("spam_state", "ability_1"),
-         goku_f, luffy_f, battle["id"]))
+         goku_f, luffy_f, blue_u, red_u, purple_u, battle["id"]))
     conn.commit()
     conn.close()
 
