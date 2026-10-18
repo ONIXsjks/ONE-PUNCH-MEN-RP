@@ -399,6 +399,46 @@ def player_dodge(battle, char):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
+
+# 🆕 فرم گوکو (با هزینه ۳۰ انرژی)
+def goku_transform(battle, char):
+    current_form = battle.get("goku_form", 0)
+    if current_form >= 4: return "active", "🔥 گوکو به حداکثر قدرت رسیده! (Ultra Instinct)", battle
+    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+    c.execute("SELECT dragonball_ki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+    row = c.fetchone(); energy = row[0] if row else 0
+    if energy < 30:
+        conn.close(); return "active", "❌ انرژی کی کافی نداری! (نیاز: ۳۰)", battle
+    c.execute("UPDATE characters SET dragonball_ki = dragonball_ki - 30 WHERE user_id=? AND is_active=1", (battle["uid"],))
+    conn.commit(); conn.close()
+    new_form = current_form + 1
+    if new_form == 1: atk_boost, dodge_boost, form_name = 10, 5, "Super Saiyan 2"
+    elif new_form == 2: atk_boost, dodge_boost, form_name = 20, 10, "Super Saiyan 3"
+    elif new_form == 3: atk_boost, dodge_boost, form_name = 35, 15, "Super Saiyan God"
+    else: atk_boost, dodge_boost, form_name = 50, 25, "Super Saiyan Blue"
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["goku_form"] = new_form
+    text = f"⚡ **گوکو به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n⚡ انرژی مصرفی: ۳۰"
+    return "active", text, battle
+
+# 🆕 فرم لوفی (با هزینه ۳۰ انرژی)
+def luffy_transform(battle, char):
+    current_form = battle.get("luffy_form", 0)
+    if current_form >= 4: return "active", "🔥 لوفی در فرم **Gear 5 (Sun God Nika)** است و به حداکثر قدرت رسیده!", battle
+    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+    c.execute("SELECT haki FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
+    row = c.fetchone(); energy = row[0] if row else 0
+    if energy < 30:
+        conn.close(); return "active", "❌ انرژی هاکی کافی نداری! (نیاز: ۳۰)", battle
+    c.execute("UPDATE characters SET haki = haki - 30 WHERE user_id=? AND is_active=1", (battle["uid"],))
+    conn.commit(); conn.close()
+    new_form = current_form + 1
+    if new_form == 1: atk_boost, dodge_boost, form_name = 15, 10, "Gear 2"
+    elif new_form == 2: atk_boost, dodge_boost, form_name = 25, 15, "Gear 3"
+    elif new_form == 3: atk_boost, dodge_boost, form_name = 40, 20, "Gear 4 (Bounceman)"
+    else: atk_boost, dodge_boost, form_name = 60, 30, "Gear 5 (Sun God Nika)"
+    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["luffy_form"] = new_form
+    text = f"⚡ **لوفی به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n⚡ انرژی مصرفی: ۳۰"
+    return "active", text, battle
 def player_ability(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -604,32 +644,6 @@ def player_ability(battle, char, ability_name):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
-
-# 🆕 فرم گوکو
-def goku_transform(battle, char):
-    current_form = battle.get("goku_form", 0)
-    if current_form >= 4: return "active", "🔥 گوکو به حداکثر قدرت رسیده! (Ultra Instinct)", battle
-    new_form = current_form + 1
-    if new_form == 1: atk_boost, dodge_boost, form_name = 10, 5, "Super Saiyan 2"
-    elif new_form == 2: atk_boost, dodge_boost, form_name = 20, 10, "Super Saiyan 3"
-    elif new_form == 3: atk_boost, dodge_boost, form_name = 35, 15, "Super Saiyan God"
-    else: atk_boost, dodge_boost, form_name = 50, 25, "Super Saiyan Blue"
-    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["goku_form"] = new_form
-    text = f"⚡ **گوکو به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n"
-    return "active", text, battle
-
-# 🆕 فرم لوفی
-def luffy_transform(battle, char):
-    current_form = battle.get("luffy_form", 0)
-    if current_form >= 4: return "active", "🔥 لوفی در فرم **Gear 5 (Sun God Nika)** است و به حداکثر قدرت رسیده!", battle
-    new_form = current_form + 1
-    if new_form == 1: atk_boost, dodge_boost, form_name = 15, 10, "Gear 2"
-    elif new_form == 2: atk_boost, dodge_boost, form_name = 25, 15, "Gear 3"
-    elif new_form == 3: atk_boost, dodge_boost, form_name = 40, 20, "Gear 4 (Bounceman)"
-    else: atk_boost, dodge_boost, form_name = 60, 30, "Gear 5 (Sun God Nika)"
-    battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["luffy_form"] = new_form
-    text = f"⚡ **لوفی به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n"
-    return "active", text, battle
 def player_ability_v2(battle, char, action):
     char_name = char[2]
     if action == "domain": return player_ability(battle, char, "DOMAIN")
@@ -640,7 +654,7 @@ def player_ability_v2(battle, char, action):
         ab_name = abilities[action]["name"]; return player_ability(battle, char, ab_name)
     return "active", "❌ Ability نامعتبر.", battle
 
-# 🆕 تابع جدید برای پردازش دکمه‌های اویکن
+# 🆕 تابع پردازش اویکن (با اسم مخصوص هر کاراکتر)
 def player_awaken_ability(battle, char, color):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -648,16 +662,13 @@ def player_awaken_ability(battle, char, color):
 
     if color == "blue":
         if battle.get("awaken_blue_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
-        mult, cost = 5, 30
-        battle["awaken_blue_used"] = 1
+        mult, cost = 5, 30; battle["awaken_blue_used"] = 1
     elif color == "red":
         if battle.get("awaken_red_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
-        mult, cost = 5, 35
-        battle["awaken_red_used"] = 1
+        mult, cost = 5, 35; battle["awaken_red_used"] = 1
     else:
         if battle.get("awaken_purple_used", 0) == 1: return "active", "❌ قبلاً استفاده کردی!", battle
-        mult, cost = 6, 40
-        battle["awaken_purple_used"] = 1
+        mult, cost = 6, 40; battle["awaken_purple_used"] = 1
 
     ability_name = get_awaken_name(char[2], color)
     
@@ -682,30 +693,22 @@ def player_awaken_ability(battle, char, color):
     elif char[2] in ABILITIES_OPM: energy_col = "opm_power"
 
     c.execute(f"SELECT {energy_col} FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],))
-    row = c.fetchone()
-    energy = row[0] if row else 0
+    row = c.fetchone(); energy = row[0] if row else 0
     if energy < cost:
-        conn.close()
-        return "active", f"❌ انرژی کافی نداری! (نیاز: {cost})", battle
+        conn.close(); return "active", f"❌ انرژی کافی نداری! (نیاز: {cost})", battle
     c.execute(f"UPDATE characters SET {energy_col} = {energy_col} - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
     conn.commit(); conn.close()
 
-    dmg = int(char[6] * mult)
-    bhp = max(0, bhp - dmg)
+    dmg = int(char[6] * mult); bhp = max(0, bhp - dmg)
     text = box_title(f"🔥 {ability_name}!", 26)
     text += f"\n\n💥 {format_num(dmg)} آسیب ({mult}x)\n⚡ انرژی مصرفی: {cost}"
-    text += f"\n\n👹 {boss['display_name']}"
-    text += f"\n{hp_bar(bhp, bmax)}"
+    text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
 
-    if bhp <= 0:
-        battle["php"] = php; battle["bhp"] = bhp
-        return "won", text, battle
-
+    if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
     php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
     battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
     if bt: text += f"\n{bt}"
     battle = apply_domain_round(battle)
-
     battle["php"] = php; battle["bhp"] = bhp
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
