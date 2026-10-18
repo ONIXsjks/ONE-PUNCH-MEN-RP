@@ -1688,7 +1688,7 @@ def main():
     app.add_handler(CommandHandler("resetchar", resetchar_cmd))
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
-app.add_handler(CommandHandler("upgradehaki", upgrade_haki))
+    app.add_handler(CommandHandler("upgradehaki", upgrade_haki))
 
     # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
