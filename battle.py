@@ -816,54 +816,59 @@ def build_battle_message(battle, char):
     return text
 
 def finish_battle(uid, boss_name, won):
-    energy_columns = [
-        ("cursed_energy", "max_cursed_energy"), ("reiatsu", "max_reiatsu"), 
-        ("geass_power", "max_geass_power"), ("haki", "max_haki"), 
-        ("naruto_chakra", "max_naruto_chakra"), ("dragonball_ki", "max_dragonball_ki"),
-        ("sololeveling_mana", "max_sololeveling_mana"), ("hxh_nen", "max_hxh_nen"), 
-        ("mushoku_mana", "max_mushoku_mana"), ("tokyoghoul_rc", "max_tokyoghoul_rc"), 
-        ("sds_magic", "max_sds_magic"), ("sakamoto_stamina", "max_sakamoto_stamina"),
-        ("aot_titan", "max_aot_titan"), ("blackclover_mana", "max_blackclover_mana"), 
-        ("berserk_bloodlust", "max_berserk_bloodlust"), ("demonslayer_breath", "max_demonslayer_breath"), 
-        ("chainsawman_blood", "max_chainsawman_blood"), ("opm_power", "max_opm_power"),
-    ]
-    set_clause = ", ".join([f"{col} = {max_col}" for col, max_col in energy_columns])
-    update_query = f"UPDATE characters SET {set_clause} WHERE user_id=? AND is_active=1"
+    # ۱. لیست تمام انرژی‌ها
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
+                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
+                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
+                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
+                "chainsawman_blood", "opm_power"]
+
+    # ۲. ساختن دستور پر کردن برای همه انرژی‌ها
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    update_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
 
     if won:
         boss = get_boss_data(boss_name)
-        if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
-        elif "Zombie Survival" in boss_name: mode, col = "zombie", "zombie_wave"
-        elif "Tower Survival" in boss_name: mode, col = "tower", "tower_wave"
-        else: mode, col = None, None
-        if mode:
+        if "Survival" in boss_name:
+            mode = "castle" if "Castle" in boss_name else ("zombie" if "Zombie" in boss_name else "tower")
+            col = f"{mode}_wave"
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"SELECT {col} FROM characters WHERE user_id=? AND is_active=1", (uid,)); row = c.fetchone()
+            c.execute(f"SELECT {col} FROM characters WHERE user_id=? AND is_active=1", (uid,))
+            row = c.fetchone()
             wave = row[0] if row else 1
             reward = get_reward_by_wave(wave)
-            if wave < 100: c.execute(f"UPDATE characters SET {col} = {col} + 1 WHERE user_id=? AND is_active=1", (uid,))
+            if wave < 100:
+                c.execute(f"UPDATE characters SET {col} = {col} + 1 WHERE user_id=? AND is_active=1", (uid,))
             conn.commit(); conn.close()
         else:
             reward = boss["reward"] if boss else 5000
+
         add_coins(uid, reward)
+        
+        # ۳. پر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         c.execute(update_query, (uid,))
         conn.commit(); conn.close()
+
         try:
-            from quests import update_quest_progress; update_quest_progress(uid, "win_3_bosses"); update_quest_progress(uid, "win_5_bosses")
+            from quests import update_quest_progress
+            update_quest_progress(uid, "win_3_bosses")
+            update_quest_progress(uid, "win_5_bosses")
         except: pass
         try:
-            from guild import give_guild_xp; give_guild_xp(uid, 5)
+            from guild import give_guild_xp
+            give_guild_xp(uid, 5)
         except: pass
         return reward
     else:
-        if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
-        elif "Zombie Survival" in boss_name: mode, col = "zombie", "zombie_wave"
-        elif "Tower Survival" in boss_name: mode, col = "tower", "tower_wave"
-        else: mode, col = None, None
-        if mode:
+        if "Survival" in boss_name:
+            mode = "castle" if "Castle" in boss_name else ("zombie" if "Zombie" in boss_name else "tower")
+            col = f"{mode}_wave"
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,)); conn.commit(); conn.close()
+            c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,))
+            conn.commit(); conn.close()
+        
+        # ۴. پر کردن انرژی‌ها
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         c.execute(update_query, (uid,))
         conn.commit(); conn.close()
