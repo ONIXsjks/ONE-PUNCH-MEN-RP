@@ -131,6 +131,7 @@ def roll_damage(atk, defender_def=0, defender_defending=0):
     if defender_defending: base -= defender_def * 2
     else: base -= defender_def * 0.5
     return max(1, int(base)), crit
+  
   def boss_ai(boss_name, boss_hp, boss_max_hp):
     r = random.random()
     jjk_bosses = ["Sukuna", "Mahito", "Jogo", "Toji Fushiguro", "Kenjaku", "Gojo Satoru", "Satoru Gojo"]
