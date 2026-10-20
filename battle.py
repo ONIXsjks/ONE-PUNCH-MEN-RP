@@ -289,14 +289,10 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
 def player_attack(battle, char):
-    # 🆕 اصلاح: پر کردن انرژی‌ها و ریست کردن max ها قبل از حمله
+    # 🆕 پر کردن خودکار انرژی‌ها و اصلاح max ها قبل از هر حمله
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
-                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
-                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
-                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
-                "chainsawman_blood", "opm_power"]
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra", "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", "chainsawman_blood", "opm_power"]
     for e in energies:
         c.execute(f"UPDATE characters SET max_{e} = 120 WHERE user_id=? AND is_active=1 AND max_{e} <= 0", (battle["uid"],))
     set_query = ", ".join([f"{e} = max_{e}" for e in energies])
@@ -430,8 +426,7 @@ def player_ability(battle, char, ability_name):
     if ability_name == "DOMAIN":
         if battle.get("domain_used", 0) >= 1: return "active", "❌ Domain فقط ۱ بار در نبرد!", battle
     if ability_name == "BANKAI":
-        if battle.get("bankai_used", 0) >= 1: return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle
-    if ability_name == "ULTIMATE_GEASS":
+        if battle.get("bankai_used", 0) >= 1: return "active", "❌ Bankai فقط ۱ بار در نبرد!", battle    if ability_name == "ULTIMATE_GEASS":
         if battle.get("geass_used", 0) >= 1: return "active", "❌ گیاس دوم فقط ۱ بار در نبرد!", battle
     found_key = None
     for key in ["ability_1", "ability_2", "ability_3"]:
@@ -805,6 +800,14 @@ def build_battle_message(battle, char):
     return text
 
 def finish_battle(uid, boss_name, won):
+    conn = sqlite3.connect(DB_NAME); c = conn.cursor()
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra", "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", "chainsawman_blood", "opm_power"]
+    for e in energies:
+        c.execute(f"UPDATE characters SET max_{e} = 120 WHERE user_id=? AND is_active=1 AND max_{e} <= 0", (uid,))
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (uid,))
+    conn.commit(); conn.close()
+
     if won:
         boss = get_boss_data(boss_name)
         if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
@@ -821,9 +824,6 @@ def finish_battle(uid, boss_name, won):
         else:
             reward = boss["reward"] if boss else 5000
         add_coins(uid, reward)
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy, reiatsu = max_reiatsu, geass_power = max_geass_power, haki = max_haki, naruto_chakra = max_naruto_chakra, dragonball_ki = max_dragonball_ki, sololeveling_mana = max_sololeveling_mana, hxh_nen = max_hxh_nen, mushoku_mana = max_mushoku_mana, tokyoghoul_rc = max_tokyoghoul_rc, sds_magic = max_sds_magic, sakamoto_stamina = max_sakamoto_stamina, aot_titan = max_aot_titan, blackclover_mana = max_blackclover_mana, berserk_bloodlust = max_berserk_bloodlust, demonslayer_breath = max_demonslayer_breath, chainsawman_blood = max_chainsawman_blood, opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
-        conn.commit(); conn.close()
         try:
             from quests import update_quest_progress; update_quest_progress(uid, "win_3_bosses"); update_quest_progress(uid, "win_5_bosses")
         except: pass
@@ -839,7 +839,4 @@ def finish_battle(uid, boss_name, won):
         if mode:
             conn = sqlite3.connect(DB_NAME); c = conn.cursor()
             c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,)); conn.commit(); conn.close()
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy, reiatsu = max_reiatsu, geass_power = max_geass_power, haki = max_haki, naruto_chakra = max_naruto_chakra, dragonball_ki = max_dragonball_ki, sololeveling_mana = max_sololeveling_mana, hxh_nen = max_hxh_nen, mushoku_mana = max_mushoku_mana, tokyoghoul_rc = max_tokyoghoul_rc, sds_magic = max_sds_magic, sakamoto_stamina = max_sakamoto_stamina, aot_titan = max_aot_titan, blackclover_mana = max_blackclover_mana, berserk_bloodlust = max_berserk_bloodlust, demonslayer_breath = max_demonslayer_breath, chainsawman_blood = max_chainsawman_blood, opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
-        conn.commit(); conn.close()
         return 0
