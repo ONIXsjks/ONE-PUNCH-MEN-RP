@@ -124,7 +124,7 @@ def get_character_abilities(char_name):
 
 def get_character_domain_bankai(char_name):
     return char_name in DOMAINS_JJK, char_name in BLEACH_BANKAI
-def get_battle_kb(char_name=None, user_id=None, battle=None):
+  def get_battle_kb(char_name=None, user_id=None, battle=None):
     kb = []
     if char_name:
         if battle:
@@ -209,7 +209,7 @@ async def check_menu_owner(q, ctx, menu_name):
         await q.answer("❌ این منو برای شما نیست! لطفاً خودتان دستور مربوطه را بزنید.", show_alert=True)
         return False
     return True
-async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+  async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     get_user(user.id, user.username)
     reset_daily_quests(user.id)
@@ -298,7 +298,7 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             return
         except Exception: pass
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb))
-async def smart_upgrade(update, ctx, energy_col, max_col, energy_name, abilities_dict):
+  async def smart_upgrade(update, ctx, energy_col, max_col, energy_name, abilities_dict):
     user_id = update.effective_user.id
     char = get_active_character(user_id)
     if not char or char[2] not in abilities_dict:
@@ -380,7 +380,7 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(format_guild(guild), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("👥 اعضا", callback_data="guild_members"), InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")], [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"), InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")], [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")]]))
     elif data == "prof_world":
         await q.message.reply_text(get_player_region_view(user_id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]))
-async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Coins: {get_coins(update.effective_user.id):,}")
 
 async def select(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -441,7 +441,7 @@ async def shop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "shop_main":
         kb = [[InlineKeyboardButton("🛡️ Ability", callback_data="shop_ab")], [InlineKeyboardButton("💊 آیتم", callback_data="shop_item")], [InlineKeyboardButton("🔥 باف", callback_data="shop_buff")], [InlineKeyboardButton("🦸 کاراکترها", callback_data="shop_char")]]
         await edit_shop_msg(q, "🏪 شاپ:\nیه دسته انتخاب کن:", kb)
-async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def shop_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     if not await check_menu_owner(q, ctx, "shop"): return
@@ -731,7 +731,7 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         try: await q.edit_message_text("🏳️ تسلیم شدی!")
         except Exception: await q.message.reply_text("🏳️ تسلیم شدی!")
         return
-if action == "awakening":
+      if action == "awakening":
     if battle.get("domain_active", 0) == 1 or battle.get("bankai_used", 0) == 1 or battle.get("geass_used", 0) == 1:
         await q.answer("❌ در حال حاضر در حالت اویکن هستی!", show_alert=True)
         return
@@ -986,7 +986,7 @@ async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     if len(full_text) > 3500: full_text = full_text[:3500] + "..."
     try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
-ضasync def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not get_active_character(user_id):
         await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
@@ -1164,7 +1164,7 @@ async def leaderboard_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif q.data == "lb_rank":
         text = "Top 10 by Rank:\n\n" + "".join([f"{i}. {name or 'Unknown'} - {char} ({rank})\n" for i, (name, char, rank) in enumerate(get_top_by_rank(10), 1)])
         await q.message.reply_text(text)
-async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def guild_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     save_menu_owner(ctx, "guild", update.effective_user.id)
     guild = get_user_guild(update.effective_user.id)
     if not guild:
@@ -1245,7 +1245,7 @@ async def guild_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for i, g in enumerate(guilds, 1):
             text += f"{i}. {g[1]} — سطح {g[3]} | 👥 {g[6]}\n"
         await q.message.reply_text(text)
-async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def pvp(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not get_active_character(user_id): return await update.message.reply_text("No active character.")
     session_id = f"pvp_{user_id}"
@@ -1375,7 +1375,7 @@ async def send_gift(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if spend_coins(sender_id, amount):
         add_coins(target_id, amount)
         await update.message.reply_text(f"🎁 **هدیه ارسال شد!**\nاز: {get_username(sender_id)}\nبه: {get_username(target_id)}\n💰 مبلغ: {amount:,} سکه")
-async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+      async def help_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = (
         "🤖 **راهنمای ربات**\n"
         "━━━━━━━━━━━━━━━━━━━\n\n"
