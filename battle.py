@@ -766,14 +766,10 @@ def build_battle_message(battle, char):
     try:
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    
-    # 🆕 گرفتن تمام انرژی‌ها در یک خط کوتاه‌تر
     query = "SELECT cursed_energy, reiatsu, geass_power, haki, naruto_chakra, dragonball_ki, sololeveling_mana, hxh_nen, mushoku_mana, tokyoghoul_rc, sds_magic, sakamoto_stamina, aot_titan, blackclover_mana, berserk_bloodlust, demonslayer_breath, chainsawman_blood, opm_power FROM characters WHERE user_id=? AND is_active=1"
     c.execute(query, (battle["uid"],))
-    
     row = c.fetchone()
     conn.close()
-    
     if row:
         if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: 
             text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[0]}"
@@ -811,4 +807,5 @@ def build_battle_message(battle, char):
             text += f"\n\n🪚 خون: {row[16]}/{row[16]}"
         elif char[2] in ABILITIES_OPM: 
             text += f"\n\n💪 قدرت مطلق: {row[17]}/{row[17]}"
-except: pass
+except: 
+    pass
