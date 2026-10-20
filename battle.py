@@ -334,6 +334,13 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
     return php, bhp, text
 
 def player_attack(battle, char):
+  conn = sqlite3.connect(DB_NAME)
+c = conn.cursor()
+energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra", "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", "chainsawman_blood", "opm_power"]
+set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
+conn.commit()
+conn.close()
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
