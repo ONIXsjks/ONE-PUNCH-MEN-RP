@@ -272,7 +272,7 @@ def init_db():
     except Exception as e:
         print(f"Balance Error: {e}")
 
-    # 🆕 اصلاح خودکار انرژی‌های صفر شده در دیتابیس (حل مشکل 0/0)
+    # 🆕 اصلاح خودکار انرژی‌های صفر شده (حل مشکل 0/0)
     try:
         c.execute("UPDATE characters SET max_cursed_energy = 120 WHERE max_cursed_energy <= 0")
         c.execute("UPDATE characters SET max_reiatsu = 120 WHERE max_reiatsu <= 0")
