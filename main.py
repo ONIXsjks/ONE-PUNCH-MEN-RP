@@ -380,7 +380,6 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(format_guild(guild), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("👥 اعضا", callback_data="guild_members"), InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")], [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"), InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")], [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")]]))
     elif data == "prof_world":
         await q.message.reply_text(get_player_region_view(user_id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]))
-
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Coins: {get_coins(update.effective_user.id):,}")
 
@@ -987,7 +986,7 @@ async def shop_buff_use_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     if len(full_text) > 3500: full_text = full_text[:3500] + "..."
     try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
-async def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+ضasync def world_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not get_active_character(user_id):
         await update.message.reply_text("❌ کاراکتر فعال نداری. /start بزن.")
