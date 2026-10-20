@@ -736,19 +736,6 @@ def player_item(battle, char, item_name):
     return "active", text, battle
 
 def build_battle_message(battle, char):
-    # 🆕 شارژ خودکار انرژی‌ها در زمان ساخت پیام
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
-                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
-                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
-                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
-                "chainsawman_blood", "opm_power"]
-    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
-    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
-    conn.commit()
-    conn.close()
-    
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
     boss_display = boss["display_name"] if boss else battle["boss_name"]
