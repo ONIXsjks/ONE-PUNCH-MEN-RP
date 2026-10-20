@@ -289,6 +289,21 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
 def player_attack(battle, char):
+    # 🆕 اصلاح: پر کردن انرژی‌ها و ریست کردن max ها قبل از حمله
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
+                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
+                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
+                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
+                "chainsawman_blood", "opm_power"]
+    for e in energies:
+        c.execute(f"UPDATE characters SET max_{e} = 120 WHERE user_id=? AND is_active=1 AND max_{e} <= 0", (battle["uid"],))
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
+    conn.commit()
+    conn.close()
+
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
@@ -790,13 +805,6 @@ def build_battle_message(battle, char):
     return text
 
 def finish_battle(uid, boss_name, won):
-    # 🆕 چک کردن و ریست کردن حداکثر انرژی‌ها در صورت صفر شدن (حل مشکل 0/0)
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("UPDATE characters SET max_cursed_energy=120, max_reiatsu=120, max_geass_power=120, max_haki=120, max_naruto_chakra=120, max_dragonball_ki=120, max_sololeveling_mana=120, max_hxh_nen=120, max_mushoku_mana=120, max_tokyoghoul_rc=120, max_sds_magic=120, max_sakamoto_stamina=120, max_aot_titan=120, max_blackclover_mana=120, max_berserk_bloodlust=120, max_demonslayer_breath=120, max_chainsawman_blood=120, max_opm_power=120 WHERE user_id=? AND is_active=1", (uid,))
-    conn.commit()
-    conn.close()
-
     if won:
         boss = get_boss_data(boss_name)
         if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
