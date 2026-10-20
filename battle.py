@@ -289,14 +289,6 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
 def player_attack(battle, char):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra", "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", "chainsawman_blood", "opm_power"]
-    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
-    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
-    conn.commit()
-    conn.close()
-    
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
@@ -744,6 +736,19 @@ def player_item(battle, char, item_name):
     return "active", text, battle
 
 def build_battle_message(battle, char):
+    # 🆕 شارژ خودکار انرژی‌ها در زمان ساخت پیام
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
+                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
+                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
+                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
+                "chainsawman_blood", "opm_power"]
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
+    conn.commit()
+    conn.close()
+    
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
     boss_display = boss["display_name"] if boss else battle["boss_name"]
@@ -766,107 +771,4 @@ def build_battle_message(battle, char):
         if shadow_bonus > 0: text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
     try:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        query = "SELECT cursed_energy, reiatsu, geass_power, haki, naruto_chakra, dragonball_ki, sololeveling_mana, hxh_nen, mushoku_mana, tokyoghoul_rc, sds_magic, sakamoto_stamina, aot_titan, blackclover_mana, berserk_bloodlust, demonslayer_breath, chainsawman_blood, opm_power FROM characters WHERE user_id=? AND is_active=1"
-        c.execute(query, (battle["uid"],))
-        row = c.fetchone()
-        conn.close()
-        if row:
-            if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[0]}"
-            elif char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: text += f"\n\n👻 ریستو: {row[1]}/{row[1]}"
-            elif char[2] in ABILITIES_CODEGEASS: text += f"\n\n👁️ گیاس: {row[2]}/{row[2]}"
-            elif char[2] in ABILITIES_ONEPIECE: text += f"\n\n🌊 هاکی: {row[3]}/{row[3]}"
-            elif char[2] in ABILITIES_NARUTO: text += f"\n\n🍥 چاکرا: {row[4]}/{row[4]}"
-            elif char[2] in ABILITIES_DRAGONBALL: text += f"\n\n🐉 کی: {row[5]}/{row[5]}"
-            elif char[2] in ABILITIES_SOLOLEVELING: text += f"\n\n🗡️ مانا: {row[6]}/{row[6]}"
-            elif char[2] in ABILITIES_HXH: text += f"\n\n🎯 نن: {row[7]}/{row[7]}"
-            elif char[2] in ABILITIES_MUSHOKU: text += f"\n\n🌀 مانا: {row[8]}/{row[8]}"
-            elif char[2] in ABILITIES_TOKYOGHOUL: text += f"\n\n👁️ RC: {row[9]}/{row[9]}"
-            elif char[2] in ABILITIES_SDS: text += f"\n\n⚔️ جادو: {row[10]}/{row[10]}"
-            elif char[2] in ABILITIES_SAKAMOTO: text += f"\n\n🍡 استقامت: {row[11]}/{row[11]}"
-            elif char[2] in ABILITIES_AOT: text += f"\n\n⚡ قدرت تایتان: {row[12]}/{row[12]}"
-            elif char[2] in ABILITIES_BLACKCLOVER: text += f"\n\n🍀 مانا: {row[13]}/{row[13]}"
-            elif char[2] in ABILITIES_BERSERK: text += f"\n\n🩸 خون‌آشامی: {row[14]}/{row[14]}"
-            elif char[2] in ABILITIES_DEMONSLAYER: text += f"\n\n🌸 نفس: {row[15]}/{row[15]}"
-            elif char[2] in ABILITIES_CHAINSAWMAN: text += f"\n\n🪚 خون: {row[16]}/{row[16]}"
-            elif char[2] in ABILITIES_OPM: text += f"\n\n💪 قدرت مطلق: {row[17]}/{row[17]}"
-    except: pass
-    if battle.get("domain_active", 0) == 1: text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
-    if battle.get("bankai_used", 0) >= 1:
-        bankai = battle.get("bankai_data", {}); text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
-    if battle.get("boss_frozen", 0) > 0: text += f"\n❄️ باس فریز است ({battle['boss_frozen']} نوبت)"
-    text += f"\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 نوبت توئه!"
-    return text
-
-def finish_battle(uid, boss_name, won):
-    if won:
-        boss = get_boss_data(boss_name)
-        if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
-        elif "Zombie Survival" in boss_name: mode, col = "zombie", "zombie_wave"
-        elif "Tower Survival" in boss_name: mode, col = "tower", "tower_wave"
-        else: mode, col = None, None
-        if mode:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"SELECT {col} FROM characters WHERE user_id=? AND is_active=1", (uid,)); row = c.fetchone()
-            wave = row[0] if row else 1
-            reward = get_reward_by_wave(wave)
-            if wave < 100: c.execute(f"UPDATE characters SET {col} = {col} + 1 WHERE user_id=? AND is_active=1", (uid,))
-            conn.commit(); conn.close()
-        else:
-            reward = boss["reward"] if boss else 5000
-        add_coins(uid, reward)
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET reiatsu = max_reiatsu WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET geass_power = max_geass_power WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET haki = max_haki WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET naruto_chakra = max_naruto_chakra WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET dragonball_ki = max_dragonball_ki WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sololeveling_mana = max_sololeveling_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET hxh_nen = max_hxh_nen WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET mushoku_mana = max_mushoku_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET tokyoghoul_rc = max_tokyoghoul_rc WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sds_magic = max_sds_magic WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sakamoto_stamina = max_sakamoto_stamina WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET aot_titan = max_aot_titan WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET blackclover_mana = max_blackclover_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET berserk_bloodlust = max_berserk_bloodlust WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET demonslayer_breath = max_demonslayer_breath WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET chainsawman_blood = max_chainsawman_blood WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
-        conn.commit(); conn.close()
-        try:
-            from quests import update_quest_progress; update_quest_progress(uid, "win_3_bosses"); update_quest_progress(uid, "win_5_bosses")
-        except: pass
-        try:
-            from guild import give_guild_xp; give_guild_xp(uid, 5)
-        except: pass
-        return reward
-    else:
-        if "Castle Survival" in boss_name: mode, col = "castle", "castle_wave"
-        elif "Zombie Survival" in boss_name: mode, col = "zombie", "zombie_wave"
-        elif "Tower Survival" in boss_name: mode, col = "tower", "tower_wave"
-        else: mode, col = None, None
-        if mode:
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,)); conn.commit(); conn.close()
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute("UPDATE characters SET cursed_energy = max_cursed_energy WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET reiatsu = max_reiatsu WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET geass_power = max_geass_power WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET haki = max_haki WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET naruto_chakra = max_naruto_chakra WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET dragonball_ki = max_dragonball_ki WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sololeveling_mana = max_sololeveling_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET hxh_nen = max_hxh_nen WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET mushoku_mana = max_mushoku_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET tokyoghoul_rc = max_tokyoghoul_rc WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sds_magic = max_sds_magic WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET sakamoto_stamina = max_sakamoto_stamina WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET aot_titan = max_aot_titan WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET blackclover_mana = max_blackclover_mana WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET berserk_bloodlust = max_berserk_bloodlust WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET demonslayer_breath = max_demonslayer_breath WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET chainsawman_blood = max_chainsawman_blood WHERE user_id=? AND is_active=1", (uid,))
-        c.execute("UPDATE characters SET opm_power = max_opm_power WHERE user_id=? AND is_active=1", (uid,))
-        conn.commit(); conn.close()
-        return 0
+        query = "SELECT cursed_energy, reiatsu, geass_power, haki, naruto_chakra, dragon
