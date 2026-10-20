@@ -131,7 +131,6 @@ def get_character_domain_bankai(char_name):
             awakening_active = (battle.get("domain_active", 0) == 1 or 
                                 battle.get("bankai_used", 0) >= 1 or 
                                 battle.get("geass_used", 0) >= 1)
-            
             if awakening_active:
                 if battle.get("awaken_blue_used", 0) == 0:
                     kb.append([InlineKeyboardButton(f"🔵 {get_awaken_name(char_name, 'blue')} (۳۰)", callback_data="act_awaken_blue")])
@@ -166,14 +165,12 @@ def get_character_domain_bankai(char_name):
                 kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
             if char_name in ABILITIES_CODEGEASS and battle.get("geass_used", 0) == 0: 
                 kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
-            
             if char_name == "Sung Jin-Woo": 
                 kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
             if char_name == "Son Goku": 
                 kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
             if char_name == "Monkey D. Luffy": 
                 kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
-            
             if not has_domain and not has_bankai and char_name not in ABILITIES_CODEGEASS:
                 kb.append([InlineKeyboardButton("🔥 اویکن (Awakening)", callback_data="act_awakening")])
         else:
@@ -183,10 +180,9 @@ def get_character_domain_bankai(char_name):
                 kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
             if char_name == "Monkey D. Luffy": 
                 kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
-
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
-    
+
 def get_multi_kb(session_id, char_name=None, current_turn=None, user_id=None):
     kb = []
     if char_name:
