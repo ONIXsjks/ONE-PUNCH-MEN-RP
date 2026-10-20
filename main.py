@@ -46,15 +46,12 @@ from admin import (is_admin, is_owner, has_permission, get_user_perms,
                    add_force_channel, remove_force_channel, get_force_channels,
                    set_custom_quest, get_custom_quest, get_all_custom_quests,
                    PERMISSIONS_LIST)
-# ============ OLD ANIMES ============
 from jjk_data import (CHARACTERS_JJK, BOSSES_JJK, FODDER_JJK, DOMAINS_JJK, ABILITIES_JJK)
 from bleach_data import (CHARACTERS_BLEACH, CHAR_PRICES_BLEACH, BLEACH_ABILITIES_SHOP, BLEACH_BANKAI, BLEACH_BOSSES, BLEACH_FODDER, ABILITIES_BLEACH)
 from opm_data import (CHARACTERS_OPM, ABILITIES_OPM, BOSSES_OPM)
 from jjk_stats import JJK_STATS
 from bleach_stats import BLEACH_STATS
 from opm_stats import OPM_STATS
-
-# ============ 7 ANIMES ============
 from aot_data import (CHARACTERS_AOT, CHAR_PRICES_AOT, ABILITIES_AOT, AOT_BOSSES, AOT_FODDER)
 from blackclover_data import (CHARACTERS_BLACKCLOVER, CHAR_PRICES_BLACKCLOVER, ABILITIES_BLACKCLOVER, BLACKCLOVER_BOSSES, BLACKCLOVER_FODDER)
 from berserk_data import (CHARACTERS_BERSERK, CHAR_PRICES_BERSERK, ABILITIES_BERSERK, BERSERK_BOSSES, BERSERK_FODDER)
@@ -62,7 +59,6 @@ from demonslayer_data import (CHARACTERS_DEMONSLAYER, CHAR_PRICES_DEMONSLAYER, A
 from chainsawman_data import (CHARACTERS_CHAINSAWMAN, CHAR_PRICES_CHAINSAWMAN, ABILITIES_CHAINSAWMAN, CHAINSAWMAN_BOSSES, CHAINSAWMAN_FODDER)
 from naruto_data import (CHARACTERS_NARUTO, CHAR_PRICES_NARUTO, ABILITIES_NARUTO, NARUTO_BOSSES, NARUTO_FODDER)
 from sevendeadlysins_data import (CHARACTERS_SDS, CHAR_PRICES_SDS, ABILITIES_SDS, SDS_BOSSES, SDS_FODDER)
-
 from aot_stats import AOT_STATS
 from blackclover_stats import BLACKCLOVER_STATS
 from berserk_stats import BERSERK_STATS
@@ -70,8 +66,6 @@ from demonslayer_stats import DEMONSLAYER_STATS
 from chainsawman_stats import CHAINSAWMAN_STATS
 from naruto_stats import NARUTO_STATS
 from sevendeadlysins_stats import SDS_STATS
-
-# ============ 8 ANIMES NEW ============
 from onepiece_data import (CHARACTERS_ONEPIECE, CHAR_PRICES_ONEPIECE, ABILITIES_ONEPIECE, ONEPIECE_BOSSES, ONEPIECE_FODDER)
 from dragonball_data import (CHARACTERS_DRAGONBALL, CHAR_PRICES_DRAGONBALL, ABILITIES_DRAGONBALL, DRAGONBALL_BOSSES, DRAGONBALL_FODDER)
 from hxh_data import (CHARACTERS_HXH, CHAR_PRICES_HXH, ABILITIES_HXH, HXH_BOSSES, HXH_FODDER)
@@ -80,7 +74,6 @@ from sololeveling_data import (CHARACTERS_SOLOLEVELING, CHAR_PRICES_SOLOLEVELING
 from mushoku_data import (CHARACTERS_MUSHOKU, CHAR_PRICES_MUSHOKU, ABILITIES_MUSHOKU, MUSHOKU_BOSSES, MUSHOKU_FODDER)
 from codegeass_data import (CHARACTERS_CODEGEASS, CHAR_PRICES_CODEGEASS, ABILITIES_CODEGEASS, CODEGEASS_BOSSES, CODEGEASS_FODDER)
 from tokyoghoul_data import (CHARACTERS_TOKYOGHOUL, CHAR_PRICES_TOKYOGHOUL, ABILITIES_TOKYOGHOUL, TOKYOGHOUL_BOSSES, TOKYOGHOUL_FODDER)
-
 from onepiece_stats import ONEPIECE_STATS
 from dragonball_stats import DRAGONBALL_STATS
 from hxh_stats import HXH_STATS
@@ -89,7 +82,6 @@ from sololeveling_stats import SOLOLEVELING_STATS
 from mushoku_stats import MUSHOKU_STATS
 from codegeass_stats import CODEGEASS_STATS
 from tokyoghoul_stats import TOKYOGHOUL_STATS
-
 from world import (REGIONS, TREASURES, get_region, get_region_name, random_explore_event, random_treasure, random_reward, can_unlock_region, get_player_region_view, get_region_view, format_treasure, format_world_progress, format_treasures_list)
 from anime_registry import (ANIME_REGISTRY, get_anime, get_anime_list, get_characters_by_anime, get_char_price_by_anime, find_char_anime, get_anime_bosses, get_anime_shop_abilities)
 from modes import (modes_cmd, castle_cmd, castle_callback, zombie_cmd, zombie_callback, tower_cmd, tower_callback)
@@ -139,7 +131,6 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
             awakening_active = (battle.get("domain_active", 0) == 1 or 
                                 battle.get("bankai_used", 0) >= 1 or 
                                 battle.get("geass_used", 0) >= 1)
-            
             if awakening_active:
                 if battle.get("awaken_blue_used", 0) == 0:
                     kb.append([InlineKeyboardButton(f"🔵 {get_awaken_name(char_name, 'blue')} (۳۰)", callback_data="act_awaken_blue")])
@@ -156,17 +147,14 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
                     kb.append([InlineKeyboardButton(f"🔵 {ab1}", callback_data="act_ability_1")])
                     kb.append([InlineKeyboardButton(f"🔴 {ab2}", callback_data="act_ability_2")])
                     kb.append([InlineKeyboardButton(f"🟣 {ab3} (۱ بار)", callback_data="act_ability_3")])
-    
     kb.append([InlineKeyboardButton("⚔️ حمله", callback_data="act_attack"), InlineKeyboardButton("🛡️ دفاع", callback_data="act_defend")])
     kb.append([InlineKeyboardButton("💨 جاخالی", callback_data="act_dodge"), InlineKeyboardButton("💊 آیتم", callback_data="act_item")])
     kb.append([InlineKeyboardButton("🔥 Ability", callback_data="act_shop_ability"), InlineKeyboardButton("✨ باف", callback_data="act_shop_buff")])
-    
     if char_name and battle:
         has_domain, has_bankai = get_character_domain_bankai(char_name)
         awakening_active = (battle.get("domain_active", 0) == 1 or 
                             battle.get("bankai_used", 0) >= 1 or 
                             battle.get("geass_used", 0) >= 1)
-        
         if not awakening_active:
             if has_domain and battle.get("domain_used", 0) == 0: 
                 kb.append([InlineKeyboardButton("🌀 گسترش قلمرو", callback_data="act_domain")])
@@ -174,14 +162,12 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
                 kb.append([InlineKeyboardButton("⚔️ Bankai", callback_data="act_bankai")])
             if char_name in ABILITIES_CODEGEASS and battle.get("geass_used", 0) == 0: 
                 kb.append([InlineKeyboardButton("👁️ گیاس دوم", callback_data="act_ultimate_geass")])
-            
             if char_name == "Sung Jin-Woo": 
                 kb.append([InlineKeyboardButton("💀 Arise", callback_data="act_arise")])
             if char_name == "Son Goku": 
                 kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
             if char_name == "Monkey D. Luffy": 
                 kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
-            
             if not has_domain and not has_bankai and char_name not in ABILITIES_CODEGEASS:
                 kb.append([InlineKeyboardButton("🔥 اویکن (Awakening)", callback_data="act_awakening")])
         else:
@@ -191,7 +177,6 @@ def get_battle_kb(char_name=None, user_id=None, battle=None):
                 kb.append([InlineKeyboardButton("🐉 فرم بعدی (Transform)", callback_data="act_goku_form")])
             if char_name == "Monkey D. Luffy": 
                 kb.append([InlineKeyboardButton("🏴‍☠️ فرم بعدی (Gear)", callback_data="act_luffy_form")])
-
     kb.append([InlineKeyboardButton("🏳️ تسلیم", callback_data="act_surrender")])
     return kb
 
@@ -262,21 +247,16 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = get_user(user_id)
     username = user[1] if user and user[1] else "ناشناس"
     char_name, rank, level, hp, atk, dfn, dodge, slots = char[2], char[3], char[4], char[5], char[6], char[7], char[8], char[9]
-    
     hp = min(hp, 50000)
     atk = min(atk, 25000)
-    
     has_domain, has_bankai = get_character_domain_bankai(char_name)
     domain_name = f" - {DOMAINS_JJK[char_name]['name']}" if has_domain else ""
     bankai_name = f" - {BLEACH_BANKAI[char_name]['name']}" if has_bankai else ""
-    
     abs_data = get_character_abilities(char_name)
     abs_text = f"🔵 {abs_data.get('ability_1', {}).get('name', '—')}\n🔴 {abs_data.get('ability_2', {}).get('name', '—')}\n🟣 {abs_data.get('ability_3', {}).get('name', '—')} (۱ بار)\n" if abs_data else "❌ Ability تعریف نشده\n"
-    
     arise_text = ""
     if char_name == "Sung Jin-Woo":
         arise_text = f"\n💀 **Arise:** {get_shadows_count(user_id, char_name)}/{MAX_SHADOWS} (+{get_shadows_atk_bonus(user_id, char_name)} ATK)\n"
-    
     energy_text = ""
     try:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
@@ -297,7 +277,6 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             elif char_name in ABILITIES_CHAINSAWMAN: energy_text += f"\n🪚 **خون:** {row[24]}/{row[25]}"
             elif char_name in ABILITIES_OPM: energy_text += f"\n💪 **قدرت مطلق:** {row[26]}/{row[27]}"
     except Exception: pass
-    
     text = (
         f"╔══════════════════════════╗\n║      👤 @{username[:14].center(14)} ║\n╚══════════════════════════╝\n\n"
         f"╭───── 🎭 کاراکتر فعال ─────╮\n│ 🦸 {char_name[:18].ljust(18)} │\n│ ⭐ Rank: {rank.ljust(14)} │\n│ 📊 Level: {str(level).ljust(13)} │\n╰────────────────────────────╯\n\n"
@@ -312,7 +291,6 @@ async def profile(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⚔️ نبرد سریع", callback_data="prof_battle"), InlineKeyboardButton("🏰 کلن", callback_data="prof_guild")],
         [InlineKeyboardButton("🗺️ دنیای آزاد", callback_data="prof_world")],
     ]
-    
     img = get_char_image(char_name)
     if img:
         try:
@@ -402,6 +380,7 @@ async def profile_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text(format_guild(guild), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("👥 اعضا", callback_data="guild_members"), InlineKeyboardButton("💰 دونیت", callback_data="guild_donate_info")], [InlineKeyboardButton("🔼 ارتقا", callback_data="guild_upgrade"), InlineKeyboardButton("🚪 خروج", callback_data="guild_leave")], [InlineKeyboardButton("🏆 رتبه‌بندی", callback_data="guild_top")]]))
     elif data == "prof_world":
         await q.message.reply_text(get_player_region_view(user_id), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌲 جنگل", callback_data="world_forest")], [InlineKeyboardButton("🏜️ بیابان", callback_data="world_desert")], [InlineKeyboardButton("🏔️ کوه", callback_data="world_mountain")], [InlineKeyboardButton("🌋 آتشفشان", callback_data="world_volcano")], [InlineKeyboardButton("🏰 سیاه‌چال", callback_data="world_dungeon")], [InlineKeyboardButton("📊 پیشرفت", callback_data="world_progress"), InlineKeyboardButton("🏆 گنج‌ها", callback_data="world_treasures")]]))
+
 async def coins(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Coins: {get_coins(update.effective_user.id):,}")
 
@@ -682,7 +661,6 @@ async def bosses_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     elif data == "tg":
         for name, d in TOKYOGHOUL_BOSSES.items(): kb.append([InlineKeyboardButton(f"👁️ {d.get('display_name', name)}", callback_data=f"solo_{name}")])
         for name, d in TOKYOGHOUL_FODDER.items(): kb.append([InlineKeyboardButton(f"🌱 {d.get('display_name', name)}", callback_data=f"solo_{name}")])
-    
     kb.append([InlineKeyboardButton("🔙 بازگشت", callback_data="battle_back")])
     await q.edit_message_text(f"⚔️ **لیست باس‌ها:**", reply_markup=InlineKeyboardMarkup(kb))
 
@@ -728,7 +706,6 @@ async def solo_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     battle_data = get_battle(user_id)
     await q.message.reply_text(build_battle_message(battle_data, char), reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle_data)))
 
-# 🆕 بخش اصلی تغییر: action_callback با پر کردن خودکار انرژی‌ها
 async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
@@ -739,8 +716,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not battle:
         await q.message.reply_text("❌ نبرد فعالی نداری. /battle بزن.")
         return
-    
-    # 🆕 پر کردن خودکار انرژی‌ها قبل از هر حرکت
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
@@ -752,7 +727,6 @@ async def action_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (user_id,))
     conn.commit()
     conn.close()
-    
     if action == "surrender":
         end_battle(battle["id"])
         try: await q.edit_message_text("🏳️ تسلیم شدی!")
@@ -772,12 +746,10 @@ if action == "awakening":
     try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     return
-
 if action in ("awaken_blue", "awaken_red", "awaken_purple"):
     color = action.replace("awaken_", "")
     from battle import player_awaken_ability
     status, text, battle = player_awaken_ability(battle, char, color)
-    
     if status == "won":
         update_battle(battle)
         reward = finish_battle(user_id, battle["boss_name"], True)
@@ -795,13 +767,11 @@ if action in ("awaken_blue", "awaken_red", "awaken_purple"):
     elif status == "active" and "❌" in text:
         await q.answer(text, show_alert=True)
         return
-    
     update_battle(battle)
     full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
     try: await q.edit_message_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     except Exception: await q.message.reply_text(full_text, reply_markup=InlineKeyboardMarkup(get_battle_kb(char[2], user_id, battle)))
     return
-
 if action in ("ability_1", "ability_2", "ability_3"):
     status, text, battle = player_ability_v2(battle, char, action)
 elif action == "attack":
@@ -883,7 +853,6 @@ elif action == "arise":
     return
 else:
     return
-
 if status == "won":
     update_battle(battle)
     reward = finish_battle(user_id, battle["boss_name"], True)
@@ -903,7 +872,6 @@ elif status == "lost":
     try: await q.edit_message_text(f"{text}\n\n💀 باختی!")
     except Exception: await q.message.reply_text(f"{text}\n\n💀 باختی!")
     return
-
 if char[2] == "Son Goku":
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -916,7 +884,6 @@ elif char[2] == "Monkey D. Luffy":
     c.execute("UPDATE active_battles SET luffy_form = ? WHERE id = ?", (battle.get("luffy_form", 0), battle["id"]))
     conn.commit()
     conn.close()
-    
 update_battle(battle)
 full_text = text + "\n\n━━━━━━━━━━━━━━━━\n\n" + build_battle_message(battle, char)
 if len(full_text) > 3500: full_text = full_text[:3500] + "..."
@@ -1057,7 +1024,6 @@ async def world_explore_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         return
     event = random_explore_event()
     increment_world_stat(user_id, "explores")
-
     if event == "enemy":
         enemy_name = random.choice(region["enemies"])
         char = get_active_character(user_id)
@@ -1616,10 +1582,7 @@ def main():
         init_quests_table()
     except Exception:
         pass
-
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
-
-    # ============ COMMANDS ============
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("profile", profile))
     app.add_handler(CommandHandler("coins", coins))
@@ -1650,14 +1613,10 @@ def main():
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("gift", send_gift))
     app.add_handler(CommandHandler("help", help_cmd))
-
-    # 🆕 MODES Commands
     app.add_handler(CommandHandler("modes", modes_cmd))
     app.add_handler(CommandHandler("castle", castle_cmd))
     app.add_handler(CommandHandler("zombie", zombie_cmd))
     app.add_handler(CommandHandler("tower", tower_cmd))
-
-    # 🆕 Energy Upgrade Commands
     app.add_handler(CommandHandler("upgradece", upgrade_ce))
     app.add_handler(CommandHandler("upgraderei", upgrade_rei))
     app.add_handler(CommandHandler("upgradegeass", upgrade_geass))
@@ -1676,8 +1635,6 @@ def main():
     app.add_handler(CommandHandler("upgradebreath", upgrade_breath))
     app.add_handler(CommandHandler("upgradeblood", upgrade_blood))
     app.add_handler(CommandHandler("upgradeopm", upgrade_opm))
-
-    # 🆕 Admin & Owner Commands
     app.add_handler(CommandHandler("admin", admin))
     app.add_handler(CommandHandler("give", give_cmd))
     app.add_handler(CommandHandler("take", take_cmd))
@@ -1693,11 +1650,7 @@ def main():
     app.add_handler(CommandHandler("resetchar", resetchar_cmd))
     app.add_handler(CommandHandler("ownerpanel", owner_panel))
     app.add_handler(CommandHandler("resetall", resetall_cmd))
-
-    # ============ MESSAGE HANDLERS ============
     app.add_handler(MessageHandler(filters.PHOTO & filters.CaptionRegex(r'^/setcharimage'), setcharimage_cmd))
-
-    # ============ CALLBACK HANDLERS ============
     app.add_handler(CallbackQueryHandler(first_char_callback, pattern="^first_"))
     app.add_handler(CallbackQueryHandler(profile_callback, pattern="^prof_"))
     app.add_handler(CallbackQueryHandler(select_callback, pattern="^sel_"))
@@ -1708,8 +1661,6 @@ def main():
     app.add_handler(CallbackQueryHandler(buy_ability_callback, pattern="^buyab_"))
     app.add_handler(CallbackQueryHandler(buy_item_callback, pattern="^buyit_"))
     app.add_handler(CallbackQueryHandler(buy_buff_callback, pattern="^buybf_"))
-    
-    # Battle
     app.add_handler(CallbackQueryHandler(solo_callback, pattern="^solo_"))
     app.add_handler(CallbackQueryHandler(bosses_anime_callback, pattern="^bosses_"))
     app.add_handler(CallbackQueryHandler(battle_back_callback, pattern="^battle_back$"))
@@ -1717,23 +1668,15 @@ def main():
     app.add_handler(CallbackQueryHandler(item_use_callback, pattern="^it_"))
     app.add_handler(CallbackQueryHandler(shop_ability_use_callback, pattern="^shopab_"))
     app.add_handler(CallbackQueryHandler(shop_buff_use_callback, pattern="^shopbf_"))
-    
-    # Coop & Multi
     app.add_handler(CallbackQueryHandler(coop_boss_callback, pattern="^coopboss_"))
     app.add_handler(CallbackQueryHandler(multi_action_callback, pattern="^mb_(attack|defend|dodge|ab1|ab2|ab3)_"))
-    
-    # World
     app.add_handler(CallbackQueryHandler(world_region_callback, pattern="^world_(forest|desert|mountain|volcano|dungeon)$"))
     app.add_handler(CallbackQueryHandler(world_explore_callback, pattern="^explore_"))
     app.add_handler(CallbackQueryHandler(world_progress_callback, pattern="^world_progress$"))
     app.add_handler(CallbackQueryHandler(world_treasures_callback, pattern="^world_treasures$"))
     app.add_handler(CallbackQueryHandler(world_back_callback, pattern="^world_back$"))
-    
-    # Guild & Leaderboard
     app.add_handler(CallbackQueryHandler(guild_callback, pattern="^guild_"))
     app.add_handler(CallbackQueryHandler(leaderboard_callback, pattern="^lb_"))
-
-    # Modes
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_castle$"))
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^modes_zombie$"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^modes_tower$"))
@@ -1741,13 +1684,10 @@ def main():
     app.add_handler(CallbackQueryHandler(zombie_callback, pattern="^zombie_start_"))
     app.add_handler(CallbackQueryHandler(tower_callback, pattern="^tower_start_"))
     app.add_handler(CallbackQueryHandler(castle_callback, pattern="^modes_back$"))
-
-    # Arise
     app.add_handler(CallbackQueryHandler(arise_callback, pattern="^arise_show$"))
     app.add_handler(CallbackQueryHandler(shadows_back_callback, pattern="^shadows_back$"))
-
     print("🤖 Bot Started!")
     app.run_polling()
 
 if __name__ == "__main__":
-    main() 
+    main()
