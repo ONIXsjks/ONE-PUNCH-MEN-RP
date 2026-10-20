@@ -289,6 +289,13 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
 def player_attack(battle, char):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra", "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", "chainsawman_blood", "opm_power"]
+    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
+    c.execute(f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1", (battle["uid"],))
+    conn.commit()
+    conn.close()
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
     php = battle["php"]; bhp = battle["bhp"]; pmax = battle["pmax"]; bmax = battle["bmax"]
@@ -369,6 +376,7 @@ def player_dodge(battle, char):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
+
 def goku_transform(battle, char):
     current_form = battle.get("goku_form", 0)
     if current_form >= 4: return "active", "🔥 گوکو به حداکثر قدرت رسیده! (Ultra Instinct)", battle
@@ -406,7 +414,6 @@ def luffy_transform(battle, char):
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["luffy_form"] = new_form
     text = f"⚡ **لوفی به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n⚡ انرژی مصرفی: ۳۰"
     return "active", text, battle
-
 def player_ability(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -424,7 +431,6 @@ def player_ability(battle, char, ability_name):
             found_key = key; break
     if found_key == "ability_3":
         if battle.get("spam_state") == "purple_used": return "active", f"🟣 {ability_name} فقط ۱ بار در کل نبرد!", battle
-
     energy_types = []
     if char_name in DOMAINS_JJK or char_name in ABILITIES_JJK or char_name in ABILITIES_NARUTO: energy_types.append("jjk")
     if char_name in BLEACH_BANKAI or char_name in ABILITIES_BLEACH: energy_types.append("bleach")
@@ -443,7 +449,6 @@ def player_ability(battle, char, ability_name):
     if char_name in ABILITIES_DEMONSLAYER: energy_types.append("ds")
     if char_name in ABILITIES_CHAINSAWMAN: energy_types.append("csm")
     if char_name in ABILITIES_OPM: energy_types.append("opm")
-
     if energy_types:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
         if "jjk" in energy_types:
@@ -501,60 +506,41 @@ def player_ability(battle, char, ability_name):
             c.execute("SELECT opm_power, max_opm_power FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "opm_power"
         else:
             c.execute("SELECT cursed_energy, max_cursed_energy FROM characters WHERE user_id=? AND is_active=1", (battle["uid"],)); row = c.fetchone(); energy = row[0] if row else 0; cost = 20; energy_col = "cursed_energy"
-
         char_level = char[4]; level_penalty = (char_level // 10) * 2; cost += level_penalty
         if energy < cost:
             hp_cost = (cost - energy) * 10
             if php <= hp_cost:
-                conn.close()
-                return "active", f"❌ نه انرژی داری نه HP کافی! (نیاز: {hp_cost} HP)", battle
+                conn.close(); return "active", f"❌ نه انرژی داری نه HP کافی! (نیاز: {hp_cost} HP)", battle
             php -= hp_cost
             c.execute(f"UPDATE characters SET {energy_col} = 0 WHERE user_id=? AND is_active=1", (battle["uid"],))
-            conn.commit()
-            conn.close()
+            conn.commit(); conn.close()
             extra_text = f"🩸 **از HP خودت انرژی ساختی! (-{format_num(hp_cost)} HP)**\n\n"
         else:
             c.execute(f"UPDATE characters SET {energy_col} = {energy_col} - ? WHERE user_id=? AND is_active=1", (cost, battle["uid"]))
-            conn.commit()
-            conn.close()
-            extra_text = ""
+            conn.commit(); conn.close(); extra_text = ""
         battle["php"] = php
     if ability_name == "DOMAIN":
         domain = DOMAINS.get(char_name) or DOMAINS_JJK.get(char_name)
-        if not domain:
-            return "active", "❌ این کاراکتر Domain نداره!", battle
-        battle["domain_used"] = 1
-        battle["domain_active"] = 1
-        battle["domain_turns"] = domain.get("duration", 2)
-        battle["domain_name"] = domain["name"]
-        effects = domain.get("effects", {})
-        battle["domain_atk_boost"] = effects.get("atk_boost", 0)
+        if not domain: return "active", "❌ این کاراکتر Domain نداره!", battle
+        battle["domain_used"] = 1; battle["domain_active"] = 1; battle["domain_turns"] = domain.get("duration", 2)
+        battle["domain_name"] = domain["name"]; effects = domain.get("effects", {}); battle["domain_atk_boost"] = effects.get("atk_boost", 0)
         dmg = int(char[6] * 2.5); bhp = max(0, bhp - dmg)
-        text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26)
-        text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
+        text = extra_text + box_title(f"🌀 {domain['name'][:20]}", 26); text += f"\n\n💥 {format_num(dmg)} آسیب (×۲.۵)"
         if "freeze" in effects:
-            battle["boss_frozen"] = effects["freeze"]
-            text += f"\n❄️ باس فریز شد! ({effects['freeze']} نوبت)"
-        if "atk_boost" in effects:
-            text += f"\n⚔️ ATK +{effects['atk_boost']}٪"
+            battle["boss_frozen"] = effects["freeze"]; text += f"\n❄️ باس فریز شد! ({effects['freeze']} نوبت)"
+        if "atk_boost" in effects: text += f"\n⚔️ ATK +{effects['atk_boost']}٪"
         if "heal" in effects:
-            heal = int(pmax * effects["heal"] / 100); php = min(pmax, php + heal)
-            text += f"\n💚 +{format_num(heal)} HP"
+            heal = int(pmax * effects["heal"] / 100); php = min(pmax, php + heal); text += f"\n💚 +{format_num(heal)} HP"
         text += f"\n\n👹 {boss['display_name']}"; text += f"\n{hp_bar(bhp, bmax)}"
-        if bhp <= 0:
-            battle["php"] = php
-            battle["bhp"] = bhp
-            return "won", text, battle
+        if bhp <= 0: battle["php"] = php; battle["bhp"] = bhp; return "won", text, battle
         php, bhp, text = boss_turn(battle, boss, php, pmax, bhp, bmax, text)
-        battle = apply_bankai_round(battle)
-        php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
+        battle = apply_bankai_round(battle); php, bhp, bt = apply_bankai_effects(battle, php, pmax, bhp, bmax)
         if bt: text += f"\n{bt}"
         battle = apply_domain_round(battle)
         battle["php"] = php; battle["bhp"] = bhp
         if bhp <= 0: return "won", text, battle
         if php <= 0: return "lost", text, battle
         return "active", text, battle
-
     if ability_name == "BANKAI":
         bankai = BANKAI.get(char_name) or BLEACH_BANKAI.get(char_name)
         if not bankai: return "active", "❌ این کاراکتر Bankai نداره!", battle
@@ -572,7 +558,6 @@ def player_ability(battle, char, ability_name):
         if bhp <= 0: return "won", text, battle
         if php <= 0: return "lost", text, battle
         return "active", text, battle
-
     if ability_name == "ULTIMATE_GEASS":
         if char_name not in ABILITIES_CODEGEASS: return "active", "❌ این کاراکتر گیاس دوم نداره!", battle
         geass = ULTIMATE_GEASS.get(char_name)
@@ -597,7 +582,6 @@ def player_ability(battle, char, ability_name):
         if bhp <= 0: return "won", text, battle
         if php <= 0: return "lost", text, battle
         return "active", text, battle
-
     if not abilities: return "active", "❌ Ability پیدا نشد.", battle
     found_ab = None
     for key in ["ability_1", "ability_2", "ability_3"]:
@@ -684,6 +668,7 @@ def player_awaken_ability(battle, char, color):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
+
 def player_ability_shop(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -731,7 +716,6 @@ def player_buff_shop(battle, char, buff_name):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
-
 def player_item(battle, char, item_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -757,6 +741,7 @@ def player_item(battle, char, item_name):
     if new_bhp <= 0: return "won", text, battle
     if new_php <= 0: return "lost", text, battle
     return "active", text, battle
+
 def build_battle_message(battle, char):
     boss = get_boss_data(battle["boss_name"])
     boss_atk = boss["atk"] if boss else 0
@@ -780,96 +765,4 @@ def build_battle_message(battle, char):
         if shadow_bonus > 0: text += f"\n\n💀 **سایه‌ها: +{shadow_bonus} ATK**"
     try:
         conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute("""SELECT cursed_energy, max_cursed_energy, reiatsu, max_reiatsu, geass_power, max_geass_power, haki, max_haki, 
-                            naruto_chakra, max_naruto_chakra, dragonball_ki, max_dragonball_ki, sololeveling_mana, max_sololeveling_mana, 
-                            hxh_nen, max_hxh_nen, mushoku_mana, max_mushoku_mana, tokyoghoul_rc, max_tokyoghoul_rc, sds_magic, max_sds_magic, 
-                            sakamoto_stamina, max_sakamoto_stamina, aot_titan, max_aot_titan, blackclover_mana, max_blackclover_mana, 
-                            berserk_bloodlust, max_berserk_bloodlust, demonslayer_breath, max_demonslayer_breath, chainsawman_blood, max_chainsawman_blood, 
-                            opm_power, max_opm_power 
-                     FROM characters WHERE user_id=? AND is_active=1""", (battle["uid"],))
-        row = c.fetchone(); conn.close()
-        if row:
-            if char[2] in DOMAINS_JJK or char[2] in ABILITIES_JJK: text += f"\n\n🔮 انرژی نفرینی: {row[0]}/{row[1]}"
-            elif char[2] in BLEACH_BANKAI or char[2] in ABILITIES_BLEACH: text += f"\n\n👻 ریستو: {row[2]}/{row[3]}"
-            elif char[2] in ABILITIES_CODEGEASS: text += f"\n\n👁️ گیاس: {row[4]}/{row[5]}"
-            elif char[2] in ABILITIES_ONEPIECE: text += f"\n\n🌊 هاکی: {row[6]}/{row[7]}"
-            elif char[2] in ABILITIES_NARUTO: text += f"\n\n🍥 چاکرا: {row[8]}/{row[9]}"
-            elif char[2] in ABILITIES_DRAGONBALL: text += f"\n\n🐉 کی: {row[10]}/{row[11]}"
-            elif char[2] in ABILITIES_SOLOLEVELING: text += f"\n\n🗡️ مانا: {row[12]}/{row[13]}"
-            elif char[2] in ABILITIES_HXH: text += f"\n\n🎯 نن: {row[14]}/{row[15]}"
-            elif char[2] in ABILITIES_MUSHOKU: text += f"\n\n🌀 مانا: {row[16]}/{row[17]}"
-            elif char[2] in ABILITIES_TOKYOGHOUL: text += f"\n\n👁️ RC: {row[18]}/{row[19]}"
-            elif char[2] in ABILITIES_SDS: text += f"\n\n⚔️ جادو: {row[20]}/{row[21]}"
-            elif char[2] in ABILITIES_SAKAMOTO: text += f"\n\n🍡 استقامت: {row[22]}/{row[23]}"
-            elif char[2] in ABILITIES_AOT: text += f"\n\n⚡ قدرت تایتان: {row[24]}/{row[25]}"
-            elif char[2] in ABILITIES_BLACKCLOVER: text += f"\n\n🍀 مانا: {row[26]}/{row[27]}"
-            elif char[2] in ABILITIES_BERSERK: text += f"\n\n🩸 خون‌آشامی: {row[28]}/{row[29]}"
-            elif char[2] in ABILITIES_DEMONSLAYER: text += f"\n\n🌸 نفس: {row[30]}/{row[31]}"
-            elif char[2] in ABILITIES_CHAINSAWMAN: text += f"\n\n🪚 خون: {row[32]}/{row[33]}"
-            elif char[2] in ABILITIES_OPM: text += f"\n\n💪 قدرت مطلق: {row[34]}/{row[35]}"
-    except: pass
-    if battle.get("domain_active", 0) == 1: text += f"\n\n🌀 قلمرو: {battle.get('domain_name', '')} ({battle.get('domain_turns', 0)} راند)"
-    if battle.get("bankai_used", 0) >= 1:
-        bankai = battle.get("bankai_data", {}); text += f"\n⚔️ Bankai: {bankai.get('name', '')}"
-    if battle.get("boss_frozen", 0) > 0: text += f"\n❄️ باس فریز است ({battle['boss_frozen']} نوبت)"
-    text += f"\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 نوبت توئه!"
-    return text
-
-def finish_battle(uid, boss_name, won):
-    # لیست تمام انرژی‌ها
-    energies = ["cursed_energy", "reiatsu", "geass_power", "haki", "naruto_chakra",
-                "dragonball_ki", "sololeveling_mana", "hxh_nen", "mushoku_mana", 
-                "tokyoghoul_rc", "sds_magic", "sakamoto_stamina", "aot_titan", 
-                "blackclover_mana", "berserk_bloodlust", "demonslayer_breath", 
-                "chainsawman_blood", "opm_power"]
-
-    # دستور پر کردن همه انرژی‌ها
-    set_query = ", ".join([f"{e} = max_{e}" for e in energies])
-    fill_query = f"UPDATE characters SET {set_query} WHERE user_id=? AND is_active=1"
-
-    if won:
-        boss = get_boss_data(boss_name)
-        if "Survival" in boss_name:
-            mode = "castle" if "Castle" in boss_name else ("zombie" if "Zombie" in boss_name else "tower")
-            col = f"{mode}_wave"
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"SELECT {col} FROM characters WHERE user_id=? AND is_active=1", (uid,))
-            row = c.fetchone()
-            wave = row[0] if row else 1
-            reward = get_reward_by_wave(wave)
-            if wave < 100:
-                c.execute(f"UPDATE characters SET {col} = {col} + 1 WHERE user_id=? AND is_active=1", (uid,))
-            conn.commit(); conn.close()
-        else:
-            reward = boss["reward"] if boss else 5000
-
-        add_coins(uid, reward)
-        
-        # پر کردن انرژی‌ها
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(fill_query, (uid,))
-        conn.commit(); conn.close()
-
-        try:
-            from quests import update_quest_progress
-            update_quest_progress(uid, "win_3_bosses")
-            update_quest_progress(uid, "win_5_bosses")
-        except: pass
-        try:
-            from guild import give_guild_xp
-            give_guild_xp(uid, 5)
-        except: pass
-        return reward
-    else:
-        if "Survival" in boss_name:
-            mode = "castle" if "Castle" in boss_name else ("zombie" if "Zombie" in boss_name else "tower")
-            col = f"{mode}_wave"
-            conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-            c.execute(f"UPDATE characters SET {col} = 1 WHERE user_id=? AND is_active=1", (uid,))
-            conn.commit(); conn.close()
-        
-        # پر کردن انرژی‌ها
-        conn = sqlite3.connect(DB_NAME); c = conn.cursor()
-        c.execute(fill_query, (uid,))
-        conn.commit(); conn.close()
-        return 0
+        c.execute("
