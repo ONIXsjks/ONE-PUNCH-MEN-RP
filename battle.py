@@ -131,6 +131,7 @@ def roll_damage(atk, defender_def=0, defender_defending=0):
     if defender_defending: base -= defender_def * 2
     else: base -= defender_def * 0.5
     return max(1, int(base)), crit
+
 def boss_ai(boss_name, boss_hp, boss_max_hp):
     r = random.random()
     jjk_bosses = ["Sukuna", "Mahito", "Jogo", "Toji Fushiguro", "Kenjaku", "Gojo Satoru", "Satoru Gojo"]
@@ -288,6 +289,7 @@ def boss_turn(battle, boss, php, pmax, bhp, bmax, text, defense_flag=None):
         text += f"\n\n💚 باس درمان: +{format_num(heal)}"
         text += f"\n👹 {hp_bar(bhp, bmax)}"
     return php, bhp, text
+
 def player_attack(battle, char):
     # 🆕 پر کردن خودکار انرژی‌ها و اصلاح max ها قبل از هر حمله
     conn = sqlite3.connect(DB_NAME)
@@ -418,6 +420,7 @@ def luffy_transform(battle, char):
     battle["domain_atk_boost"] = battle.get("domain_atk_boost", 0) + atk_boost; battle["luffy_form"] = new_form
     text = f"⚡ **لوفی به فرم {form_name} رفت!**\n\n⚔️ ATK: +{atk_boost}٪\n💨 DODGE: +{dodge_boost}٪\n⚡ انرژی مصرفی: ۳۰"
     return "active", text, battle
+
 def player_ability(battle, char, ability_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
@@ -585,6 +588,7 @@ def player_ability(battle, char, ability_name):
         if bhp <= 0: return "won", text, battle
         if php <= 0: return "lost", text, battle
         return "active", text, battle
+
     if not abilities: return "active", "❌ Ability پیدا نشد.", battle
     found_ab = None
     for key in ["ability_1", "ability_2", "ability_3"]:
@@ -719,6 +723,7 @@ def player_buff_shop(battle, char, buff_name):
     if bhp <= 0: return "won", text, battle
     if php <= 0: return "lost", text, battle
     return "active", text, battle
+
 def player_item(battle, char, item_name):
     boss = get_boss_data(battle["boss_name"])
     if not boss: return "active", "❌ باس پیدا نشد.", battle
